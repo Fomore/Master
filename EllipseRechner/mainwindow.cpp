@@ -11,12 +11,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    cv::Mat inMat = mKreis.print(0,0);
-    QImage image( inMat.data,
-                  inMat.cols, inMat.rows,
-                  static_cast<int>(inMat.step),
-                  QImage::Format_ARGB32 );
-    ui->label->setPixmap(QPixmap::fromImage(image));
+
+    x = y = 180;
+    plot();
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(plot()));
@@ -29,23 +26,24 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::plot(){
-    cv::Mat inMat = mKreis.print(ui->horizontalSlider->sliderPosition(),ui->verticalSlider->sliderPosition());
-    QImage image( inMat.data,
-                  inMat.cols, inMat.rows,
-                  static_cast<int>(inMat.step),
-                  QImage::Format_ARGB32 );
-    QPixmap img(QPixmap::fromImage(image));
+    if(x != ui->horizontalSlider->sliderPosition() || y != ui->verticalSlider->sliderPosition()){
+        x = ui->horizontalSlider->sliderPosition();
+        y = ui->verticalSlider->sliderPosition();
 
-    QPainter paint(&img);
 
-    paint.translate(300,300);
-    paint.rotate(90);
-    paint.setPen(*(new QColor(255,34,255,255)));
-    int x = 100;
-    int y = 150;
-    paint.drawEllipse(-x/2,-y/2,x,y);
+        cv::Mat inMat = mKreis.print(x,y);
+        cv::ellipse( inMat, mEllipse.calculate_Ellipse(inMat), cv::Scalar(255,0,255), 1,1 );
 
-    ui->label->setPixmap(img);
-    ui->lineEdit->setText(QString::number(ui->horizontalSlider->sliderPosition()));
-    ui->lineEdit_2->setText(QString::number(ui->verticalSlider->sliderPosition()));
+        mEllipse.calculate_Ellipse(inMat);
+
+        QImage image( inMat.data,
+                      inMat.cols, inMat.rows,
+                      static_cast<int>(inMat.step),
+                      QImage::Format_ARGB32 );
+        QPixmap img(QPixmap::fromImage(image));
+
+        ui->label->setPixmap(img);
+        ui->lineEdit->setText(QString::number(ui->horizontalSlider->sliderPosition()));
+        ui->lineEdit_2->setText(QString::number(ui->verticalSlider->sliderPosition()));
+    }
 }

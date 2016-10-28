@@ -4,6 +4,7 @@
 #include <QMainWindow>
 
 #include "Model/kreis.h"
+#include "Model/ellipse.h"
 
 namespace Ui {
 class MainWindow;
@@ -24,6 +25,8 @@ private slots:
 private:
     Ui::MainWindow *ui;
     Kreis mKreis;
+    Ellipse mEllipse;
+    int x,y;
 };
 
 #endif // MAINWINDOW_H

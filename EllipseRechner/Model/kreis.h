@@ -16,7 +16,6 @@ public:
     Kreis();
     ~Kreis();
     cv::Mat print(int alpha_x, int alpha_y);
-    bool busy;
 };
 
 #endif // KREIS_H
