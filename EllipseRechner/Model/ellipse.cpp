@@ -26,10 +26,5 @@ cv::RotatedRect Ellipse::calculate_Ellipse(cv::Mat image){
         }
     }
 
-    cv::RotatedRect mEllipse = cv::fitEllipse( cv::Mat(pos) );
-    cv::ellipse( image, mEllipse, cv::Scalar(255,0,255), 1,1 );
-
-    cv::namedWindow( "Gray Img", CV_WINDOW_AUTOSIZE );
-    imshow( "Gray Img", image );
-    return mEllipse;
+    return cv::RotatedRect(cv::fitEllipse( cv::Mat(pos) ));
 }
