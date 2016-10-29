@@ -35,6 +35,17 @@ void Kreis::rotate_Y(int alpha, double &x, double &y, double &z){
     z = tz;
 }
 
+void Kreis::rotate_XY(int alpha_x, int alpha_y, double &x, double &y, double &z){
+    double ax = M_PI*alpha_x/180.0;
+    double ay = M_PI*alpha_y/180.0;
+    double tx = cos(ay)*x+sin(ay)*sin(ax)*y+sin(ay)*cos(ax)*z;
+    double ty = cos(ax)*y-sin(ay)*z;
+    double tz = -sin(ay)*x+cos(ay)*sin(ax)*y+cos(ax)*cos(ay)*z;
+    x=tx;
+    y=ty;
+    z=tz;
+}
+
 cv::Mat Kreis::print(int alpha_x, int alpha_y){
     double s = 250;//Skallierung
     double step = 700;
@@ -42,8 +53,9 @@ cv::Mat Kreis::print(int alpha_x, int alpha_y){
     for(double a = 0; a< step*2; a++){
         double pos[3];
         get_circle(a/step*M_PI,pos[0],pos[1],pos[2]);
-        rotate_X(alpha_x,pos[0],pos[1],pos[2]);
-        rotate_Y(alpha_y,pos[0],pos[1],pos[2]);
+
+        rotate_XY(alpha_x,alpha_y,pos[0],pos[1],pos[2]);
+
         int i = mat.rows/2+(int)(s*(pos[0]/(pos[2]+3)));
         int j = mat.cols/2+(int)(s*(pos[1]/(pos[2]+3)));
         if(i >=0 && i < mat.rows && j >= 0 && j < mat.cols){
