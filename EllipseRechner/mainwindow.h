@@ -6,6 +6,8 @@
 #include "Model/kreis.h"
 #include "Model/ellipse.h"
 
+#include "Control/neigungswinkel.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -26,6 +28,7 @@ private:
     Ui::MainWindow *ui;
     Kreis mKreis;
     Ellipse mEllipse;
+    Neigungswinkel mWinkel;
     int x,y;
 };
 

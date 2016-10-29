@@ -16,10 +16,12 @@ LIBS += `pkg-config opencv --libs`
 SOURCES += main.cpp\
         mainwindow.cpp \
     Model/kreis.cpp \
-    Model/ellipse.cpp
+    Model/ellipse.cpp \
+    Control/neigungswinkel.cpp
 
 HEADERS  += mainwindow.h \
     Model/kreis.h \
-    Model/ellipse.h
+    Model/ellipse.h \
+    Control/neigungswinkel.h
 
 FORMS    += mainwindow.ui

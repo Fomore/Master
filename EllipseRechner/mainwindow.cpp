@@ -32,7 +32,11 @@ void MainWindow::plot(){
 
 
         cv::Mat inMat = mKreis.print(x,y);
-        cv::ellipse( inMat, mEllipse.calculate_Ellipse(inMat), cv::Scalar(255,0,255,255), 1,1 );
+        cv::RotatedRect ellipse(mEllipse.calculate_Ellipse(inMat));
+
+        mWinkel.calculate(ellipse);
+
+        cv::ellipse( inMat, ellipse, cv::Scalar(255,0,255,255), 1,1 );
 
         QImage image( inMat.data,
                       inMat.cols, inMat.rows,

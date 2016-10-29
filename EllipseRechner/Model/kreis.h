@@ -16,6 +16,7 @@ public:
     Kreis();
     ~Kreis();
     cv::Mat print(int alpha_x, int alpha_y);
+    void build_Table();
 };
 
 #endif // KREIS_H
