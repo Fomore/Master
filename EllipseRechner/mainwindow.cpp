@@ -18,6 +18,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(plot()));
     timer->start(100);//Zeit in msec
+
+    mWinkel = *(new Neigungswinkel());
 }
 
 MainWindow::~MainWindow()
@@ -26,15 +28,15 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::plot(){
-    if(x != ui->horizontalSlider->sliderPosition() || y != ui->verticalSlider->sliderPosition()){
+    if(x != ui->horizontalSlider->sliderPosition() || y != ui->verticalSlider->sliderPosition() || r != ui->verticalSlider_2->sliderPosition()){
         x = ui->horizontalSlider->sliderPosition();
         y = ui->verticalSlider->sliderPosition();
+        r = ui->verticalSlider_2->sliderPosition();
 
-
-        cv::Mat inMat = mKreis.print(x,y);
+        cv::Mat inMat = mKreis.print(x,y,r);
         cv::RotatedRect ellipse(mEllipse.calculate_Ellipse(inMat));
 
-        mWinkel.calculate(ellipse);
+        mWinkel.calculate(ellipse,x,y);
 
         cv::ellipse( inMat, ellipse, cv::Scalar(255,0,255,255), 1,1 );
 
@@ -47,5 +49,6 @@ void MainWindow::plot(){
         ui->label->setPixmap(img);
         ui->lineEdit->setText(QString::number(ui->horizontalSlider->sliderPosition()));
         ui->lineEdit_2->setText(QString::number(ui->verticalSlider->sliderPosition()));
+        ui->lineEdit_3->setText(QString::number(ui->verticalSlider_2->sliderPosition()));
     }
 }

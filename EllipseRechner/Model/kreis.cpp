@@ -46,18 +46,32 @@ void Kreis::rotate_XY(int alpha_x, int alpha_y, double &x, double &y, double &z)
     z=tz;
 }
 
-cv::Mat Kreis::print(int alpha_x, int alpha_y){
-    double s = 250;//Skallierung
+void Kreis::rotate_circle(double alpha, int alpha_x, int alpha_y, double &x, double &y, double &z){
+    double ax = M_PI*alpha_x/180.0;
+    double ay = M_PI*alpha_y/180.0;
+    x = mRadius*(sin(alpha)*sin(ax)*sin(ay)+cos(alpha)*cos(ay));
+    y = mRadius*sin(alpha)*cos(ax);
+    z = mRadius*(sin(alpha)*sin(ax)*cos(ay)-cos(alpha)*sin(ay));
+}
+
+cv::Mat Kreis::print(int alpha_x, int alpha_y, int radius){
+    mRadius = radius/100.0;
+    double s = 300;//Skallierung
     double step = 700;
     cv::Mat mat = cv::Mat::zeros(cv::Size(600,600), CV_8UC4);
+
+    cv::Vec4b& bgra = mat.at<cv::Vec4b>(mat.rows/2,mat.cols/2);
+    bgra[0] = 0;
+    bgra[1] = 0;
+    bgra[2] = 255;
+    bgra[3] = UCHAR_MAX;
+
     for(double a = 0; a< step*2; a++){
         double pos[3];
-        get_circle(a/step*M_PI,pos[0],pos[1],pos[2]);
+        rotate_circle(a/step*M_PI,alpha_x,alpha_y,pos[0],pos[1],pos[2]);
+        int i = mat.rows/2+(int)(s*pos[0]/(2+pos[2]));
+        int j = mat.cols/2+(int)(s*pos[1]/(2+pos[2]));
 
-        rotate_XY(alpha_x,alpha_y,pos[0],pos[1],pos[2]);
-
-        int i = mat.rows/2+(int)(s*(pos[0]/(pos[2]+3)));
-        int j = mat.cols/2+(int)(s*(pos[1]/(pos[2]+3)));
         if(i >=0 && i < mat.rows && j >= 0 && j < mat.cols){
             cv::Vec4b& bgra = mat.at<cv::Vec4b>(i, j);
             bgra[0] = 0;

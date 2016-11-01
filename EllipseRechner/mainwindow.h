@@ -29,7 +29,7 @@ private:
     Kreis mKreis;
     Ellipse mEllipse;
     Neigungswinkel mWinkel;
-    int x,y;
+    int x,y,r;
 };
 
 #endif // MAINWINDOW_H
