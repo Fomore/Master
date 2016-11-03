@@ -36,7 +36,8 @@ void MainWindow::plot(){
         cv::Mat inMat = mKreis.print(x,y,r);
         cv::RotatedRect ellipse(mEllipse.calculate_Ellipse(inMat));
 
-        mWinkel.calculate(ellipse,x,y);
+//        mWinkel.calculate(ellipse,x,y);
+        mWinkel.calculate2(ellipse,x,y);
 
         cv::ellipse( inMat, ellipse, cv::Scalar(255,0,255,255), 1,1 );
 

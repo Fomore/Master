@@ -29,6 +29,10 @@ void Neigungswinkel::calculate(cv::RotatedRect ellipse, double x, double y){
 
     std::cout<<"Winkel: "<<ellipse.angle<<" ,Zentrum "<<ellipse.center.x<<"/"<<ellipse.center.y<<" ,Durchmesser: "<<ellipse.size.height<<"/"<<ellipse.size.width
              <<"\n   Strecken r0:"<<r[0]<<" r1: "<<r[1]<<" r2: "<<r[2]<<" r3: "<<r[3]<<std::endl;
+    double a = acos(ellipse.size.width/ellipse.size.height);
+    double a1 = sin(ellipse.angle/180*M_PI)*a/M_PI*180;
+    double a2 = cos(ellipse.angle/180*M_PI)*a/M_PI*180;
+    std::cout<<"   Test "<<a/M_PI*180<<" : "<<a1<<" / "<<a2<<std::endl;
 
     double ret[3];
 
@@ -66,4 +70,16 @@ void Neigungswinkel::calculate(cv::RotatedRect ellipse, double x, double y){
         std::cout<<"    Fehler Y: "<<fehler[i*7][1]<<" / "<<fehler[i*7+1][1]<<" / "<<fehler[i*7+2][1]<<" / "<<fehler[i*7+3][1]<<" / "<<fehler[i*7+4][1]<<" / "<<fehler[i*7+5][1]<<" / "<<fehler[i*7+6][1]<<std::endl;
     }
     std::cout<<"Ergebnis: "<<ret[0]<<" / "<<ret[1]<<" / "<<ret[2]<<std::endl;
+}
+
+void Neigungswinkel::calculate2(cv::RotatedRect ellipse, double x, double y){
+    double a = ellipse.angle/180.0*M_PI;
+    double r = ellipse.size.height/300;
+    double d = ellipse.size.width/300;
+
+    double dy = 2*atan((sqrt(1/2*(d*d*cos(2*a)+2*d*d*r*r+d*d-2*d*r*sin(2*a)-r*r*cos(2*a)+r*r))+r*d)/d*cos(a)-r*sin(a));
+    double dx = atan(cos(dy)/(sin(a)*r)+sin(dy)/tan(a));
+
+    std::cout<<"Werte: "<<a<<" / "<<r<<" / "<<d<<std::endl;
+    std::cout<<"Neue Variante: "<<(dx/M_PI*180.0)<<" - "<<y<<" / "<<(dy/M_PI*180.0)<<" - "<<x<<" / "<<std::endl;
 }
