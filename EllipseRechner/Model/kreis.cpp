@@ -54,9 +54,9 @@ void Kreis::rotate_circle(double alpha, int alpha_x, int alpha_y, double &x, dou
     z = mRadius*(sin(alpha)*sin(ax)*cos(ay)-cos(alpha)*sin(ay));
 }
 
-cv::Mat Kreis::print(int alpha_x, int alpha_y, int radius){
+cv::Mat Kreis::print(int alpha_x, int alpha_y, int radius, int distanz, int skallierung){
     mRadius = radius/100.0;
-    double s = 300;//Skallierung
+    double s = skallierung;
     double step = 700;
     cv::Mat mat = cv::Mat::zeros(cv::Size(600,600), CV_8UC4);
 
@@ -69,8 +69,8 @@ cv::Mat Kreis::print(int alpha_x, int alpha_y, int radius){
     for(double a = 0; a< step*2; a++){
         double pos[3];
         rotate_circle(a/step*M_PI,alpha_x,alpha_y,pos[0],pos[1],pos[2]);
-        int i = mat.rows/2+(int)(s*pos[0]/(2+pos[2]));
-        int j = mat.cols/2+(int)(s*pos[1]/(2+pos[2]));
+        int i = mat.rows/2+(int)(s*pos[0]/(distanz/10+pos[2]));
+        int j = mat.cols/2+(int)(s*pos[1]/(distanz/10+pos[2]));
 
         if(i >=0 && i < mat.rows && j >= 0 && j < mat.cols){
             cv::Vec4b& bgra = mat.at<cv::Vec4b>(i, j);

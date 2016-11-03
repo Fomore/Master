@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    x = y = 180;
+    x = y = r = s = d = 0;
     plot();
 
     QTimer *timer = new QTimer(this);
@@ -28,16 +28,22 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::plot(){
-    if(x != ui->horizontalSlider->sliderPosition() || y != ui->verticalSlider->sliderPosition() || r != ui->verticalSlider_2->sliderPosition()){
+    if(x != ui->horizontalSlider->sliderPosition()
+            || y != ui->verticalSlider->sliderPosition()
+            || r != ui->verticalSlider_2->sliderPosition()
+            || d != ui->verticalSlider_3->sliderPosition()
+            || s != ui->verticalSlider_4->sliderPosition()){
         x = ui->horizontalSlider->sliderPosition();
         y = ui->verticalSlider->sliderPosition();
         r = ui->verticalSlider_2->sliderPosition();
+        d = ui->verticalSlider_3->sliderPosition();
+        s = ui->verticalSlider_4->sliderPosition();
 
-        cv::Mat inMat = mKreis.print(x,y,r);
+        cv::Mat inMat = mKreis.print(x,y,r, d, s);
         cv::RotatedRect ellipse(mEllipse.calculate_Ellipse(inMat));
 
-//        mWinkel.calculate(ellipse,x,y);
-        mWinkel.calculate2(ellipse,x,y);
+        mWinkel.calculate(ellipse,x,y);
+//        mWinkel.calculate2(ellipse,x,y);
 
         cv::ellipse( inMat, ellipse, cv::Scalar(255,0,255,255), 1,1 );
 
@@ -51,5 +57,7 @@ void MainWindow::plot(){
         ui->lineEdit->setText(QString::number(ui->horizontalSlider->sliderPosition()));
         ui->lineEdit_2->setText(QString::number(ui->verticalSlider->sliderPosition()));
         ui->lineEdit_3->setText(QString::number(ui->verticalSlider_2->sliderPosition()));
+        ui->lineEdit_4->setText(QString::number(ui->verticalSlider_3->sliderPosition()));
+        ui->lineEdit_5->setText(QString::number(ui->verticalSlider_4->sliderPosition()));
     }
 }

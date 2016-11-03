@@ -16,7 +16,7 @@ private:
 public:
     Kreis();
     ~Kreis();
-    cv::Mat print(int alpha_x, int alpha_y, int radius);
+    cv::Mat print(int alpha_x, int alpha_y, int radius, int distanz, int skallierung);
     void build_Table();
 };
 
