@@ -66,8 +66,8 @@ void Neigungswinkel::calculate(cv::RotatedRect ellipse, double x, double y){
         }
 
         std::cout<<"    Neigung r"<<i<<": "<<alpha1<<" / "<<alpha2<<" / "<<alpha3<<" / "<<alpha4<<" / "<<alpha5<<" / "<<alpha6<<" / "<<alpha7<<std::endl;
-        std::cout<<"    Fehler X: "<<fehler[i*7][0]<<" / "<<fehler[i*7+1][0]<<" / "<<fehler[i*7+2][0]<<" / "<<fehler[i*7+3][0]<<" / "<<fehler[i*7+4][0]<<" / "<<fehler[i*7+5][0]<<" / "<<fehler[i*7+6][0]<<std::endl;
-        std::cout<<"    Fehler Y: "<<fehler[i*7][1]<<" / "<<fehler[i*7+1][1]<<" / "<<fehler[i*7+2][1]<<" / "<<fehler[i*7+3][1]<<" / "<<fehler[i*7+4][1]<<" / "<<fehler[i*7+5][1]<<" / "<<fehler[i*7+6][1]<<std::endl;
+   //     std::cout<<"    Fehler X: "<<fehler[i*7][0]<<" / "<<fehler[i*7+1][0]<<" / "<<fehler[i*7+2][0]<<" / "<<fehler[i*7+3][0]<<" / "<<fehler[i*7+4][0]<<" / "<<fehler[i*7+5][0]<<" / "<<fehler[i*7+6][0]<<std::endl;
+ //       std::cout<<"    Fehler Y: "<<fehler[i*7][1]<<" / "<<fehler[i*7+1][1]<<" / "<<fehler[i*7+2][1]<<" / "<<fehler[i*7+3][1]<<" / "<<fehler[i*7+4][1]<<" / "<<fehler[i*7+5][1]<<" / "<<fehler[i*7+6][1]<<std::endl;
     }
     std::cout<<"Ergebnis: "<<ret[0]<<" / "<<ret[1]<<" / "<<ret[2]<<std::endl;
 }
@@ -82,4 +82,12 @@ void Neigungswinkel::calculate2(cv::RotatedRect ellipse, double x, double y){
 
     std::cout<<"Werte: "<<a<<" / "<<r<<" / "<<d<<std::endl;
     std::cout<<"Neue Variante: "<<(dx/M_PI*180.0)<<" - "<<y<<" / "<<(dy/M_PI*180.0)<<" - "<<x<<" / "<<std::endl;
+}
+
+
+void Neigungswinkel::calculate3(cv::RotatedRect ellipse, double& x, double& y){
+    double alpha = acos(ellipse.size.width/ellipse.size.height);
+    double r = sin(alpha);
+    double a = cos(ellipse.angle/180*M_PI)*r;
+    double b = sin(ellipse.angle/180*M_PI)*r;
 }

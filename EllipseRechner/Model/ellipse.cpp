@@ -1,6 +1,7 @@
 #include "ellipse.h"
 
 #include <iostream>
+#include <math.h>
 
 Ellipse::Ellipse()
 {
@@ -24,5 +25,14 @@ cv::RotatedRect Ellipse::calculate_Ellipse(cv::Mat image){
         }
     }
 
-    return cv::fitEllipse( cv::Mat(pos) );
+    cv::RotatedRect ret_ellipse = cv::fitEllipse( cv::Mat(pos) );
+    std::cout<<"Ellipse: "<<ret_ellipse.angle<<" - "<<ret_ellipse.size.height<<" - "<<ret_ellipse.size.width<<std::endl;
+    double ax = cos(ret_ellipse.angle/180.0*M_PI)*ret_ellipse.size.height/2;
+    double ay = sin(ret_ellipse.angle/180.0*M_PI)*ret_ellipse.size.height/2;
+    double bx = cos((ret_ellipse.angle+90)/180.0*M_PI)*ret_ellipse.size.width/2;
+    double by = sin((ret_ellipse.angle+90)/180.0*M_PI)*ret_ellipse.size.width/2;
+
+    std::cout<<"   Scheitelpunkt: "<<ax<<" / "<< ay<<" - "<<bx<<" / "<<by<<std::endl;
+
+    return ret_ellipse;
 }

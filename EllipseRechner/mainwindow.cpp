@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(timer, SIGNAL(timeout()), this, SLOT(plot()));
     timer->start(100);//Zeit in msec
 
-    mWinkel = *(new Neigungswinkel());
+//    mKreis.build_Table();
 }
 
 MainWindow::~MainWindow()
@@ -43,9 +43,12 @@ void MainWindow::plot(){
         cv::RotatedRect ellipse(mEllipse.calculate_Ellipse(inMat));
 
         mWinkel.calculate(ellipse,x,y);
+        double tx,ty;
+        mWinkel.calculate3(ellipse,tx,ty);
 //        mWinkel.calculate2(ellipse,x,y);
 
         cv::ellipse( inMat, ellipse, cv::Scalar(255,0,255,255), 1,1 );
+        cv::line(inMat,ellipse.center,ellipse.center+cv::Point2f(tx*30,ty*30),cv::Scalar(0,0,255,255), 1,1 );
 
         QImage image( inMat.data,
                       inMat.cols, inMat.rows,

@@ -12,6 +12,7 @@ public:
     ~Neigungswinkel();
     void calculate(cv::RotatedRect ellipse, double x, double y);
     void calculate2(cv::RotatedRect ellipse, double x, double y);
+    void calculate3(cv::RotatedRect ellipse, double &x, double &y);
 };
 
 #endif // NEIGUNGSWINKEL_H

@@ -11,6 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = EllipseRechner
 TEMPLATE = app
 
+CONFIG += c++11
+
 LIBS += `pkg-config opencv --libs`
 
 SOURCES += main.cpp\
