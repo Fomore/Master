@@ -90,4 +90,5 @@ void Neigungswinkel::calculate3(cv::RotatedRect ellipse, double& x, double& y){
     double r = sin(alpha);
     double a = cos(ellipse.angle/180*M_PI)*r;
     double b = sin(ellipse.angle/180*M_PI)*r;
+    //Anders
 }
