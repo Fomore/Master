@@ -12,9 +12,8 @@ TARGET = AufmerksamkeitTracken
 TEMPLATE = app
 
 CONFIG += c++11
-CONFIG += link_pkgconfig
 
-LIBS += `pkg-config opencv --libs`
+#LIBS += `pkg-config opencv --libs`
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -29,25 +28,34 @@ FORMS    += mainwindow.ui
 
 # Neu
 
+PKGCONFIG += x11
+
+PKGCONFIG += opencv
+CONFIG += link_pkgconfig
+
+#opencv
+INCLUDEPATH += /usr/local/include
+LIBS += -L/usr/local/lib -lopencv_shape -lopencv_stitching -lopencv_objdetect -lopencv_superres -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_highgui -lopencv_videoio -lopencv_imgcodecs -lopencv_video -lopencv_photo -lopencv_ml -lopencv_imgproc -lopencv_flann -lopencv_viz -lopencv_core
+
 #Boost:
-#INCLUDEPATH += /usr/include/boost
-#LIBS += -L/usr/lib/x86_64-linux-gnu -lboost_filesystem -lboost_system -lIlmImf -lz -lHalf -ljasper -ltiff -lpng12
+INCLUDEPATH += /usr/include/boost
+LIBS += -L/usr/lib/x86_64-linux-gnu -lboost_filesystem -lboost_system -lIlmImf -lz -lHalf -ljasper -ltiff -lpng12
 
 #dlib
-#INCLUDEPATH += /home/falko/Uni/Master/AufmerksamkeitTracken/lib/3rdParty/dlib/include
-#LIBS += -L/home/falko/Uni/Master/AufmerksamkeitTracken/lib/3rdParty/dlib -ldlib
+INCLUDEPATH += /home/falko/Uni/OpenCv/OpenFace/lib/3rdParty/dlib/include
+LIBS += -L/home/falko/Uni/OpenCv/OpenFace/build/lib/3rdParty/dlib -ldlib
 
 #tbb
-#LIBS += -ltbb -ltbbmalloc -ltbbmalloc_proxy
+LIBS += -ltbb -ltbbmalloc -ltbbmalloc_proxy
 
 #blas and lapack
-#LIBS += -llapack -lblas
+LIBS += -llapack -lblas
 
 #openface
-#INCLUDEPATH +=/home/falko/Uni/Master/AufmerksamkeitTracken/lib/local/LandmarkDetector/include ##correcto para include landmark.h
-#LIBS += -L/home/falko/Uni/Master/AufmerksamkeitTracken/lib/local/LandmarkDetector -lLandmarkDetector
+INCLUDEPATH += /home/falko/Uni/OpenCv/OpenFace/lib/local/LandmarkDetector/include
+LIBS += -L/home/falko/Uni/OpenCv/OpenFace/build/lib/local/LandmarkDetector -lLandmarkDetector
 #LIBS += -L/home/pp/Librerias/opencv-3.1.0/build/3rdparty/lib -llibwebp
-#LIBS += -L/home/pp/Librerias/opencv-3.1.0/3rdparty/ippicv/unpack/ippicv_lnx/lib/intel64 -lippicv
+LIBS += -L/home/falko/Uni/OpenCv/OpenCV/3rdparty/ippicv/unpack/ippicv_lnx/lib/intel64 -lippicv
 
-#LIBS += -pthread -ljpeg
-#LIBS += -ldl -fPIC
+LIBS += -pthread -ljpeg
+LIBS += -ldl -fPIC

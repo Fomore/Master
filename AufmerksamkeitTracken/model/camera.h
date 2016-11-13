@@ -11,8 +11,10 @@ private:
     void correct_Image();
 public:
     Camera();
+    Camera(int id);
+    Camera(std::string path);
     ~Camera();
-    void camera_calibration();
+    void camera_calibration(std::string path);
 };
 
 #endif // CAMERA_H
