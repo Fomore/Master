@@ -6,8 +6,9 @@
 class Camera
 {
 private:
-    cv::Mat default_cameraMatrix ;
-    cv::Mat default_distCoeffs;
+    cv::Mat cameraMatrix ;
+    cv::Mat distCoeffs;
+    void correct_Image();
 public:
     Camera();
     ~Camera();
