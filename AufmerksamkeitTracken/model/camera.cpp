@@ -2,37 +2,31 @@
 
 #include <iostream>
 
-Camera::Camera(){
-    Camera(2);
-}
 Camera::Camera(std::string path){
     camera_calibration(path);
 }
 
 Camera::Camera(int id)
 {
-    if(id == 1){ //Für 4k Action Cam
-        cameraMatrix = (cv::Mat_<double>(3,3) << 5606.085310668697, 0, 1919.69788797893,
-                        0, 5645.910633922549, 1077.745088495707,
-                        0, 0, 1);
-        distCoeffs = (cv::Mat_<double>(1,5) << -0.8104565014370436, -2.781890571732347,
-                      0.005975670615393422, -0.02735745506102933, 14.40716902307102);
-    }else if(id == 2){ //Webcam
+    if(id == 1){ //Webcam
         cameraMatrix = (cv::Mat_<double>(3,3) << 1687.931264381175, 0, 220.916339131956,
                         0, 1725.537614772272, 328.0023471819056,
                         0, 0, 1);
-        distCoeffs = (cv::Mat_<double>(1,5) << -0.2337548449359694, 6.124272192973521, -0.02745182623396643, 0.04883917214658949, -78.60351534016021 );
-    }else if(id == 3){ //1280P der 4k Cam
-        cameraMatrix = (cv::Mat_<double>(3,3) << 0,0,0,0,0,0,0,0,0 );
-        distCoeffs = (cv::Mat_<double>(1,5) << 0,0,0,0,0 );
-    }
-    else{//Default Parameter
+        distCoeffs = (cv::Mat_<double>(1,5) << -0.2337548449359694, 6.124272192973521,
+                      -0.02745182623396643, 0.04883917214658949, -78.60351534016021 );
+    }else if(id == 2){ //1280P der 4k Actioncam
+        cameraMatrix = (cv::Mat_<double>(3,3) << 1907.35363928477, 0, 633.8982380360976,
+                        0, 1645.567312479385, 366.9137086428425,
+                        0, 0, 1);
+        distCoeffs = (cv::Mat_<double>(1,5) << -0.4328529813449852, -0.5421577205524081,
+                      -0.01820603681764989, -0.02865158102593597, 4.266311993981554 );
+    }else{//Default Parameter
         cameraMatrix = (cv::Mat_<double>(3,3) << 1, 0, 0,
                         0, 1, 0,
                         0, 0, 1);
         distCoeffs = (cv::Mat_<double>(1,5) << 0, 0, 0, 0, 0);
-
     }
+//    correct_Image();
 }
 
 Camera::~Camera()
@@ -59,7 +53,7 @@ void Camera::camera_calibration(std::string path){
     cv::Size s(0,0);
 
     std::cout<<"Lade Video "<<std::endl;
-    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/WIN_20161113_19_22_03_Pro.mp4");
+    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_3840.mp4");
     if(video.isOpened()){
         cv::Mat frame_col;
         //        cv::namedWindow("True Image Colo",1);
@@ -108,9 +102,7 @@ void Camera::camera_calibration(std::string path){
 }
 
 void Camera::correct_Image(){
-    //    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/20161112_125821A.mp4");//4K
-    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/WIN_20161113_15_30_03_Pro.mp4");//Webcam
-//        cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/WIN_20161113_19_22_03_Pro.mp4");//1080P
+    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_1280.mp4");
     cv::Size imageSize;
     if(video.isOpened()){
         cv::Mat frame_col, map1, map2;
@@ -143,4 +135,12 @@ void Camera::correct_Image(){
             if(cv::waitKey(30) >= 0) break;
         }
     }
+}
+
+// Gibt die Werte der Kamera aus
+void Camera::get_camera_params(double &fx, double &fy, double &cx, double &cy){
+    fx = cameraMatrix.at<double>(0,0);
+    fy = cameraMatrix.at<double>(1,1);
+    cx = cameraMatrix.at<double>(0,2);
+    cy = cameraMatrix.at<double>(1,2);
 }

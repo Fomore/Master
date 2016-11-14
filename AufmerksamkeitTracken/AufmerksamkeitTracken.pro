@@ -19,6 +19,7 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     model/camera.cpp \
     control/facedetection.cpp
+#    FaceLandmarkVidMulti.cpp
 
 HEADERS  += mainwindow.h \
     model/camera.h \

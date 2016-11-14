@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 
-#include "model/camera.h"
+#include "control/facedetection.h"
 
 namespace Ui {
 class MainWindow;
@@ -17,9 +17,12 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+private slots:
+    void on_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
-    Camera mKamera;
+    FaceDetection mFaceDetection;
 };
 
 #endif // MAINWINDOW_H
