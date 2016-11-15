@@ -4,10 +4,12 @@
 
 Camera::Camera(std::string path){
     camera_calibration(path);
+    init = true;
 }
 
 Camera::Camera(int id)
 {
+    init = true;
     if(id == 1){ //Webcam
         cameraMatrix = (cv::Mat_<double>(3,3) << 1687.931264381175, 0, 220.916339131956,
                         0, 1725.537614772272, 328.0023471819056,
@@ -26,7 +28,7 @@ Camera::Camera(int id)
                         0, 0, 1);
         distCoeffs = (cv::Mat_<double>(1,5) << 0, 0, 0, 0, 0);
     }
-//    correct_Image();
+    //    correct_Image();
 }
 
 Camera::~Camera()
@@ -46,9 +48,7 @@ void Camera::camera_calibration(std::string path){
     std::vector<std::vector<cv::Point3f> > p;
     std::vector<std::vector<cv::Point2f> > m;
 
-
     bool set = true;
-
 
     cv::Size s(0,0);
 
@@ -135,6 +135,30 @@ void Camera::correct_Image(){
             if(cv::waitKey(30) >= 0) break;
         }
     }
+}
+
+void Camera::correct_Image(cv::Mat &frame){
+    if(init){
+        cv::Size imageSize;
+        imageSize.height = frame.rows;
+        imageSize.width = frame.cols;
+        cv::initUndistortRectifyMap(cameraMatrix, distCoeffs, cv::Mat(),
+                                    getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize, 0), imageSize,
+                                    CV_16SC2, map1, map2);
+        init = false;
+    }
+    //            cv::undistort(frame,frame, cameraMatrix, distCoeffs);//Korrektur mit beschneiden
+    cv::remap(frame, frame, map1, map2, cv::INTER_LINEAR);//Korrektur mit skallierung
+}
+
+void Camera::correct_Image_Init(int height, int width){
+    cv::Size imageSize;
+    imageSize.height = height;
+    imageSize.width = width;
+    cv::initUndistortRectifyMap(cameraMatrix, distCoeffs, cv::Mat(),
+                                getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize, 0), imageSize,
+                                CV_16SC2, map1, map2);
+    init = false;
 }
 
 // Gibt die Werte der Kamera aus

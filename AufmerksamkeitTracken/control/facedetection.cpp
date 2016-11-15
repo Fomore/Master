@@ -7,7 +7,7 @@ using namespace std;
 
 FaceDetection::FaceDetection()
 {
-    mKamera = new Camera(2);
+    mKamera = new Camera(1);
 
     vector<string> arguments;
     arguments.push_back(""); // Hat arguments keine Werte kann wes wegoptimiert werden und dadurch wirft die Initilaisierung unten Fehler
@@ -82,7 +82,11 @@ void FaceDetection::test(){
     cv::namedWindow("tracking_result",1);
 
     for(int frame_count = 0;video.read(frame_col);frame_count++){
+        if(frame_count == 0){
+            mKamera->correct_Image_Init(frame_col.rows,frame_col.cols);
+        }
         // Reading the images
+        mKamera->correct_Image(frame_col);
         cv::Mat_<float> depth_image;
         cv::Mat_<uchar> grayscale_image;
 
