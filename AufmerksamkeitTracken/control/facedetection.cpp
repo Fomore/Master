@@ -65,14 +65,14 @@ void FaceDetection::test(){
     double fx,fy,cx,cy;
     mKamera->get_camera_params(fx,fy,cx,cy);
 
-//    mKamera->correct_Image();
+    //    mKamera->correct_Image();
 
     // For measuring the timings
     int64 t1,t0 = cv::getTickCount();
     double fps = 10;
 
     // Anwendung - Berechnung der Faces
-    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/WIN_20161113_15_30_03_Pro.mp4");
+    cv::VideoCapture video("/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4");
     if(!video.isOpened()){
         cout<<"Kein Video"<<std::endl;
         return;
@@ -134,8 +134,8 @@ void FaceDetection::test(){
 
         // Go through every model and update the tracking
         tbb::parallel_for(0, (int)clnf_models.size(), [&](int model){
-        //for(unsigned int model = 0; model < clnf_models.size(); ++model)
-        //{
+            //for(unsigned int model = 0; model < clnf_models.size(); ++model)
+            //{
 
             bool detection_success = false;
 
@@ -182,13 +182,16 @@ void FaceDetection::test(){
         {
             // Visualising the results
             // Drawing the facial landmarks on the face and the bounding box around it if tracking is successful and initialised
-            double detection_certainty = clnf_models[model].detection_certainty;
+            double detection_certainty = clnf_models[model].detection_certainty; // Qualität der detection: -1 perfekt und 1 falsch
 
             double visualisation_boundary = -0.1;
 
             // Only draw if the reliability is reasonable, the value is slightly ad-hoc
             if(detection_certainty < visualisation_boundary)
             {
+
+                print_Eye(disp_image, clnf_models[model]);
+
                 LandmarkDetector::Draw(disp_image, clnf_models[model]);
 
                 if(detection_certainty > 1)
@@ -247,6 +250,57 @@ void FaceDetection::test(){
             cout<<"Lol Quiet-Mode aktiv!"<<endl;
         }
         if(cv::waitKey(30) >= 0) break;
+    }
+}
+
+void FaceDetection::print_Eye(const cv::Mat img, const LandmarkDetector::CLNF &clnf_model){
+
+    cv::Mat_<double> shape2D = clnf_model.detected_landmarks;
+
+    int n = shape2D.rows/2;
+
+    int X_L = cvRound(shape2D.at<double>(36));
+    int Y_L = cvRound(shape2D.at<double>(36 + n));
+    int Width_L = cvRound(shape2D.at<double>(36));
+    int Height_L = cvRound(shape2D.at<double>(36 + n));
+
+    int X_R = cvRound(shape2D.at<double>(42));
+    int Y_R = cvRound(shape2D.at<double>(42 + n));
+    int Width_R = cvRound(shape2D.at<double>(42));
+    int Height_R = cvRound(shape2D.at<double>(42 + n));
+
+    for( int i = 37; i < 42; ++i)// Beginnt bei 0 das Output-Format
+    {
+        int xL = cvRound(shape2D.at<double>(i));
+        int yL = cvRound(shape2D.at<double>(i + n));
+        X_L = min(X_L,xL);
+        Y_L = min(Y_L,yL);
+        Width_L = max(Width_L,xL);
+        Height_L = max(Height_L,yL);
+
+        int xR = cvRound(shape2D.at<double>(i + 6));
+        int yR = cvRound(shape2D.at<double>(i + n + 6));
+        X_R = min(X_R,xR);
+        Y_R = min(Y_R,yR);
+        Width_R = max(Width_R,xR);
+        Height_R = max(Height_R,yR);
+
+    }
+
+    Width_L = Width_L-X_L;
+    Height_L = Height_L-Y_L;
+    if(X_L >= 0 && Y_L >= 0 && Width_L > 0 && Height_L > 0 && X_L+Width_L < img.cols && Y_L+Height_L < img.rows){
+        cv::Mat img_L = img(cv::Rect(X_L,Y_L,Width_L,Height_L));
+        cv::namedWindow("Eye Left",1);
+        imshow("Eye Left", img_L);
+    }
+
+    Width_R = Width_R-X_R;
+    Height_R = Height_R-Y_R;
+    if(X_R >= 0 && Y_R >= 0 && Width_R > 0 && Height_R > 0 && X_R+Width_R < img.cols && Y_R+Height_R < img.rows){
+        cv::Mat img_R = img(cv::Rect(X_R,Y_R,Width_R,Height_R));
+        cv::namedWindow("Eye Right",1);
+        imshow("Eye Right", img_R);
     }
 }
 

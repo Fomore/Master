@@ -18,7 +18,7 @@ public:
     void camera_calibration(std::string path);
     void get_camera_params(double &fx, double &fy, double &cx, double &cy);
     void correct_Image();
-    void correct_Image(cv::Mat &frame);
+    void correct_Image(cv::Mat frame);
     void correct_Image_Init(int height, int width);
 };
 

@@ -137,7 +137,7 @@ void Camera::correct_Image(){
     }
 }
 
-void Camera::correct_Image(cv::Mat &frame){
+void Camera::correct_Image(cv::Mat frame){
     if(init){
         cv::Size imageSize;
         imageSize.height = frame.rows;

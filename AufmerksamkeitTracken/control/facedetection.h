@@ -8,12 +8,15 @@ class FaceDetection
 {
 private:
     Camera* mKamera;
+    void print_Eye(const cv::Mat img,const LandmarkDetector::CLNF& clnf_model);
+
     void NonOverlapingDetections(const vector<LandmarkDetector::CLNF>& clnf_models, vector<cv::Rect_<double> >& face_detections);
 
     vector<LandmarkDetector::FaceModelParameters> det_parameters;
     // The modules that are being used for tracking
     vector<LandmarkDetector::CLNF> clnf_models;
     vector<bool> active_models;
+
 public:
     FaceDetection();
     ~FaceDetection();
