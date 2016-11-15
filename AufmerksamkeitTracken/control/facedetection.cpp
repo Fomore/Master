@@ -113,8 +113,8 @@ void FaceDetection::test(){
 
         }
 
-        // Get the detections (every 8th frame and when there are free models available for tracking)
-        if(frame_count % 8 == 0 && !all_models_active)
+        // Get the detections (every 8th frame and when there are free models available for tracking) //Nun wird jedes Frame (%1) Berechent
+        if(frame_count % 1 == 0 && !all_models_active)
         {
             if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR)
             {
@@ -190,7 +190,7 @@ void FaceDetection::test(){
             if(detection_certainty < visualisation_boundary)
             {
 
-                print_Eye(disp_image, clnf_models[model]);
+                print_Eyes(disp_image, clnf_models[model]);
 
                 LandmarkDetector::Draw(disp_image, clnf_models[model]);
 
@@ -253,55 +253,45 @@ void FaceDetection::test(){
     }
 }
 
-void FaceDetection::print_Eye(const cv::Mat img, const LandmarkDetector::CLNF &clnf_model){
-
+void FaceDetection::print_Eye(const cv::Mat img, const LandmarkDetector::CLNF &clnf_model, int pos, string name){
     cv::Mat_<double> shape2D = clnf_model.detected_landmarks;
 
     int n = shape2D.rows/2;
 
-    int X_L = cvRound(shape2D.at<double>(36));
-    int Y_L = cvRound(shape2D.at<double>(36 + n));
-    int Width_L = cvRound(shape2D.at<double>(36));
-    int Height_L = cvRound(shape2D.at<double>(36 + n));
-
-    int X_R = cvRound(shape2D.at<double>(42));
-    int Y_R = cvRound(shape2D.at<double>(42 + n));
-    int Width_R = cvRound(shape2D.at<double>(42));
-    int Height_R = cvRound(shape2D.at<double>(42 + n));
-
-    for( int i = 37; i < 42; ++i)// Beginnt bei 0 das Output-Format
+    double X = cvRound(shape2D.at<double>(pos));
+    double Y = cvRound(shape2D.at<double>(pos + n));
+    double Width = cvRound(shape2D.at<double>(pos));
+    double Height = cvRound(shape2D.at<double>(pos + n));
+    for(int i = pos+1; i < pos+6; ++i)// Beginnt bei 0 das Output-Format
     {
-        int xL = cvRound(shape2D.at<double>(i));
-        int yL = cvRound(shape2D.at<double>(i + n));
-        X_L = min(X_L,xL);
-        Y_L = min(Y_L,yL);
-        Width_L = max(Width_L,xL);
-        Height_L = max(Height_L,yL);
-
-        int xR = cvRound(shape2D.at<double>(i + 6));
-        int yR = cvRound(shape2D.at<double>(i + n + 6));
-        X_R = min(X_R,xR);
-        Y_R = min(Y_R,yR);
-        Width_R = max(Width_R,xR);
-        Height_R = max(Height_R,yR);
-
+        double x = (shape2D.at<double>(i));
+        double y = (shape2D.at<double>(i + n));
+        X = min(X,x);
+        Y = min(Y,y);
+        Width = max(Width,x);
+        Height = max(Height,y);
     }
 
-    Width_L = Width_L-X_L;
-    Height_L = Height_L-Y_L;
-    if(X_L >= 0 && Y_L >= 0 && Width_L > 0 && Height_L > 0 && X_L+Width_L < img.cols && Y_L+Height_L < img.rows){
-        cv::Mat img_L = img(cv::Rect(X_L,Y_L,Width_L,Height_L));
-        cv::namedWindow("Eye Left",1);
-        imshow("Eye Left", img_L);
+    Width = Width-X;
+    Height = Height-Y;
+    double fr_X = Width*0.35;
+    double fr_Y = Height*0.4;
+    X -= fr_X;
+    Y -= fr_Y;
+    Width += fr_X*2;
+    Height += fr_Y*2;
+    if(X >= 0 && Y >= 0 && Width > 0 && Height > 0 && X+Width < img.cols && Y+Height < img.rows){
+        cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
+        cv::namedWindow(name,1);
+        imshow(name, img_Eye);
+    }else{
+        cout<<"Fehler: "<<X<<" "<<Y<<" "<<Width<<" "<<Height<<endl;
     }
+}
 
-    Width_R = Width_R-X_R;
-    Height_R = Height_R-Y_R;
-    if(X_R >= 0 && Y_R >= 0 && Width_R > 0 && Height_R > 0 && X_R+Width_R < img.cols && Y_R+Height_R < img.rows){
-        cv::Mat img_R = img(cv::Rect(X_R,Y_R,Width_R,Height_R));
-        cv::namedWindow("Eye Right",1);
-        imshow("Eye Right", img_R);
-    }
+void FaceDetection::print_Eyes(const cv::Mat img, const LandmarkDetector::CLNF &clnf_model){
+    print_Eye(img,clnf_model,36,"Left Eye");
+    print_Eye(img,clnf_model,42,"Right Eye");
 }
 
 // Dieser Teil ist aus OpenFace/FaceLandmarkVidMulti.cpp übernommen
