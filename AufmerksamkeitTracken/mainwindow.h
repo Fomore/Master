@@ -5,6 +5,8 @@
 
 #include "control/facedetection.h"
 
+#include "model/camera.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -22,6 +24,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    Camera mKamera;
     FaceDetection mFaceDetection;
 };
 

@@ -271,7 +271,7 @@ void FaceDetection::print_Eye(const cv::Mat img, const LandmarkDetector::CLNF &c
         Width = max(Width,x);
         Height = max(Height,y);
     }
-
+    // To Do: Grenzen Dynamische Abmessungen für Randwerte
     Width = Width-X;
     Height = Height-Y;
     double fr_X = Width*0.35;
@@ -284,8 +284,6 @@ void FaceDetection::print_Eye(const cv::Mat img, const LandmarkDetector::CLNF &c
         cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
         cv::namedWindow(name,1);
         imshow(name, img_Eye);
-    }else{
-        cout<<"Fehler: "<<X<<" "<<Y<<" "<<Width<<" "<<Height<<endl;
     }
 }
 

@@ -1,9 +1,10 @@
 #include "camera.h"
 
 #include <iostream>
+#include <math.h>
 
-Camera::Camera(std::string path){
-    camera_calibration(path);
+Camera::Camera(){
+    camera_calibration("");
     init = true;
 }
 
@@ -49,56 +50,130 @@ void Camera::camera_calibration(std::string path){
     std::vector<std::vector<cv::Point2f> > m;
 
     bool set = true;
-
     cv::Size s(0,0);
 
-    std::cout<<"Lade Video "<<std::endl;
-    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_3840.mp4");
-    if(video.isOpened()){
-        cv::Mat frame_col;
-        //        cv::namedWindow("True Image Colo",1);
-        //        cv::namedWindow("False Image Colo",1);
+    std::vector<cv::VideoCapture> videos;
 
-        while (video.read(frame_col)) {
-            if(set){
-                set = false;
-                s.width = frame_col.cols;
-                s.height= frame_col.rows;
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/WIN_20161110_13_01_06_Pro.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/WIN_20161112_21_54_26_Pro.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/WIN_20161113_15_30_03_Pro.mp4"));
+
+    for(int i = 0; i < videos.size(); i++){ // Könnte parallel werden
+        std::cout<<"Lade Video "<<i<<std::endl;
+        cv::VideoCapture video = videos.at(i);
+        if(video.isOpened()){
+            cv::Mat frame_col;
+            //        cv::namedWindow("True Image Colo",1);
+            //        cv::namedWindow("False Image Colo",1);
+            while (video.read(frame_col)) {
+                if(set){
+                    set = false;
+                    s.width = frame_col.cols;
+                    s.height= frame_col.rows;
+                }
+
+                cv::Mat gray;
+                cvtColor(frame_col, gray, CV_BGR2GRAY);
+
+                std::vector<cv::Point2f> corners;
+                corners.clear();
+                bool patternfound = cv::findChessboardCorners(frame_col, patternsize, corners,
+                                                              CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE | CV_CALIB_CB_FAST_CHECK);
+                if(patternfound){
+                    cornerSubPix(gray, corners, cv::Size(5,5), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.04));
+
+                    p.push_back(realPoints);
+                    m.push_back(corners);
+
+                    //                drawChessboardCorners(frame_col, cv::Size(h,w), corners, patternfound);
+                    //                imshow("True Image Colo", frame_col);
+                }
+                //            if(cv::waitKey(30) >= 0) break;
             }
-
-            cv::Mat gray;
-            cvtColor(frame_col, gray, CV_BGR2GRAY);
-
-            std::vector<cv::Point2f> corners;
-            corners.clear();
-            bool patternfound = cv::findChessboardCorners(frame_col, patternsize, corners,
-                                                          CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE | CV_CALIB_CB_FAST_CHECK);
-            if(patternfound){
-                cornerSubPix(gray, corners, cv::Size(5,5), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.04));
-
-                p.push_back(realPoints);
-                m.push_back(corners);
-
-                //                drawChessboardCorners(frame_col, cv::Size(h,w), corners, patternfound);
-                //                imshow("True Image Colo", frame_col);
-            }
-            else{
-                //                imshow("False Image Colo", frame_col);
-            }
-
-            if(cv::waitKey(30) >= 0) break;
+            //        cv::destroyWindow("True Image Colo");
+            //        cv::destroyWindow("False Image Colo");
+        }else{
+            std::cout<<"Datei nicht gefunden"<<std::endl;
         }
-        //        cv::destroyWindow("True Image Colo");
-        //        cv::destroyWindow("False Image Colo");
-    }else{
-        std::cout<<"Datei nicht gefunden"<<std::endl;
     }
-
 
     std::vector<cv::Mat> rvecs,tvecs;
     std::cout << "Berechnung läuft auf "<< p.size()<< " Bildern" << std::endl;
+    get_perfect_Points(m,s);
     cv::calibrateCamera(p, m, s, cameraMatrix, distCoeffs, rvecs, tvecs);
     std::cout <<"Neue Kalibrierung:" << std::endl << cameraMatrix << std::endl << distCoeffs << std::endl;
+}
+
+void Camera::get_perfect_Points(std::vector<std::vector<cv::Point2f> > points, const cv::Size dim){
+    std::vector<cv::Point3d> your_point;
+    for(int i = 0; i < points.size(); i++){
+        cv::Mat point = cv::Mat(points.at(i)).reshape(1).t();
+        double mean_X = cv::mean(point.row(0))[0];
+        double mean_Y = cv::mean(point.row(1))[0];
+        double radius = 0;
+        for(int y = 0; y < point.rows; y++){
+            radius += sqrt((point.at<float>(0,y)-mean_X)*(point.at<float>(0,y)-mean_X)
+                           +(point.at<float>(1,y)-mean_Y)*(point.at<float>(1,y)-mean_Y));
+        }
+        your_point.push_back(cv::Point3d(mean_X,mean_Y,radius/25.0));
+    }
+    cv::Mat your_mat = cv::Mat(your_point).reshape(1).t();
+
+    double minX, maxX, meanX;
+    meanX = cv::mean(your_mat.row(0))[0];
+    cv::minMaxLoc(your_mat.row(0), &minX, &maxX);
+
+    std::cout<<"Ergebnis X: "<<minX<<" "<<meanX<<" "<<maxX<<std::endl;
+
+    double minY, maxY, meanY;
+    meanY = cv::mean(your_mat.row(1))[0];
+    cv::minMaxLoc(your_mat.row(1), &minY, &maxY);
+
+    std::cout<<"Ergebnis Y: "<<minY<<" "<<meanY<<" "<<maxY<<std::endl;
+
+    double minR, maxR, meanR;
+    meanR = cv::mean(your_mat.row(2))[0];
+    cv::minMaxLoc(your_mat.row(2), &minR, &maxR);
+
+    std::cout<<"Ergebnis R: "<<minR<<" "<<meanR<<" "<<maxR<<std::endl;
+
+    double q = (double)dim.width/(double)dim.height;
+    double b = sqrt(120.0/q);
+    double a = sqrt(120.0*q);
+
+    double X = dim.width/a;
+    double Y = dim.height/b;
+
+    std::cout<<dim<<" "<<q<<" "<<a<<" "<<(int)a<<" "<<b<<" - "<<X<<" "<<Y<<std::endl;
+
+    std::vector<int> center[(int)a+1][(int)b+1];
+    for(int i = 0; i < your_mat.cols; i++){
+        int x = your_mat.at<double>(0,i)/X;
+        int y = your_mat.at<double>(1,i)/Y;
+        center[x][y].push_back(i);
+    }
+    std::vector<cv::Point2d> feld_dim;
+    feld_dim.clear();
+    for(int x = 0; x<=(int)a; x++){
+        for(int y= 0; y<=(int)b; y++){
+            if(center[x][y].size() > 0){
+                double mi, mx;
+                mi = mx = your_mat.at<double>(2,center[x][y].at(0));
+                for(int i = 1; i < center[x][y].size(); i++){
+                    double r = your_mat.at<double>(2,center[x][y].at(i));
+                    mi = std::min(mi, r);
+                    mx = std::max(mx, r);
+                }
+                std::cout<<x<<"/"<<y<<" : "<<mi<<" "<<mx<<" "<<center[x][y].size()<<std::endl;
+                feld_dim.push_back(cv::Point2d(mi, mx));
+            }
+        }
+    }
+//    std::cout<<"Grenzen: "<<feld_dim<<std::endl;
+
+    // Sortieren im Index;
+    cv::Mat out;
+    cv::sortIdx(your_mat, out, CV_SORT_EVERY_ROW+CV_SORT_ASCENDING);
 }
 
 void Camera::correct_Image(){

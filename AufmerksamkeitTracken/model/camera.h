@@ -11,9 +11,11 @@ private:
 
     bool init;
     cv::Mat map1, map2;
+
+    void get_perfect_Points(std::vector<std::vector<cv::Point2f> > points, const cv::Size dim);
 public:
     Camera(int id);
-    Camera(std::string path);
+    Camera();
     ~Camera();
     void camera_calibration(std::string path);
     void get_camera_params(double &fx, double &fy, double &cx, double &cy);
