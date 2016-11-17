@@ -4,19 +4,19 @@
 #include <math.h>
 
 Camera::Camera(){
-    camera_calibration("");
     init = true;
+    camera_calibration("");
+    correct_Image();
 }
 
 Camera::Camera(int id)
 {
     init = true;
     if(id == 1){ //Webcam
-        cameraMatrix = (cv::Mat_<double>(3,3) << 1687.931264381175, 0, 220.916339131956,
-                        0, 1725.537614772272, 328.0023471819056,
+        cameraMatrix = (cv::Mat_<double>(3,3) << 2288.8872146151, 0, 326.4366918263556,
+                        0, 2186.84347316115, 240.4137245062925,
                         0, 0, 1);
-        distCoeffs = (cv::Mat_<double>(1,5) << -0.2337548449359694, 6.124272192973521,
-                      -0.02745182623396643, 0.04883917214658949, -78.60351534016021 );
+        distCoeffs = (cv::Mat_<double>(1,5) << 0.5488223009312883, 0.8600516903057833, -0.07985604709274093, 0.02173550476776541, -1048.693669653505);
     }else if(id == 2){ //1280P der 4k Actioncam
         cameraMatrix = (cv::Mat_<double>(3,3) << 1907.35363928477, 0, 633.8982380360976,
                         0, 1645.567312479385, 366.9137086428425,
@@ -54,9 +54,12 @@ void Camera::camera_calibration(std::string path){
 
     std::vector<cv::VideoCapture> videos;
 
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/WIN_20161110_13_01_06_Pro.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/WIN_20161112_21_54_26_Pro.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/WIN_20161113_15_30_03_Pro.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_0.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_1.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_2.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_3.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_4.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_5.mp4"));
 
     for(int i = 0; i < videos.size(); i++){ // Könnte parallel werden
         std::cout<<"Lade Video "<<i<<std::endl;
@@ -81,8 +84,6 @@ void Camera::camera_calibration(std::string path){
                                                               CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE | CV_CALIB_CB_FAST_CHECK);
                 if(patternfound){
                     cornerSubPix(gray, corners, cv::Size(5,5), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.04));
-
-                    p.push_back(realPoints);
                     m.push_back(corners);
 
                     //                drawChessboardCorners(frame_col, cv::Size(h,w), corners, patternfound);
@@ -97,14 +98,21 @@ void Camera::camera_calibration(std::string path){
         }
     }
 
+    std::cout << "Berechnung hat "<< m.size()<< " Bilder ergeben" << std::endl;
+
+    std::vector<std::vector<cv::Point2f> > m2 = get_perfect_Points(m,s,200);
+    for(int i = 0; i < m2.size(); i++){
+        p.push_back(realPoints);
+    }
+
     std::vector<cv::Mat> rvecs,tvecs;
-    std::cout << "Berechnung läuft auf "<< p.size()<< " Bildern" << std::endl;
-    get_perfect_Points(m,s);
-    cv::calibrateCamera(p, m, s, cameraMatrix, distCoeffs, rvecs, tvecs);
+    std::cout << "Berechnung läuft auf "<< m2.size()<< " Bildern" << std::endl;
+    cv::calibrateCamera(p, m2, s, cameraMatrix, distCoeffs, rvecs, tvecs);
     std::cout <<"Neue Kalibrierung:" << std::endl << cameraMatrix << std::endl << distCoeffs << std::endl;
+    correct_Image_Init(s.height,s.width);
 }
 
-void Camera::get_perfect_Points(std::vector<std::vector<cv::Point2f> > points, const cv::Size dim){
+std::vector<std::vector<cv::Point2f> > Camera::get_perfect_Points(std::vector<std::vector<cv::Point2f> > points, const cv::Size dim, int maxImages){
     std::vector<cv::Point3d> your_point;
     for(int i = 0; i < points.size(); i++){
         cv::Mat point = cv::Mat(points.at(i)).reshape(1).t();
@@ -119,32 +127,12 @@ void Camera::get_perfect_Points(std::vector<std::vector<cv::Point2f> > points, c
     }
     cv::Mat your_mat = cv::Mat(your_point).reshape(1).t();
 
-    double minX, maxX, meanX;
-    meanX = cv::mean(your_mat.row(0))[0];
-    cv::minMaxLoc(your_mat.row(0), &minX, &maxX);
-
-    std::cout<<"Ergebnis X: "<<minX<<" "<<meanX<<" "<<maxX<<std::endl;
-
-    double minY, maxY, meanY;
-    meanY = cv::mean(your_mat.row(1))[0];
-    cv::minMaxLoc(your_mat.row(1), &minY, &maxY);
-
-    std::cout<<"Ergebnis Y: "<<minY<<" "<<meanY<<" "<<maxY<<std::endl;
-
-    double minR, maxR, meanR;
-    meanR = cv::mean(your_mat.row(2))[0];
-    cv::minMaxLoc(your_mat.row(2), &minR, &maxR);
-
-    std::cout<<"Ergebnis R: "<<minR<<" "<<meanR<<" "<<maxR<<std::endl;
-
     double q = (double)dim.width/(double)dim.height;
-    double b = sqrt(120.0/q);
-    double a = sqrt(120.0*q);
+    double b = sqrt((double)maxImages/q);
+    double a = sqrt((double)maxImages*q);
 
     double X = dim.width/a;
     double Y = dim.height/b;
-
-    std::cout<<dim<<" "<<q<<" "<<a<<" "<<(int)a<<" "<<b<<" - "<<X<<" "<<Y<<std::endl;
 
     std::vector<int> center[(int)a+1][(int)b+1];
     for(int i = 0; i < your_mat.cols; i++){
@@ -152,32 +140,54 @@ void Camera::get_perfect_Points(std::vector<std::vector<cv::Point2f> > points, c
         int y = your_mat.at<double>(1,i)/Y;
         center[x][y].push_back(i);
     }
-    std::vector<cv::Point2d> feld_dim;
-    feld_dim.clear();
+
+    std::vector<int> valueUse;
     for(int x = 0; x<=(int)a; x++){
         for(int y= 0; y<=(int)b; y++){
             if(center[x][y].size() > 0){
-                double mi, mx;
-                mi = mx = your_mat.at<double>(2,center[x][y].at(0));
+                double centerX, centerY;
+                if(x == 0){ centerX = 0;}
+                else if(x == (int)a-1){ centerX = dim.width;}
+                else{centerX = (x+0.5)*X;}
+
+                if(y == 0){ centerY = 0;}
+                else if(y == (int)b-1){ centerY = dim.height;}
+                else{centerY = (y+0.5)*Y;}
+
+                int value = center[x][y].at(0);
+                double minDistanz = sqrt(pow(your_mat.at<double>(0,value)-centerX,2)+pow(your_mat.at<double>(1,value)-centerY,2));
                 for(int i = 1; i < center[x][y].size(); i++){
-                    double r = your_mat.at<double>(2,center[x][y].at(i));
-                    mi = std::min(mi, r);
-                    mx = std::max(mx, r);
+                    int v = center[x][y].at(i);
+                    double dis = sqrt(pow(your_mat.at<double>(0,v)-centerX,2)+pow(your_mat.at<double>(1,v)-centerY,2));
+                    if(dis < minDistanz){
+                        value = v;
+                        minDistanz = dis;
+                    }
                 }
-                std::cout<<x<<"/"<<y<<" : "<<mi<<" "<<mx<<" "<<center[x][y].size()<<std::endl;
-                feld_dim.push_back(cv::Point2d(mi, mx));
+                double maxRadius = your_mat.at<double>(2,value);
+                minDistanz += sqrt(pow(X/20,2)+pow(Y/20,2));
+                for(int i = 0; i < center[x][y].size(); i++){
+                    int v = center[x][y].at(i);
+                    double dis = sqrt(pow(your_mat.at<double>(0,v)-centerX,2)+pow(your_mat.at<double>(1,v)-centerY,2));
+                    if(dis < minDistanz && your_mat.at<double>(2,v) > maxRadius){
+                        value = v;
+                        maxRadius = your_mat.at<double>(2,v);
+                    }
+                }
+                valueUse.push_back(value);
             }
         }
     }
-//    std::cout<<"Grenzen: "<<feld_dim<<std::endl;
-
-    // Sortieren im Index;
-    cv::Mat out;
-    cv::sortIdx(your_mat, out, CV_SORT_EVERY_ROW+CV_SORT_ASCENDING);
+    std::vector<std::vector<cv::Point2f> > ret;
+    for(int i = 0; i < valueUse.size(); i++){
+        int v = valueUse.at(i);
+        ret.push_back(points.at(v));
+    }
+    return ret;
 }
 
 void Camera::correct_Image(){
-    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_1280.mp4");
+    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_0.mp4");
     cv::Size imageSize;
     if(video.isOpened()){
         cv::Mat frame_col, map1, map2;
@@ -201,9 +211,9 @@ void Camera::correct_Image(){
             //            cv::undistort(frame_col, view, cameraMatrix, distCoeffs);//Korrektur mit beschneiden
             cv::remap(frame_col, view, map1, map2, cv::INTER_LINEAR);//Korrektur mit skallierung
 
-            cv::Size size(384*2.5, 216*2.5);
-            resize(view,view,size);
-            resize(frame_col,frame_col,size);
+            //            cv::Size size(384*2.5, 216*2.5);
+            //            resize(view,view,size);
+            //            resize(frame_col,frame_col,size);
             imshow("Image Raw", frame_col);
             imshow("Image Correct", view);
 

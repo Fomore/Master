@@ -12,7 +12,7 @@ private:
     bool init;
     cv::Mat map1, map2;
 
-    void get_perfect_Points(std::vector<std::vector<cv::Point2f> > points, const cv::Size dim);
+    std::vector<std::vector<cv::Point2f> > get_perfect_Points(std::vector<std::vector<cv::Point2f> > points, const cv::Size dim, int maxImages);
 public:
     Camera(int id);
     Camera();
