@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>940</width>
+    <height>650</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,14 +17,63 @@
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>200</x>
-      <y>110</y>
-      <width>99</width>
-      <height>27</height>
+      <x>810</x>
+      <y>30</y>
+      <width>120</width>
+      <height>25</height>
      </rect>
     </property>
     <property name="text">
-     <string>PushButton</string>
+     <string>Face Detection</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Main_Label">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>800</width>
+      <height>600</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Left_Label">
+    <property name="geometry">
+     <rect>
+      <x>800</x>
+      <y>100</y>
+      <width>70</width>
+      <height>500</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Right_Label">
+    <property name="geometry">
+     <rect>
+      <x>870</x>
+      <y>100</y>
+      <width>70</width>
+      <height>500</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="Path_lineEdit">
+    <property name="geometry">
+     <rect>
+      <x>810</x>
+      <y>0</y>
+      <width>120</width>
+      <height>27</height>
+     </rect>
     </property>
    </widget>
   </widget>
@@ -33,10 +82,16 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>400</width>
+     <width>940</width>
      <height>25</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFace_Detection">
+    <property name="title">
+     <string>Face Detection</string>
+    </property>
+   </widget>
+   <addaction name="menuFace_Detection"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">

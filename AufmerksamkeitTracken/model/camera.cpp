@@ -17,7 +17,7 @@ Camera::Camera(int id)
                         0, 2186.84347316115, 240.4137245062925,
                         0, 0, 1);
         distCoeffs = (cv::Mat_<double>(1,5) << 0.5488223009312883, 0.8600516903057833, -0.07985604709274093, 0.02173550476776541, -1048.693669653505);
-    }else if(id == 2){ //1280P der 4k Actioncam
+    }else if(id == 2){ //1280P der 4k Actioncam als Webcam
         cameraMatrix = (cv::Mat_<double>(3,3) << 1907.35363928477, 0, 633.8982380360976,
                         0, 1645.567312479385, 366.9137086428425,
                         0, 0, 1);
@@ -29,7 +29,7 @@ Camera::Camera(int id)
                         0, 0, 1);
         distCoeffs = (cv::Mat_<double>(1,5) << 0, 0, 0, 0, 0);
     }
-    //    correct_Image();
+//        correct_Image();
 }
 
 Camera::~Camera()
@@ -59,15 +59,13 @@ void Camera::camera_calibration(std::string path){
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_2.mp4"));
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_3.mp4"));
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_4.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_5.mp4"));
 
+//    cv::namedWindow("True Image Colo",1);
     for(int i = 0; i < videos.size(); i++){ // Könnte parallel werden
         std::cout<<"Lade Video "<<i<<std::endl;
         cv::VideoCapture video = videos.at(i);
         if(video.isOpened()){
             cv::Mat frame_col;
-            //        cv::namedWindow("True Image Colo",1);
-            //        cv::namedWindow("False Image Colo",1);
             while (video.read(frame_col)) {
                 if(set){
                     set = false;
@@ -81,18 +79,17 @@ void Camera::camera_calibration(std::string path){
                 std::vector<cv::Point2f> corners;
                 corners.clear();
                 bool patternfound = cv::findChessboardCorners(frame_col, patternsize, corners,
-                                                              CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE | CV_CALIB_CB_FAST_CHECK);
+                                                              CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_FILTER_QUADS);
                 if(patternfound){
                     cornerSubPix(gray, corners, cv::Size(5,5), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.04));
                     m.push_back(corners);
 
-                    //                drawChessboardCorners(frame_col, cv::Size(h,w), corners, patternfound);
-                    //                imshow("True Image Colo", frame_col);
+//                                    drawChessboardCorners(frame_col, cv::Size(h,w), corners, patternfound);
+//                                    imshow("True Image Colo", frame_col);
                 }
-                //            if(cv::waitKey(30) >= 0) break;
+//                            if(cv::waitKey(30) >= 0) break;
             }
-            //        cv::destroyWindow("True Image Colo");
-            //        cv::destroyWindow("False Image Colo");
+//                    cv::destroyWindow("True Image Colo");
         }else{
             std::cout<<"Datei nicht gefunden"<<std::endl;
         }
@@ -100,7 +97,7 @@ void Camera::camera_calibration(std::string path){
 
     std::cout << "Berechnung hat "<< m.size()<< " Bilder ergeben" << std::endl;
 
-    std::vector<std::vector<cv::Point2f> > m2 = get_perfect_Points(m,s,200);
+    std::vector<std::vector<cv::Point2f> > m2 = get_perfect_Points(m,s,150);
     for(int i = 0; i < m2.size(); i++){
         p.push_back(realPoints);
     }
@@ -187,7 +184,7 @@ std::vector<std::vector<cv::Point2f> > Camera::get_perfect_Points(std::vector<st
 }
 
 void Camera::correct_Image(){
-    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_0.mp4");
+    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_1.mp4");
     cv::Size imageSize;
     if(video.isOpened()){
         cv::Mat frame_col, map1, map2;

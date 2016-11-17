@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    mFaceDetection = new FaceDetection(ui);
 }
 
 MainWindow::~MainWindow()
@@ -15,5 +16,5 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-    mFaceDetection.test();
+    mFaceDetection->FaceTracking(ui->Path_lineEdit->text().toStdString());
 }

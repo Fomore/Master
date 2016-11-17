@@ -4,12 +4,19 @@
 #include "model/camera.h"
 #include "LandmarkCoreIncludes.h"
 
+#include "ui_mainwindow.h"
+
 class FaceDetection
 {
 private:
+    Ui::MainWindow* mTheWindow;
+    void showImage(cv::Mat image);
+    void showEyeImage(cv::Mat image, int number, bool right);
+    QImage MatToQImage(const cv::Mat& mat);
+
     Camera* mKamera;
     void print_Eyes(const cv::Mat img,const LandmarkDetector::CLNF& clnf_model);
-    void print_Eye(const cv::Mat img,const LandmarkDetector::CLNF& clnf_model, int pos, string name);
+    void print_Eye(const cv::Mat img, const LandmarkDetector::CLNF& clnf_model, int pos, string name, bool right);
 
     void NonOverlapingDetections(const vector<LandmarkDetector::CLNF>& clnf_models, vector<cv::Rect_<double> >& face_detections);
 
@@ -18,10 +25,11 @@ private:
     vector<LandmarkDetector::CLNF> clnf_models;
     vector<bool> active_models;
 
+    int num_faces_max = 4;
 public:
-    FaceDetection();
+    FaceDetection(Ui::MainWindow *parent = 0);
     ~FaceDetection();
-    void test();
+    void FaceTracking(std::string path);
 };
 
 #endif // FACEDETECTION_H

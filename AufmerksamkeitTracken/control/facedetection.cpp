@@ -5,9 +5,11 @@
 
 using namespace std;
 
-FaceDetection::FaceDetection()
+FaceDetection::FaceDetection(Ui::MainWindow *mWindow)
 {
-    mKamera = new Camera(1);
+    mTheWindow = mWindow;
+
+    mKamera = new Camera(2);
 
     vector<string> arguments;
     arguments.push_back(""); // Hat arguments keine Werte kann wes wegoptimiert werden und dadurch wirft die Initilaisierung unten Fehler
@@ -36,8 +38,6 @@ FaceDetection::FaceDetection()
     det_parameters.push_back(det_params);
 
     // Maximale Gesichter im Fil, Achtung: Schnitte und vieles Wechseln scherschlechtert die Qualität
-    int num_faces_max = 4;
-
     LandmarkDetector::CLNF clnf_model(det_parameters[0].model_location);
     clnf_model.face_detector_HAAR.load(det_parameters[0].face_detector_location);
     clnf_model.face_detector_location = det_parameters[0].face_detector_location;
@@ -60,7 +60,7 @@ FaceDetection::~FaceDetection()
 
 }
 
-void FaceDetection::test(){
+void FaceDetection::FaceTracking(std::string path){
     // Initialisiierung
     double fx,fy,cx,cy;
     mKamera->get_camera_params(fx,fy,cx,cy);
@@ -72,14 +72,17 @@ void FaceDetection::test(){
     double fps = 10;
 
     // Anwendung - Berechnung der Faces
-    cv::VideoCapture video("/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4");
+    if(path.size() < 1){
+        path = "/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4";
+    }
+    cv::VideoCapture video(path);
     if(!video.isOpened()){
         cout<<"Kein Video"<<std::endl;
         return;
     }
     cv::Mat frame_col;
 
-    cv::namedWindow("tracking_result",1);
+//    cv::namedWindow("tracking_result",1);
 
     for(int frame_count = 0;video.read(frame_col);frame_count++){
         if(frame_count == 0){
@@ -245,7 +248,8 @@ void FaceDetection::test(){
 
         if(!det_parameters[0].quiet_mode)
         {
-            imshow("tracking_result", disp_image);
+//            imshow("tracking_result", disp_image);
+            showImage(disp_image);
         }else{
             cout<<"Lol Quiet-Mode aktiv!"<<endl;
         }
@@ -253,7 +257,7 @@ void FaceDetection::test(){
     }
 }
 
-void FaceDetection::print_Eye(const cv::Mat img, const LandmarkDetector::CLNF &clnf_model, int pos, string name){
+void FaceDetection::print_Eye(const cv::Mat img, const LandmarkDetector::CLNF &clnf_model, int pos, string name, bool right){
     cv::Mat_<double> shape2D = clnf_model.detected_landmarks;
 
     int n = shape2D.rows/2;
@@ -282,14 +286,15 @@ void FaceDetection::print_Eye(const cv::Mat img, const LandmarkDetector::CLNF &c
     Height += fr_Y*2;
     if(X >= 0 && Y >= 0 && Width > 0 && Height > 0 && X+Width < img.cols && Y+Height < img.rows){
         cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
-        cv::namedWindow(name,1);
-        imshow(name, img_Eye);
+//        cv::namedWindow(name,1);
+//        imshow(name, img_Eye);
+        showEyeImage(img_Eye,1,right);
     }
 }
 
 void FaceDetection::print_Eyes(const cv::Mat img, const LandmarkDetector::CLNF &clnf_model){
-    print_Eye(img,clnf_model,36,"Left Eye");
-    print_Eye(img,clnf_model,42,"Right Eye");
+    print_Eye(img,clnf_model,36,"Left Eye",false);
+    print_Eye(img,clnf_model,42,"Right Eye",true);
 }
 
 // Dieser Teil ist aus OpenFace/FaceLandmarkVidMulti.cpp übernommen
@@ -313,5 +318,62 @@ void FaceDetection::NonOverlapingDetections(const vector<LandmarkDetector::CLNF>
                 face_detections.erase(face_detections.begin() + detection);
             }
         }
+    }
+}
+
+void FaceDetection::showImage(cv::Mat image){
+    QImage img = MatToQImage(image);
+    QImage img2 = img.scaled(mTheWindow->Main_Label->size().width(),mTheWindow->Main_Label->size().height(),Qt::KeepAspectRatio);
+    mTheWindow->Main_Label->setPixmap(QPixmap::fromImage(img2));
+}
+
+void FaceDetection::showEyeImage(cv::Mat image, int number, bool right){
+    QImage img = MatToQImage(image);
+    int h,w;
+    if(right){
+        h = mTheWindow->Right_Label->size().height();
+        w = mTheWindow->Right_Label->size().width();
+    }else{
+        h = mTheWindow->Left_Label->size().height();
+        w = mTheWindow->Left_Label->size().width();
+    }
+    QImage img2 = img.scaled(w,h/num_faces_max,Qt::KeepAspectRatio);
+    if(right){
+        mTheWindow->Right_Label->setPixmap(QPixmap::fromImage(img2));
+    }else{
+        mTheWindow->Left_Label->setPixmap(QPixmap::fromImage(img2));
+    }
+}
+
+// Diese Methode stammt von http://www.qtcentre.org/threads/56482-efficient-way-to-display-opencv-image-into-Qt
+QImage FaceDetection::MatToQImage(const cv::Mat& mat)
+{
+    // 8-bits unsigned, NO. OF CHANNELS=1
+    if(mat.type()==CV_8UC1)
+    {
+        // Set the color table (used to translate colour indexes to qRgb values)
+        QVector<QRgb> colorTable;
+        for (int i=0; i<256; i++)
+            colorTable.push_back(qRgb(i,i,i));
+        // Copy input Mat
+        const uchar *qImageBuffer = (const uchar*)mat.data;
+        // Create QImage with same dimensions as input Mat
+        QImage img(qImageBuffer, mat.cols, mat.rows, mat.step, QImage::Format_Indexed8);
+        img.setColorTable(colorTable);
+        return img;
+    }
+    // 8-bits unsigned, NO. OF CHANNELS=3
+    else if(mat.type()==CV_8UC3)
+    {
+        // Copy input Mat
+        const uchar *qImageBuffer = (const uchar*)mat.data;
+        // Create QImage with same dimensions as input Mat
+        QImage img(qImageBuffer, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
+        return img.rgbSwapped();
+    }
+    else
+    {
+//        qDebug() << "ERROR: Mat could not be converted to QImage.";
+        return QImage();
     }
 }
