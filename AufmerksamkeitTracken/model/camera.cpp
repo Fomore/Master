@@ -6,7 +6,7 @@
 Camera::Camera(){
     init = true;
     camera_calibration("");
-    correct_Image();
+    //    correct_Image();
 }
 
 Camera::Camera(int id)
@@ -60,8 +60,8 @@ void Camera::camera_calibration(std::string path){
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_3.mp4"));
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_4.mp4"));
 
-    //    cv::namedWindow("True Image Colo",1);
-    //    cv::namedWindow("Fase Image Colo",1);
+//    cv::namedWindow("True Image Colo",1);
+//    cv::namedWindow("False Image Colo",1);
 
     for(int i = 0; i < videos.size(); i++){ // Könnte parallel werden
         std::cout<<"Lade Video "<<i<<std::endl;
@@ -83,12 +83,40 @@ void Camera::camera_calibration(std::string path){
                 bool patternfound = cv::findChessboardCorners(frame_col, patternsize, corners,
                                                               CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE | CV_CALIB_CB_FILTER_QUADS | CV_CALIB_CB_FAST_CHECK);
                 if(patternfound){
-                    cornerSubPix(gray, corners, cv::Size(3,3), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.04));
-                    m.push_back(corners);
-                    //                    drawChessboardCorners(frame_col, cv::Size(h,w), corners, patternfound);
-                    //                    imshow("True Image Colo", frame_col);
+                    bool run = true;
+                    int search_size = std::max(3.0,sqrt(pow(corners.at(0).x - corners.at(h*w-1).x,2)
+                                                 +pow(corners.at(0).y - corners.at(h*w-1).y,2))/(sqrt(h*h+w*w)*5));
+                    for(int j = 0; j < corners.size(); j++){
+                        int X = corners.at(j).x-search_size;
+                        int Y = corners.at(j).y-search_size;
+
+                        cv::Mat img_cur = gray(cv::Rect(X,Y,search_size*2,search_size*2));
+                        cv::Mat img_out;
+
+                        cornerHarris(img_cur, img_out, 3, 3, 0.04, cv::BORDER_DEFAULT);
+                        double minVal, maxVal;
+                        cv::Point minLoc, maxLoc;
+
+                        cv::minMaxLoc(img_out, &minVal, &maxVal, &minLoc, &maxLoc );
+
+                        if(maxVal < 0.0006){// Schwellenwert wie unscharf eine Ecke sein darf
+                            run = false;
+                        }
+                    }
+                    if(run){
+                        cornerSubPix(gray, corners, cv::Size(5,5), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.04));
+                        m.push_back(corners);
+                    }
+                    /*
+                    drawChessboardCorners(frame_col, cv::Size(h,w), corners, patternfound);
+                    if(run){
+                        imshow("True Image Colo", frame_col);
+                    }else{
+                        imshow("False Image Colo", frame_col);
+                    }
+                    */
                 }
-                //                if(cv::waitKey(30) >= 0) break;
+//                if(cv::waitKey(30) >= 0) break;
             }
             //                    cv::destroyWindow("True Image Colo");
         }else{
@@ -98,7 +126,7 @@ void Camera::camera_calibration(std::string path){
 
     std::cout << "Berechnung hat "<< m.size()<< " Bilder ergeben" << std::endl;
 
-    std::vector<std::vector<cv::Point2f> > m2 = get_perfect_Points(m,s,120);
+    std::vector<std::vector<cv::Point2f> > m2 = get_perfect_Points(m,s,160);
     for(int i = 0; i < m2.size(); i++){
         p.push_back(realPoints);
     }
