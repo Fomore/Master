@@ -29,7 +29,7 @@ Camera::Camera(int id)
                         0, 0, 1);
         distCoeffs = (cv::Mat_<double>(1,5) << 0, 0, 0, 0, 0);
     }
-//        correct_Image();
+    //        correct_Image();
 }
 
 Camera::~Camera()
@@ -60,7 +60,9 @@ void Camera::camera_calibration(std::string path){
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_3.mp4"));
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_4.mp4"));
 
-//    cv::namedWindow("True Image Colo",1);
+    //    cv::namedWindow("True Image Colo",1);
+    //    cv::namedWindow("Fase Image Colo",1);
+
     for(int i = 0; i < videos.size(); i++){ // Könnte parallel werden
         std::cout<<"Lade Video "<<i<<std::endl;
         cv::VideoCapture video = videos.at(i);
@@ -79,17 +81,16 @@ void Camera::camera_calibration(std::string path){
                 std::vector<cv::Point2f> corners;
                 corners.clear();
                 bool patternfound = cv::findChessboardCorners(frame_col, patternsize, corners,
-                                                              CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_FILTER_QUADS);
+                                                              CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE | CV_CALIB_CB_FILTER_QUADS | CV_CALIB_CB_FAST_CHECK);
                 if(patternfound){
-                    cornerSubPix(gray, corners, cv::Size(5,5), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.04));
+                    cornerSubPix(gray, corners, cv::Size(3,3), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.04));
                     m.push_back(corners);
-
-//                                    drawChessboardCorners(frame_col, cv::Size(h,w), corners, patternfound);
-//                                    imshow("True Image Colo", frame_col);
+                    //                    drawChessboardCorners(frame_col, cv::Size(h,w), corners, patternfound);
+                    //                    imshow("True Image Colo", frame_col);
                 }
-//                            if(cv::waitKey(30) >= 0) break;
+                //                if(cv::waitKey(30) >= 0) break;
             }
-//                    cv::destroyWindow("True Image Colo");
+            //                    cv::destroyWindow("True Image Colo");
         }else{
             std::cout<<"Datei nicht gefunden"<<std::endl;
         }
@@ -97,7 +98,7 @@ void Camera::camera_calibration(std::string path){
 
     std::cout << "Berechnung hat "<< m.size()<< " Bilder ergeben" << std::endl;
 
-    std::vector<std::vector<cv::Point2f> > m2 = get_perfect_Points(m,s,150);
+    std::vector<std::vector<cv::Point2f> > m2 = get_perfect_Points(m,s,120);
     for(int i = 0; i < m2.size(); i++){
         p.push_back(realPoints);
     }
