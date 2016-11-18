@@ -5,6 +5,7 @@
 
 #include "control/facedetection.h"
 #include "model/camera.h"
+#include "model/image.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -19,14 +20,14 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    void showImage(cv::Mat image);
 
 private slots:
     void on_pushButton_clicked();
 
 private:
     Ui::MainWindow *ui;
-    Camera mKamera;
+//    Camera mKamera;
+//    Image mImage;
     FaceDetection *mFaceDetection;
 };
 

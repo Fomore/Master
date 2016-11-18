@@ -85,9 +85,9 @@ void FaceDetection::FaceTracking(std::string path){
 //    cv::namedWindow("tracking_result",1);
 
     for(int frame_count = 0;video.read(frame_col);frame_count++){
-        if(frame_count == 0){
-            mKamera->correct_Image_Init(frame_col.rows,frame_col.cols);
-        }
+//        std::string file = "/home/falko/Uni/Master/Film/Chor_01_Img_02.png";
+//        frame_col = cv::imread(file, -1);
+
         // Reading the images
         mKamera->correct_Image(frame_col);
         cv::Mat_<float> depth_image;
@@ -224,27 +224,14 @@ void FaceDetection::FaceTracking(std::string path){
         }
 
         // Write out the framerate on the image before displaying it
-        char fpsC[255];
-        sprintf(fpsC, "%d", (int)fps);
-        string fpsSt("FPS:");
-        fpsSt += fpsC;
-        cv::putText(disp_image, fpsSt, cv::Point(10,20), CV_FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(255,0,0), 1, CV_AA);
-
         int num_active_models = 0;
-
-        for( size_t active_model = 0; active_model < active_models.size(); active_model++)
-        {
-            if(active_models[active_model])
-            {
+        for( size_t active_model = 0; active_model < active_models.size(); active_model++){
+            if(active_models[active_model]){
                 num_active_models++;
             }
         }
 
-        char active_m_C[255];
-        sprintf(active_m_C, "%d", num_active_models);
-        string active_models_st("Active models:");
-        active_models_st += active_m_C;
-        cv::putText(disp_image, active_models_st, cv::Point(10,60), CV_FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(255,0,0), 1, CV_AA);
+        print_FPS_Model(cvRound(fps),num_active_models);
 
         if(!det_parameters[0].quiet_mode)
         {
@@ -376,4 +363,9 @@ QImage FaceDetection::MatToQImage(const cv::Mat& mat)
 //        qDebug() << "ERROR: Mat could not be converted to QImage.";
         return QImage();
     }
+}
+
+void FaceDetection::print_FPS_Model(int fps, int model){
+    mTheWindow->FPS_Label->setText(QString::number(fps));
+    mTheWindow->Model_Label->setText(QString::number(model));
 }

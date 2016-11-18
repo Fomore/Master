@@ -18,12 +18,14 @@ CONFIG += c++11
 SOURCES += main.cpp\
         mainwindow.cpp \
     model/camera.cpp \
-    control/facedetection.cpp
+    control/facedetection.cpp \
+    model/image.cpp
 #    FaceLandmarkVidMulti.cpp
 
 HEADERS  += mainwindow.h \
     model/camera.h \
-    control/facedetection.h
+    control/facedetection.h \
+    model/image.h
 
 FORMS    += mainwindow.ui
 

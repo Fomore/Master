@@ -6,7 +6,7 @@
 Camera::Camera(){
     init = true;
     camera_calibration("");
-    //    correct_Image();
+    correct_Image();
 }
 
 Camera::Camera(int id)
@@ -17,19 +17,18 @@ Camera::Camera(int id)
                         0, 2186.84347316115, 240.4137245062925,
                         0, 0, 1);
         distCoeffs = (cv::Mat_<double>(1,5) << 0.5488223009312883, 0.8600516903057833, -0.07985604709274093, 0.02173550476776541, -1048.693669653505);
-    }else if(id == 2){ //1280P der 4k Actioncam als Webcam
-        cameraMatrix = (cv::Mat_<double>(3,3) << 1907.35363928477, 0, 633.8982380360976,
-                        0, 1645.567312479385, 366.9137086428425,
-                        0, 0, 1);
-        distCoeffs = (cv::Mat_<double>(1,5) << -0.4328529813449852, -0.5421577205524081,
-                      -0.01820603681764989, -0.02865158102593597, 4.266311993981554 );
+    }else if(id == 2){ //1280P der 4k Actioncam (als Webcam)
+        cameraMatrix = (cv::Mat_<double>(3,3) << 4505.771917224674, 0, 627.2704519691812,
+                        0, 2986.23823820304, 365.9469872012109,
+                        0, 0, 1 );
+        distCoeffs = (cv::Mat_<double>(1,5) << -5.683648805753482, 69.69903660169872, -0.1033539021069702, -0.0165845448486779, -487.6393497545911);
     }else{//Default Parameter
         cameraMatrix = (cv::Mat_<double>(3,3) << 1, 0, 0,
                         0, 1, 0,
                         0, 0, 1);
         distCoeffs = (cv::Mat_<double>(1,5) << 0, 0, 0, 0, 0);
     }
-    //        correct_Image();
+    //    correct_Image();
 }
 
 Camera::~Camera()
@@ -52,17 +51,14 @@ void Camera::camera_calibration(std::string path){
     bool set = true;
     cv::Size s(0,0);
 
+    double avg_Quality = 0.0;
+
     std::vector<cv::VideoCapture> videos;
 
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_0.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_1.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_2.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_3.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_4.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1920.mp4"));
 
-//    cv::namedWindow("True Image Colo",1);
-//    cv::namedWindow("False Image Colo",1);
-
+    //    cv::namedWindow("True Image Colo",1);
+    //    cv::namedWindow("False Image Colo",1);
     for(int i = 0; i < videos.size(); i++){ // Könnte parallel werden
         std::cout<<"Lade Video "<<i<<std::endl;
         cv::VideoCapture video = videos.at(i);
@@ -85,7 +81,7 @@ void Camera::camera_calibration(std::string path){
                 if(patternfound){
                     bool run = true;
                     int search_size = std::max(3.0,sqrt(pow(corners.at(0).x - corners.at(h*w-1).x,2)
-                                                 +pow(corners.at(0).y - corners.at(h*w-1).y,2))/(sqrt(h*h+w*w)*5));
+                                                        +pow(corners.at(0).y - corners.at(h*w-1).y,2))/(sqrt(h*h+w*w)*5));
                     for(int j = 0; j < corners.size(); j++){
                         int X = corners.at(j).x-search_size;
                         int Y = corners.at(j).y-search_size;
@@ -99,7 +95,9 @@ void Camera::camera_calibration(std::string path){
 
                         cv::minMaxLoc(img_out, &minVal, &maxVal, &minLoc, &maxLoc );
 
-                        if(maxVal < 0.0006){// Schwellenwert wie unscharf eine Ecke sein darf
+                        avg_Quality += maxVal;
+
+                        if(maxVal < 0.0001){// Schwellenwert wie unscharf eine Ecke sein darf, bei 1280-> 0.0006
                             run = false;
                         }
                     }
@@ -116,7 +114,7 @@ void Camera::camera_calibration(std::string path){
                     }
                     */
                 }
-//                if(cv::waitKey(30) >= 0) break;
+                //                if(cv::waitKey(30) >= 0) break;
             }
             //                    cv::destroyWindow("True Image Colo");
         }else{
@@ -124,9 +122,9 @@ void Camera::camera_calibration(std::string path){
         }
     }
 
-    std::cout << "Berechnung hat "<< m.size()<< " Bilder ergeben" << std::endl;
+    std::cout << "Berechnung hat "<< m.size()<< " Bilder ergeben mit Qualität "<<avg_Quality/(m.size()*25)<< std::endl;
 
-    std::vector<std::vector<cv::Point2f> > m2 = get_perfect_Points(m,s,160);
+    std::vector<std::vector<cv::Point2f> > m2 = get_perfect_Points(m,s,200);
     for(int i = 0; i < m2.size(); i++){
         p.push_back(realPoints);
     }
@@ -213,7 +211,7 @@ std::vector<std::vector<cv::Point2f> > Camera::get_perfect_Points(std::vector<st
 }
 
 void Camera::correct_Image(){
-    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_1280_1.mp4");
+    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_1920.mp4");
     cv::Size imageSize;
     if(video.isOpened()){
         cv::Mat frame_col, map1, map2;
