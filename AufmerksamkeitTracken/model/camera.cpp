@@ -55,7 +55,7 @@ void Camera::camera_calibration(std::string path){
 
     std::vector<cv::VideoCapture> videos;
 
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1920.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_2688.mp4"));
 
     //    cv::namedWindow("True Image Colo",1);
     //    cv::namedWindow("False Image Colo",1);
@@ -211,7 +211,7 @@ std::vector<std::vector<cv::Point2f> > Camera::get_perfect_Points(std::vector<st
 }
 
 void Camera::correct_Image(){
-    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_1920.mp4");
+    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_2688.mp4");
     cv::Size imageSize;
     if(video.isOpened()){
         cv::Mat frame_col, map1, map2;

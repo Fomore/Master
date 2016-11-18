@@ -82,11 +82,11 @@ void FaceDetection::FaceTracking(std::string path){
     }
     cv::Mat frame_col;
 
-//    cv::namedWindow("tracking_result",1);
+    //    cv::namedWindow("tracking_result",1);
 
     for(int frame_count = 0;video.read(frame_col);frame_count++){
-//        std::string file = "/home/falko/Uni/Master/Film/Chor_01_Img_02.png";
-//        frame_col = cv::imread(file, -1);
+        //        std::string file = "/home/falko/Uni/Master/Film/Chor_01_Img_02.png";
+        //        frame_col = cv::imread(file, -1);
 
         // Reading the images
         mKamera->correct_Image(frame_col);
@@ -192,9 +192,9 @@ void FaceDetection::FaceTracking(std::string path){
             // Only draw if the reliability is reasonable, the value is slightly ad-hoc
             if(detection_certainty < visualisation_boundary)
             {
-
-                print_Eyes(disp_image, clnf_models[model]);
-
+                if(!det_parameters[0].quiet_mode){
+                    print_Eyes(disp_image, clnf_models[model]);
+                }
                 LandmarkDetector::Draw(disp_image, clnf_models[model]);
 
                 if(detection_certainty > 1)
@@ -231,17 +231,52 @@ void FaceDetection::FaceTracking(std::string path){
             }
         }
 
-        print_FPS_Model(cvRound(fps),num_active_models);
-
         if(!det_parameters[0].quiet_mode)
         {
-//            imshow("tracking_result", disp_image);
+            //            imshow("tracking_result", disp_image);
+            print_FPS_Model(cvRound(fps),num_active_models);
             showImage(disp_image);
         }else{
             cout<<"Lol Quiet-Mode aktiv!"<<endl;
         }
         if(cv::waitKey(30) >= 0) break;
     }
+}
+
+// Dieser Teil ist aus OpenFace/FaceLandmarkVidMulti.cpp übernommen
+void FaceDetection::NonOverlapingDetections(const vector<LandmarkDetector::CLNF>& clnf_models, vector<cv::Rect_<double> >& face_detections){
+
+    // Go over the model and eliminate detections that are not informative (there already is a tracker there)
+    for(size_t model = 0; model < clnf_models.size(); ++model)
+    {
+
+        // See if the detections intersect
+        cv::Rect_<double> model_rect = clnf_models[model].GetBoundingBox();
+
+        for(int detection = face_detections.size()-1; detection >=0; --detection)
+        {
+            double intersection_area = (model_rect & face_detections[detection]).area();
+            double union_area = model_rect.area() + face_detections[detection].area() - 2 * intersection_area;
+
+            // If the model is already tracking what we're detecting ignore the detection, this is determined by amount of overlap
+            if( intersection_area/union_area > 0.5)
+            {
+                face_detections.erase(face_detections.begin() + detection);
+            }
+        }
+    }
+}
+
+void FaceDetection::showImage(cv::Mat image){
+    QImage img = MatToQImage(image);
+    QImage img2 = img.scaled(mTheWindow->Main_Label->size().width(),mTheWindow->Main_Label->size().height(),Qt::KeepAspectRatio);
+    mTheWindow->Main_Label->setPixmap(QPixmap::fromImage(img2));
+}
+
+// To Do: Erweiterung, damit mehrere Model-Augen dargestellt werden können
+void FaceDetection::print_Eyes(const cv::Mat img, const LandmarkDetector::CLNF &clnf_model){
+    print_Eye(img,clnf_model,36,"Left Eye",false);
+    print_Eye(img,clnf_model,42,"Right Eye",true);
 }
 
 void FaceDetection::print_Eye(const cv::Mat img, const LandmarkDetector::CLNF &clnf_model, int pos, string name, bool right){
@@ -273,45 +308,10 @@ void FaceDetection::print_Eye(const cv::Mat img, const LandmarkDetector::CLNF &c
     Height += fr_Y*2;
     if(X >= 0 && Y >= 0 && Width > 0 && Height > 0 && X+Width < img.cols && Y+Height < img.rows){
         cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
-//        cv::namedWindow(name,1);
-//        imshow(name, img_Eye);
+        //        cv::namedWindow(name,1);
+        //        imshow(name, img_Eye);
         showEyeImage(img_Eye,1,right);
     }
-}
-
-void FaceDetection::print_Eyes(const cv::Mat img, const LandmarkDetector::CLNF &clnf_model){
-    print_Eye(img,clnf_model,36,"Left Eye",false);
-    print_Eye(img,clnf_model,42,"Right Eye",true);
-}
-
-// Dieser Teil ist aus OpenFace/FaceLandmarkVidMulti.cpp übernommen
-void FaceDetection::NonOverlapingDetections(const vector<LandmarkDetector::CLNF>& clnf_models, vector<cv::Rect_<double> >& face_detections){
-
-    // Go over the model and eliminate detections that are not informative (there already is a tracker there)
-    for(size_t model = 0; model < clnf_models.size(); ++model)
-    {
-
-        // See if the detections intersect
-        cv::Rect_<double> model_rect = clnf_models[model].GetBoundingBox();
-
-        for(int detection = face_detections.size()-1; detection >=0; --detection)
-        {
-            double intersection_area = (model_rect & face_detections[detection]).area();
-            double union_area = model_rect.area() + face_detections[detection].area() - 2 * intersection_area;
-
-            // If the model is already tracking what we're detecting ignore the detection, this is determined by amount of overlap
-            if( intersection_area/union_area > 0.5)
-            {
-                face_detections.erase(face_detections.begin() + detection);
-            }
-        }
-    }
-}
-
-void FaceDetection::showImage(cv::Mat image){
-    QImage img = MatToQImage(image);
-    QImage img2 = img.scaled(mTheWindow->Main_Label->size().width(),mTheWindow->Main_Label->size().height(),Qt::KeepAspectRatio);
-    mTheWindow->Main_Label->setPixmap(QPixmap::fromImage(img2));
 }
 
 void FaceDetection::showEyeImage(cv::Mat image, int number, bool right){
@@ -348,19 +348,14 @@ QImage FaceDetection::MatToQImage(const cv::Mat& mat)
         QImage img(qImageBuffer, mat.cols, mat.rows, mat.step, QImage::Format_Indexed8);
         img.setColorTable(colorTable);
         return img;
-    }
-    // 8-bits unsigned, NO. OF CHANNELS=3
-    else if(mat.type()==CV_8UC3)
-    {
+    }else if(mat.type()==CV_8UC3){    // 8-bits unsigned, NO. OF CHANNELS=3
         // Copy input Mat
         const uchar *qImageBuffer = (const uchar*)mat.data;
         // Create QImage with same dimensions as input Mat
         QImage img(qImageBuffer, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
         return img.rgbSwapped();
-    }
-    else
-    {
-//        qDebug() << "ERROR: Mat could not be converted to QImage.";
+    }else{
+        //        qDebug() << "ERROR: Mat could not be converted to QImage.";
         return QImage();
     }
 }
