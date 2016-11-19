@@ -267,7 +267,7 @@ void FaceDetection::NonOverlapingDetections(const vector<LandmarkDetector::CLNF>
     }
 }
 
-void FaceDetection::showImage(cv::Mat image){
+void FaceDetection::showImage(const cv::Mat image){
     QImage img = MatToQImage(image);
     QImage img2 = img.scaled(mTheWindow->Main_Label->size().width(),mTheWindow->Main_Label->size().height(),Qt::KeepAspectRatio);
     mTheWindow->Main_Label->setPixmap(QPixmap::fromImage(img2));
@@ -314,7 +314,14 @@ void FaceDetection::print_Eye(const cv::Mat img, const LandmarkDetector::CLNF &c
     }
 }
 
-void FaceDetection::showEyeImage(cv::Mat image, int number, bool right){
+void FaceDetection::showEyeImage(const cv::Mat image, int number, bool right){
+    cv::Mat gray;
+    cvtColor(image, gray, CV_BGR2GRAY);
+    equalizeHist(gray, gray);
+    cv::RotatedRect ellipse = ELSE::run(gray);
+
+    cv::ellipse( image, ellipse, cv::Scalar(0,255,0,255), 1,1 );
+
     QImage img = MatToQImage(image);
     int h,w;
     if(right){

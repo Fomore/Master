@@ -19,13 +19,17 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     model/camera.cpp \
     control/facedetection.cpp \
-    model/image.cpp
+    model/image.cpp \
+    src/stdafx.cpp
 #    FaceLandmarkVidMulti.cpp
 
 HEADERS  += mainwindow.h \
     model/camera.h \
     control/facedetection.h \
-    model/image.h
+    model/image.h \
+    src/algo.h \
+    src/blob_gen.h \
+    src/stdafx.h
 
 FORMS    += mainwindow.ui
 
