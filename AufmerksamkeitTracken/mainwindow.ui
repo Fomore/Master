@@ -134,6 +134,19 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QPushButton" name="Learn_Button">
+    <property name="geometry">
+     <rect>
+      <x>810</x>
+      <y>99</y>
+      <width>120</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Lernen</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

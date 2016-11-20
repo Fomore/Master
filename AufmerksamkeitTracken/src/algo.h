@@ -32,7 +32,7 @@ static cv::RotatedRect run(cv::Mat input_img){
 
 
 
-    double border=0.01;
+    double border=0.1;
 
 
 	cv::RotatedRect ellipse;

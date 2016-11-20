@@ -73,7 +73,8 @@ void FaceDetection::FaceTracking(std::string path){
 
     // Anwendung - Berechnung der Faces
     if(path.size() < 1){
-        path = "/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4";
+//        path = "/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4";
+        path = "/home/falko/Uni/Master/Film/Schulklasse_01.mp4";
     }
     cv::VideoCapture video(path);
     if(!video.isOpened()){
@@ -85,9 +86,6 @@ void FaceDetection::FaceTracking(std::string path){
     //    cv::namedWindow("tracking_result",1);
 
     for(int frame_count = 0;video.read(frame_col);frame_count++){
-        //        std::string file = "/home/falko/Uni/Master/Film/Chor_01_Img_02.png";
-        //        frame_col = cv::imread(file, -1);
-
         // Reading the images
         mKamera->correct_Image(frame_col);
         cv::Mat_<float> depth_image;
@@ -370,4 +368,31 @@ QImage FaceDetection::MatToQImage(const cv::Mat& mat)
 void FaceDetection::print_FPS_Model(int fps, int model){
     mTheWindow->FPS_Label->setText(QString::number(fps));
     mTheWindow->Model_Label->setText(QString::number(model));
+}
+
+void FaceDetection::LearnModel(){
+    /*
+    vector<cv::Rect_<double> > face_detections;
+
+    if(det_parameters.curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR)
+    {
+        vector<double> confidences;
+        LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, face_detector_hog, confidences);
+    }
+    else
+    {
+        LandmarkDetector::DetectFaces(face_detections, grayscale_image, classifier);
+    }
+    //--------------------------------
+
+    if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR)
+    {
+        vector<double> confidences;
+        LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_models[0].face_detector_HOG, confidences);
+    }
+    else
+    {
+        LandmarkDetector::DetectFaces(face_detections, grayscale_image, clnf_models[0].face_detector_HAAR);
+    }
+    */
 }

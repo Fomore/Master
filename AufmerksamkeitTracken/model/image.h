@@ -5,12 +5,15 @@
 
 class Image
 {
+private:
+    std::vector<std::string> mImagePaths;
+    int ID;
 public:
     Image();
     ~Image();
     cv::Mat get_Face_Image(cv::Mat image, int X, int Y, int Wight, int Height);
+    void convert_to_grayscale(const cv::Mat& in, cv::Mat& out);
+    bool getNextImage(cv::Mat& out);
 };
 
 #endif // IMAGE_H
-
-// /home/falko/Uni/Master/Film/Schulklasse_01.mp4

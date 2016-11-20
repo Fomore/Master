@@ -2,6 +2,7 @@
 #define FACEDETECTION_H
 
 #include "model/camera.h"
+#include "model/image.h"
 #include "LandmarkCoreIncludes.h"
 #include "src/algo.h"
 
@@ -20,7 +21,7 @@ private:
     void print_Eye(const cv::Mat img, const LandmarkDetector::CLNF& clnf_model, int pos, string name, bool right);
     void print_FPS_Model(int fps, int model);
 
-//    ELSE mElSE;
+    Image mImage;
 
     void NonOverlapingDetections(const vector<LandmarkDetector::CLNF>& clnf_models, vector<cv::Rect_<double> >& face_detections);
 
@@ -34,6 +35,7 @@ public:
     FaceDetection(Ui::MainWindow *parent = 0);
     ~FaceDetection();
     void FaceTracking(std::string path);
+    void LearnModel();
 };
 
 #endif // FACEDETECTION_H

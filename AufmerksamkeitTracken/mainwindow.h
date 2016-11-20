@@ -24,6 +24,8 @@ public:
 private slots:
     void on_pushButton_clicked();
 
+    void on_Learn_Button_clicked();
+
 private:
     Ui::MainWindow *ui;
 //    Camera mKamera;
