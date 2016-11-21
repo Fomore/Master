@@ -21,5 +21,5 @@ void MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_Learn_Button_clicked()
 {
-
+    mFaceDetection->LearnModel();
 }

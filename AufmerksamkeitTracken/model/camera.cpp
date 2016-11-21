@@ -5,6 +5,7 @@
 
 Camera::Camera(){
     init = true;
+    ID = 0;
     camera_calibration("");
     correct_Image();
 }
@@ -12,6 +13,17 @@ Camera::Camera(){
 Camera::Camera(int id)
 {
     init = true;
+    setCameraParameter(id);
+        correct_Image();
+}
+
+Camera::~Camera()
+{
+
+}
+
+void Camera::setCameraParameter(int id){
+    ID = id;
     if(id == 1){ //Webcam
         cameraMatrix = (cv::Mat_<double>(3,3) << 2288.8872146151, 0, 326.4366918263556,
                         0, 2186.84347316115, 240.4137245062925,
@@ -38,12 +50,6 @@ Camera::Camera(int id)
                         0, 0, 1);
         distCoeffs = (cv::Mat_<double>(1,5) << 0, 0, 0, 0, 0);
     }
-//        correct_Image();
-}
-
-Camera::~Camera()
-{
-
 }
 
 void Camera::camera_calibration(std::string path){
@@ -66,15 +72,17 @@ void Camera::camera_calibration(std::string path){
 
     std::vector<cv::VideoCapture> videos;
 
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_0.mp4"));
+//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_0.mp4"));
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_1.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_2.mp4"));
+//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_2.mp4"));
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_3.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_4.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_5.mp4"));
 
 //    cv::namedWindow("True Image Colo",1);
 //    cv::namedWindow("False Image Colo",1);
     for(int i = 0; i < videos.size(); i++){ // Könnte parallel werden
-        std::cout<<"Lade Video "<<i<<" - "<<m.size()<<std::endl;
+        std::cout<<"Lade Video "<<i<<" - "<<m.size()<<" / "<<del<<std::endl;
         cv::VideoCapture video = videos.at(i);
         if(video.isOpened()){
             cv::Mat frame_col;
@@ -130,7 +138,7 @@ void Camera::camera_calibration(std::string path){
                         cornerSubPix(gray, corners, cv::Size(5,5), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.04));
                         m.push_back(corners);
 //                        imshow("True Image Colo", gray);
-                    }else{
+//                    }else{
 //                        imshow("False Image Colo", gray);
                     }
                 }
@@ -156,6 +164,24 @@ void Camera::camera_calibration(std::string path){
     std::vector<cv::Mat> rvecs,tvecs;
     std::cout << "Berechnung läuft auf "<< m2.size()<< " Bildern" << std::endl;
     if(m2.size() > 1){
+        cv::Mat imgCal = cv::Mat::zeros(s.height,s.width, CV_8UC3 );
+        int lineType = 8;
+        int npt[] = { 4 };
+        int colStep = 255/m2.size();
+
+        for(int i = 0; i < m2.size(); i++){
+          cv::Point rook_points[1][4];
+          rook_points[0][0] = m2.at(i).at(20);
+          rook_points[0][1] = m2.at(i).at(0);
+          rook_points[0][2] = m2.at(i).at(4);
+          rook_points[0][3] = m2.at(i).at(24);
+
+          const cv::Point* ppt[1] = { rook_points[0] };
+
+          cv::fillPoly( imgCal, ppt, npt, 1, cv::Scalar( 255-(i*colStep), 0, 255-((m2.size()-1-i)*colStep)), lineType );
+         }
+        cv::namedWindow("Kalibrierung",1);
+        imshow("Kalibrierung", imgCal);
     cv::calibrateCamera(p, m2, s, cameraMatrix, distCoeffs, rvecs, tvecs);
     std::cout <<"Neue Kalibrierung:" << std::endl << cameraMatrix << std::endl << distCoeffs << std::endl;
     correct_Image_Init(s.height,s.width);
@@ -246,26 +272,11 @@ void Camera::correct_Image(){
         cv::namedWindow("Image Raw",1);
         cv::namedWindow("Image Correct",1);
 
-        bool init = true;
+        init = true;
 
         while (video.read(frame_col)) {
-            if(init){
-                imageSize.height = frame_col.rows;
-                imageSize.width = frame_col.cols;
-                init = false;
-                cv::initUndistortRectifyMap(
-                            cameraMatrix, distCoeffs, cv::Mat(),
-                            getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize, 0), imageSize,
-                            CV_16SC2, map1, map2);
-            }
-            cv::Mat view;
-
-            //            cv::undistort(frame_col, view, cameraMatrix, distCoeffs);//Korrektur mit beschneiden
-            cv::remap(frame_col, view, map1, map2, cv::INTER_LINEAR);//Korrektur mit skallierung
-
-            //            cv::Size size(384*2.5, 216*2.5);
-            //            resize(view,view,size);
-            //            resize(frame_col,frame_col,size);
+            cv::Mat view = frame_col.clone();
+            correct_Image(view);
 
             if(frame_col.cols > 1000 || frame_col.rows > 600){
                 double fx = 1000.0/frame_col.cols;
@@ -289,6 +300,7 @@ void Camera::correct_Image(){
 }
 
 void Camera::correct_Image(cv::Mat frame){
+    if(ID >= 0 ){
     if(init){
         cv::Size imageSize;
         imageSize.height = frame.rows;
@@ -300,6 +312,7 @@ void Camera::correct_Image(cv::Mat frame){
     }
     //            cv::undistort(frame,frame, cameraMatrix, distCoeffs);//Korrektur mit beschneiden
     cv::remap(frame, frame, map1, map2, cv::INTER_LINEAR);//Korrektur mit skallierung
+    }
 }
 
 void Camera::correct_Image_Init(int height, int width){

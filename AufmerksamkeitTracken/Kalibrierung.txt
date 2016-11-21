@@ -29,3 +29,24 @@ Neue Kalibrierung:
  0, 9147,371093444839, 555,0626747797013;
  0, 0, 1]
 [-12,10258051415297, 364,3393499087215, 0,01904471299540101, -0,02184071835848123, -4233,890907585142]
+
+
+
+4K
+Lade Video 0 - 0 / 0
+Lade Video 1 - 15 / 1941
+Lade Video 2 - 200 / 3005
+Lade Video 3 - 202 / 3236
+Lade Video 4 - 342 / 4816
+Lade Video 5 - 369 / 5011
+Berechnung hat 442 Bilder ergeben mit Qualität 0.00923841 entfernt:7823
+Berechnung läuft auf 78 Bildern
+Neue Kalibrierung:
+[7718,917458427523, 0, 1858,190587945411;
+ 0, 7684,040039678899, 937,0843805591616;
+ 0, 0, 1]
+[-2,542354618226029, 23,7268514563548, 0,02995268933009279, -0,05657173705670854, -100,7485229859002]
+Reading the CLNF landmark detector/tracker from: model/main_clnf_general.txt
+Reading the landmark detector module from: model/clnf_general.txt
+Reading the PDM module from: model/pdms/In-the-wild_aligned_PDM_68.txt....Done
+Reading the Triangulations module from: model/tris_68.txt....Done

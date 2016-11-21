@@ -12,7 +12,7 @@ public:
     Image();
     ~Image();
     cv::Mat get_Face_Image(cv::Mat image, int X, int Y, int Wight, int Height);
-    void convert_to_grayscale(const cv::Mat& in, cv::Mat& out);
+    static void convert_to_grayscale(const cv::Mat& in, cv::Mat& out);
     bool getNextImage(cv::Mat& out);
 };
 

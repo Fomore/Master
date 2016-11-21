@@ -22,6 +22,7 @@ SOURCES += main.cpp\
     model/image.cpp \
     src/stdafx.cpp
 #    FaceLandmarkVidMulti.cpp
+#    FaceLandmarkImg.cpp
 
 HEADERS  += mainwindow.h \
     model/camera.h \

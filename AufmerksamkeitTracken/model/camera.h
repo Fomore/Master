@@ -13,6 +13,9 @@ private:
     cv::Mat map1, map2;
 
     std::vector<std::vector<cv::Point2f> > get_perfect_Points(std::vector<std::vector<cv::Point2f> > points, const cv::Size dim, int maxImages);
+
+    int ID;
+    void setCameraParameter(int id);
 public:
     Camera(int id);
     Camera();

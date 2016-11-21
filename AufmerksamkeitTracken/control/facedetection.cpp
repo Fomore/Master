@@ -9,7 +9,7 @@ FaceDetection::FaceDetection(Ui::MainWindow *mWindow)
 {
     mTheWindow = mWindow;
 
-    mKamera = new Camera(2);
+    mKamera = new Camera(4);
 
     vector<string> arguments;
     arguments.push_back(""); // Hat arguments keine Werte kann wes wegoptimiert werden und dadurch wirft die Initilaisierung unten Fehler
@@ -93,14 +93,7 @@ void FaceDetection::FaceTracking(std::string path){
 
         cv::Mat disp_image = frame_col.clone();
 
-        if(frame_col.channels() == 3)
-        {
-            cv::cvtColor(frame_col, grayscale_image, CV_BGR2GRAY);
-        }
-        else
-        {
-            grayscale_image = frame_col.clone();
-        }
+        Image::convert_to_grayscale(frame_col,grayscale_image);
 
         vector<cv::Rect_<double> > face_detections;
 
@@ -371,6 +364,22 @@ void FaceDetection::print_FPS_Model(int fps, int model){
 }
 
 void FaceDetection::LearnModel(){
+    // Initialisiierung
+    double fx,fy,cx,cy;
+    mKamera->get_camera_params(fx,fy,cx,cy);
+    cv::Mat frame_col;
+
+if(mImage.getNextImage(frame_col)){
+        // Reading the images
+        mKamera->correct_Image(frame_col);
+        cv::Mat_<uchar> grayscale_image;
+
+        cv::Mat disp_image = frame_col.clone();
+
+        Image::convert_to_grayscale(frame_col,grayscale_image);
+
+        showImage(disp_image);
+}
     /*
     vector<cv::Rect_<double> > face_detections;
 
