@@ -20,8 +20,10 @@ private:
     void print_Eyes(const cv::Mat img,const LandmarkDetector::CLNF& clnf_model);
     void print_Eye(const cv::Mat img, const LandmarkDetector::CLNF& clnf_model, int pos, string name, bool right);
     void print_FPS_Model(int fps, int model);
+    void print_CLNF(cv::Mat img, int model, double itens, double fx, double fy, double cx, double cy);
 
     Image mImage;
+    int Model_Init;
 
     void NonOverlapingDetections(const vector<LandmarkDetector::CLNF>& clnf_models, vector<cv::Rect_<double> >& face_detections);
 

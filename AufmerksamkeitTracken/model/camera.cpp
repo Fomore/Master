@@ -14,7 +14,7 @@ Camera::Camera(int id)
 {
     init = true;
     setCameraParameter(id);
-        correct_Image();
+//        correct_Image();
 }
 
 Camera::~Camera()
@@ -44,6 +44,12 @@ void Camera::setCameraParameter(int id){
                         0, 5613.841123206106, 962.5658045838203,
                         0, 0, 1);
         distCoeffs = (cv::Mat_<double>(1,5) << -1.484996965134229, 5.748404337479958, 0.008656338023441646, -0.01457077780605927, -12.09940654367966);
+    }else if(id = 5){
+        // 3840P der 4K Actioncam
+               cameraMatrix = (cv::Mat_<double>(3,3) << 8814.572769059419, 0, 1875.385785348307,
+                               0, 8871.4437844653, 971.4901818251557,
+                               0, 0, 1);
+        distCoeffs = (cv::Mat_<double>(1,5) << -1.915891109401613, 20.49816269684929, 0.07322823783978712, -0.03882332526060985, -142.3394617487301);
     }else{//Default Parameter
         cameraMatrix = (cv::Mat_<double>(3,3) << 1, 0, 0,
                         0, 1, 0,
@@ -72,12 +78,10 @@ void Camera::camera_calibration(std::string path){
 
     std::vector<cv::VideoCapture> videos;
 
-//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_0.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_1.mp4"));
-//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_2.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_3.mp4"));
+//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_1.mp4"));
+//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_3.mp4"));
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_4.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_5.mp4"));
+//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_5.mp4"));
 
 //    cv::namedWindow("True Image Colo",1);
 //    cv::namedWindow("False Image Colo",1);
@@ -181,6 +185,8 @@ void Camera::camera_calibration(std::string path){
           cv::fillPoly( imgCal, ppt, npt, 1, cv::Scalar( 255-(i*colStep), 0, 255-((m2.size()-1-i)*colStep)), lineType );
          }
         cv::namedWindow("Kalibrierung",1);
+//        cv::imwrite("Verteilung",imgCal);
+        DisplayImage(imgCal);
         imshow("Kalibrierung", imgCal);
     cv::calibrateCamera(p, m2, s, cameraMatrix, distCoeffs, rvecs, tvecs);
     std::cout <<"Neue Kalibrierung:" << std::endl << cameraMatrix << std::endl << distCoeffs << std::endl;
@@ -264,33 +270,30 @@ std::vector<std::vector<cv::Point2f> > Camera::get_perfect_Points(std::vector<st
     return ret;
 }
 
+void Camera::DisplayImage(cv::Mat &img){
+    if(img.cols > 1000 || img.rows > 600){
+        double fx = 1000.0/img.cols;
+        double fy = 600.0/img.rows;
+        double fxy = std::min(fx,fy);
+        resize(img, img, cv::Size(), fxy, fxy, CV_INTER_LINEAR);
+    }
+}
+
 void Camera::correct_Image(){
     cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_1.mp4");
-    cv::Size imageSize;
     if(video.isOpened()){
-        cv::Mat frame_col, map1, map2;
         cv::namedWindow("Image Raw",1);
         cv::namedWindow("Image Correct",1);
 
         init = true;
-
+        cv::Mat frame_col;
         while (video.read(frame_col)) {
             cv::Mat view = frame_col.clone();
             correct_Image(view);
 
-            if(frame_col.cols > 1000 || frame_col.rows > 600){
-                double fx = 1000.0/frame_col.cols;
-                double fy = 600.0/frame_col.rows;
-                double fxy = std::min(fx,fy);
-                resize(frame_col, frame_col, cv::Size(), fxy, fxy, CV_INTER_LINEAR);
-            }
+            DisplayImage(frame_col);
+            DisplayImage(view);
 
-            if(view.cols > 1000 || view.rows > 600){
-                double fx = 1000.0/view.cols;
-                double fy = 600.0/view.rows;
-                double fxy = std::min(fx,fy);
-                resize(view, view, cv::Size(), fxy, fxy, CV_INTER_LINEAR);
-            }
             imshow("Image Raw", frame_col);
             imshow("Image Correct", view);
 

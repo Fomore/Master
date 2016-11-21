@@ -9,7 +9,8 @@ FaceDetection::FaceDetection(Ui::MainWindow *mWindow)
 {
     mTheWindow = mWindow;
 
-    mKamera = new Camera(4);
+    mKamera = new Camera(-1);
+    Model_Init = 0;
 
     vector<string> arguments;
     arguments.push_back(""); // Hat arguments keine Werte kann wes wegoptimiert werden und dadurch wirft die Initilaisierung unten Fehler
@@ -65,15 +66,13 @@ void FaceDetection::FaceTracking(std::string path){
     double fx,fy,cx,cy;
     mKamera->get_camera_params(fx,fy,cx,cy);
 
-    //    mKamera->correct_Image();
-
     // For measuring the timings
     int64 t1,t0 = cv::getTickCount();
     double fps = 10;
 
     // Anwendung - Berechnung der Faces
     if(path.size() < 1){
-//        path = "/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4";
+        //        path = "/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4";
         path = "/home/falko/Uni/Master/Film/Schulklasse_01.mp4";
     }
     cv::VideoCapture video(path);
@@ -181,28 +180,16 @@ void FaceDetection::FaceTracking(std::string path){
             double visualisation_boundary = -0.1;
 
             // Only draw if the reliability is reasonable, the value is slightly ad-hoc
-            if(detection_certainty < visualisation_boundary)
-            {
-                if(!det_parameters[0].quiet_mode){
-                    print_Eyes(disp_image, clnf_models[model]);
-                }
-                LandmarkDetector::Draw(disp_image, clnf_models[model]);
-
+            if(detection_certainty < visualisation_boundary && !det_parameters[0].quiet_mode){
+                print_Eyes(disp_image, clnf_models[model]);
                 if(detection_certainty > 1)
                     detection_certainty = 1;
                 if(detection_certainty < -1)
                     detection_certainty = -1;
 
-                detection_certainty = (detection_certainty + 1)/(visualisation_boundary +1);
+                double itens = (detection_certainty + 1)/(visualisation_boundary +1);
+                print_CLNF(disp_image,model,itens,fx,fy,cx,cy);
 
-                // A rough heuristic for box around the face width
-                int thickness = (int)std::ceil(2.0* ((double)frame_col.cols) / 640.0);
-
-                // Work out the pose of the head from the tracked model
-                cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy);
-
-                // Draw it in reddish if uncertain, blueish if certain
-                LandmarkDetector::DrawBox(disp_image, pose_estimate, cv::Scalar((1-detection_certainty)*255.0,0, detection_certainty*255), thickness, fx, fy, cx, cy);
             }
         }
 
@@ -232,6 +219,19 @@ void FaceDetection::FaceTracking(std::string path){
         }
         if(cv::waitKey(30) >= 0) break;
     }
+}
+
+void FaceDetection::print_CLNF(cv::Mat img, int model, double itens, double fx, double fy, double cx, double cy){
+    LandmarkDetector::Draw(img, clnf_models[model]);
+
+    // A rough heuristic for box around the face width
+    int thickness = (int)std::ceil(2.0* ((double)img.cols) / 640.0);
+
+    // Work out the pose of the head from the tracked model
+    cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy);
+
+    // Draw it in reddish if uncertain, blueish if certain
+    LandmarkDetector::DrawBox(img, pose_estimate, cv::Scalar((1-itens)*255.0,0, itens*255), thickness, fx, fy, cx, cy);
 }
 
 // Dieser Teil ist aus OpenFace/FaceLandmarkVidMulti.cpp übernommen
@@ -299,8 +299,6 @@ void FaceDetection::print_Eye(const cv::Mat img, const LandmarkDetector::CLNF &c
     Height += fr_Y*2;
     if(X >= 0 && Y >= 0 && Width > 0 && Height > 0 && X+Width < img.cols && Y+Height < img.rows){
         cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
-        //        cv::namedWindow(name,1);
-        //        imshow(name, img_Eye);
         showEyeImage(img_Eye,1,right);
     }
 }
@@ -369,9 +367,10 @@ void FaceDetection::LearnModel(){
     mKamera->get_camera_params(fx,fy,cx,cy);
     cv::Mat frame_col;
 
-if(mImage.getNextImage(frame_col)){
+    if(mImage.getNextImage(frame_col)){
         // Reading the images
         mKamera->correct_Image(frame_col);
+        cv::Mat_<float> depth_image;
         cv::Mat_<uchar> grayscale_image;
 
         cv::Mat disp_image = frame_col.clone();
@@ -379,29 +378,29 @@ if(mImage.getNextImage(frame_col)){
         Image::convert_to_grayscale(frame_col,grayscale_image);
 
         showImage(disp_image);
-}
-    /*
-    vector<cv::Rect_<double> > face_detections;
 
-    if(det_parameters.curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR)
-    {
-        vector<double> confidences;
-        LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, face_detector_hog, confidences);
-    }
-    else
-    {
-        LandmarkDetector::DetectFaces(face_detections, grayscale_image, classifier);
-    }
-    //--------------------------------
+        // Detect faces in an image
+        vector<cv::Rect_<double> > face_detections;
 
-    if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR)
-    {
-        vector<double> confidences;
-        LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_models[0].face_detector_HOG, confidences);
+        if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
+            vector<double> confidences;
+            LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_models[0].face_detector_HOG, confidences);
+        }else{
+            LandmarkDetector::DetectFaces(face_detections, grayscale_image, clnf_models[0].face_detector_HAAR);
+        }
+
+        // perform landmark detection for every face detected
+        for(size_t face=0; face < face_detections.size(); ++face)
+        {
+            Model_Init = (Model_Init+face)%num_faces_max;
+            // if there are multiple detections go through them
+            bool success = LandmarkDetector::DetectLandmarksInImage(grayscale_image, depth_image, face_detections[face], clnf_models[0], det_parameters[0]);
+            if(success){
+                print_Eyes(disp_image, clnf_models[0]);
+                print_CLNF(disp_image,0,0.5,fx,fy,cx,cy);
+            }
+        }
+        Model_Init++;
+        showImage(disp_image);
     }
-    else
-    {
-        LandmarkDetector::DetectFaces(face_detections, grayscale_image, clnf_models[0].face_detector_HAAR);
-    }
-    */
 }
