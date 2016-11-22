@@ -78,10 +78,10 @@ void Camera::camera_calibration(std::string path){
 
     std::vector<cv::VideoCapture> videos;
 
-//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_1.mp4"));
-//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_3.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_1.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_3.mp4"));
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_4.mp4"));
-//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_5.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_5.mp4"));
 
 //    cv::namedWindow("True Image Colo",1);
 //    cv::namedWindow("False Image Colo",1);

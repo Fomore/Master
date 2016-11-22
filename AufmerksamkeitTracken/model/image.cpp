@@ -48,13 +48,17 @@ bool Image::getNextImage(cv::Mat& out){
         out = cv::Mat();
         return false;
     }
+    bool ret = getImage(out);
+    ID++;
+    return ret;
+}
+
+bool Image::getImage(cv::Mat &out){
     out = cv::imread(mImagePaths.at(ID), -1);
     if(!out.data){
         std::cout<<"Fehler in Der ImageList"<<std::endl;
-        ID++;
         return false;
     }
-    ID++;
     return true;
 }
 

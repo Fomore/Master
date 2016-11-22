@@ -9,7 +9,7 @@ FaceDetection::FaceDetection(Ui::MainWindow *mWindow)
 {
     mTheWindow = mWindow;
 
-    mKamera = new Camera(-1);
+    mKamera = new Camera(2);
     Model_Init = 0;
 
     vector<string> arguments;
@@ -82,9 +82,18 @@ void FaceDetection::FaceTracking(std::string path){
     }
     cv::Mat frame_col;
 
-    //    cv::namedWindow("tracking_result",1);
+//    cv::namedWindow("tracking_result",1);
+    /*
+    cv::namedWindow("Normal",1);
+    mImage.getImage(frame_col);
+    imshow("Normal", frame_col);
 
+    cv::namedWindow("grau",1);
+    mImage.convert_to_grayscale(frame_col,frame_col);
+    imshow("grau", frame_col);
+    */
     for(int frame_count = 0;video.read(frame_col);frame_count++){
+//        for(int frame_count = 0;mImage.getImage(frame_col);frame_count++){//Hiermit bekommt am auf Chor-Face einen Wert nach einiger Zeit
         // Reading the images
         mKamera->correct_Image(frame_col);
         cv::Mat_<float> depth_image;
