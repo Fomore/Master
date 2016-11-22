@@ -28,7 +28,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    Camera mKamera;
+//    Camera mKamera;
 //    Image mImage;
     FaceDetection *mFaceDetection;
 };

@@ -17,8 +17,8 @@ private:
     QImage MatToQImage(const cv::Mat& mat);
 
     Camera* mKamera;
-    void print_Eyes(const cv::Mat img,const LandmarkDetector::CLNF& clnf_model);
-    void print_Eye(const cv::Mat img, const LandmarkDetector::CLNF& clnf_model, int pos, string name, bool right);
+    void print_Eyes(const cv::Mat img, int model);
+    void print_Eye(const cv::Mat img, int model, int pos, string name, bool right);
     void print_FPS_Model(int fps, int model);
     void print_CLNF(cv::Mat img, int model, double itens, double fx, double fy, double cx, double cy);
 

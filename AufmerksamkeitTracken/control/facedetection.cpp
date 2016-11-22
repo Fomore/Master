@@ -9,7 +9,7 @@ FaceDetection::FaceDetection(Ui::MainWindow *mWindow)
 {
     mTheWindow = mWindow;
 
-    mKamera = new Camera(2);
+    mKamera = new Camera(-1);
     Model_Init = 0;
 
     vector<string> arguments;
@@ -190,7 +190,7 @@ void FaceDetection::FaceTracking(std::string path){
 
             // Only draw if the reliability is reasonable, the value is slightly ad-hoc
             if(detection_certainty < visualisation_boundary && !det_parameters[0].quiet_mode){
-                print_Eyes(disp_image, clnf_models[model]);
+                print_Eyes(disp_image, model);
                 if(detection_certainty > 1)
                     detection_certainty = 1;
                 if(detection_certainty < -1)
@@ -274,13 +274,13 @@ void FaceDetection::showImage(const cv::Mat image){
 }
 
 // To Do: Erweiterung, damit mehrere Model-Augen dargestellt werden können
-void FaceDetection::print_Eyes(const cv::Mat img, const LandmarkDetector::CLNF &clnf_model){
-    print_Eye(img,clnf_model,36,"Left Eye",false);
-    print_Eye(img,clnf_model,42,"Right Eye",true);
+void FaceDetection::print_Eyes(const cv::Mat img, int model){
+    print_Eye(img,model,36,"Left Eye",false);
+    print_Eye(img,model,42,"Right Eye",true);
 }
 
-void FaceDetection::print_Eye(const cv::Mat img, const LandmarkDetector::CLNF &clnf_model, int pos, string name, bool right){
-    cv::Mat_<double> shape2D = clnf_model.detected_landmarks;
+void FaceDetection::print_Eye(const cv::Mat img, int model, int pos, string name, bool right){
+    cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
 
     int n = shape2D.rows/2;
 
@@ -300,22 +300,24 @@ void FaceDetection::print_Eye(const cv::Mat img, const LandmarkDetector::CLNF &c
     // To Do: Grenzen Dynamische Abmessungen für Randwerte
     Width = Width-X;
     Height = Height-Y;
+
     double fr_X = Width*0.35;
     double fr_Y = Height*0.4;
     X -= fr_X;
     Y -= fr_Y;
     Width += fr_X*2;
     Height += fr_Y*2;
+
     if(X >= 0 && Y >= 0 && Width > 0 && Height > 0 && X+Width < img.cols && Y+Height < img.rows){
         cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
-        showEyeImage(img_Eye,1,right);
+        showEyeImage(img_Eye,model,right);
     }
 }
 
 void FaceDetection::showEyeImage(const cv::Mat image, int number, bool right){
     cv::Mat gray;
-    cvtColor(image, gray, CV_BGR2GRAY);
-    equalizeHist(gray, gray);
+    Image::convert_to_grayscale(image, gray);
+//    equalizeHist(gray, gray);
     cv::RotatedRect ellipse = ELSE::run(gray);
 
     cv::ellipse( image, ellipse, cv::Scalar(0,255,0,255), 1,1 );
@@ -405,7 +407,7 @@ void FaceDetection::LearnModel(){
             // if there are multiple detections go through them
             bool success = LandmarkDetector::DetectLandmarksInImage(grayscale_image, depth_image, face_detections[face], clnf_models[0], det_parameters[0]);
             if(success){
-                print_Eyes(disp_image, clnf_models[0]);
+                print_Eyes(disp_image, 0);
                 print_CLNF(disp_image,0,0.5,fx,fy,cx,cy);
             }
         }

@@ -19,6 +19,7 @@ Image::Image()
     }
     */
     mImagePaths.clear();
+    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_14.jpg");
     mImagePaths.push_back("/home/falko/Uni/Master/Film/face_00.png");
     mImagePaths.push_back("/home/falko/Uni/Master/Film/face_01.png");
     mImagePaths.push_back("/home/falko/Uni/Master/Film/face_02.jpg");
