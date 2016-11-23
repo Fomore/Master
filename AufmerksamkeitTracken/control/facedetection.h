@@ -13,8 +13,10 @@ class FaceDetection
 private:
     Ui::MainWindow* mTheWindow;
     void showImage(const cv::Mat image);
-    void showEyeImage(const cv::Mat image, int number, bool right);
+    void showSmallImage(const cv::Mat image, int number, bool right);
     QImage MatToQImage(const cv::Mat& mat);
+
+    cv::Rect_<double> getBoundingbox();
 
     Camera* mKamera;
     void print_Eyes(const cv::Mat img, int model);

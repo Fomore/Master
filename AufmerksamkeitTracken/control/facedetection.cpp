@@ -17,7 +17,7 @@ FaceDetection::FaceDetection(Ui::MainWindow *mWindow)
 
     /*
     -mloc - the location of landmark detection models
-    -sigma -
+    -sigma -UpdateModelParameters
     -w_reg -
     -reg -
     -multi_view -
@@ -72,8 +72,10 @@ void FaceDetection::FaceTracking(std::string path){
 
     // Anwendung - Berechnung der Faces
     if(path.size() < 1){
-        //        path = "/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4";
-        path = "/home/falko/Uni/Master/Film/Schulklasse_01.mp4";
+//        path = "/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4";
+//        path = "/home/falko/Uni/Master/Film/Schulklasse_01.mp4";
+//        path = "/home/falko/Uni/Master/Film/Chor_01.mp4";
+        path = "/home/falko/Uni/Master/Film/Interview_640.mp4";
     }
     cv::VideoCapture video(path);
     if(!video.isOpened()){
@@ -93,10 +95,10 @@ void FaceDetection::FaceTracking(std::string path){
     imshow("grau", frame_col);
     */
     for(int frame_count = 0;video.read(frame_col);frame_count++){
-//        for(int frame_count = 0;mImage.getImage(frame_col);frame_count++){//Hiermit bekommt am auf Chor-Face einen Wert nach einiger Zeit
+//   for(int frame_count = 0;mImage.getScallImage(frame_col);frame_count++){
+//      for(int frame_count = 0;mImage.getImage(frame_col);frame_count++){//Hiermit bekommt am auf Chor-Face einen Wert nach einiger Zeit
         // Reading the images
         mKamera->correct_Image(frame_col);
-        cv::Mat_<float> depth_image;
         cv::Mat_<uchar> grayscale_image;
 
         cv::Mat disp_image = frame_col.clone();
@@ -162,7 +164,8 @@ void FaceDetection::FaceTracking(std::string path){
 
                         // This ensures that a wider window is used for the initial landmark localisation
                         clnf_models[model].detection_success = false;
-                        detection_success = LandmarkDetector::DetectLandmarksInVideo(grayscale_image, depth_image, face_detections[detection_ind], clnf_models[model], det_parameters[model]);
+
+                        detection_success = LandmarkDetector::DetectLandmarksInVideo(grayscale_image, face_detections[detection_ind], clnf_models[model], det_parameters[model]);
 
                         // This activates the model
                         active_models[model] = true;
@@ -175,7 +178,7 @@ void FaceDetection::FaceTracking(std::string path){
             else
             {
                 // The actual facial landmark detection / tracking
-                detection_success = LandmarkDetector::DetectLandmarksInVideo(grayscale_image, depth_image, clnf_models[model], det_parameters[model]);
+                detection_success = LandmarkDetector::DetectLandmarksInVideo(grayscale_image, clnf_models[model], det_parameters[model]);
             }
         });
 
@@ -198,7 +201,7 @@ void FaceDetection::FaceTracking(std::string path){
 
                 double itens = (detection_certainty + 1)/(visualisation_boundary +1);
                 print_CLNF(disp_image,model,itens,fx,fy,cx,cy);
-
+                std::cout<<"Gesicht: "<<clnf_models[model].GetBoundingBox()<<std::endl;
             }
         }
 
@@ -268,7 +271,7 @@ void FaceDetection::NonOverlapingDetections(const vector<LandmarkDetector::CLNF>
 }
 
 void FaceDetection::showImage(const cv::Mat image){
-    QImage img = MatToQImage(image);
+    QImage img = Image::MatToQImage(image);
     QImage img2 = img.scaled(mTheWindow->Main_Label->size().width(),mTheWindow->Main_Label->size().height(),Qt::KeepAspectRatio);
     mTheWindow->Main_Label->setPixmap(QPixmap::fromImage(img2));
 }
@@ -310,19 +313,20 @@ void FaceDetection::print_Eye(const cv::Mat img, int model, int pos, string name
 
     if(X >= 0 && Y >= 0 && Width > 0 && Height > 0 && X+Width < img.cols && Y+Height < img.rows){
         cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
-        showEyeImage(img_Eye,model,right);
+
+        cv::Mat gray;
+        Image::convert_to_grayscale(img_Eye, gray);
+    //    equalizeHist(gray, gray);
+        cv::RotatedRect ellipse = ELSE::run(gray);
+        cv::ellipse(img_Eye, ellipse, cv::Scalar(0,255,0,255), 1,1 );
+
+        showSmallImage(img_Eye,model,right);
     }
 }
 
-void FaceDetection::showEyeImage(const cv::Mat image, int number, bool right){
-    cv::Mat gray;
-    Image::convert_to_grayscale(image, gray);
-//    equalizeHist(gray, gray);
-    cv::RotatedRect ellipse = ELSE::run(gray);
+void FaceDetection::showSmallImage(const cv::Mat image, int number, bool right){
 
-    cv::ellipse( image, ellipse, cv::Scalar(0,255,0,255), 1,1 );
-
-    QImage img = MatToQImage(image);
+    QImage img = Image::MatToQImage(image);
     int h,w;
     if(right){
         h = mTheWindow->Right_Label->size().height();
@@ -336,34 +340,6 @@ void FaceDetection::showEyeImage(const cv::Mat image, int number, bool right){
         mTheWindow->Right_Label->setPixmap(QPixmap::fromImage(img2));
     }else{
         mTheWindow->Left_Label->setPixmap(QPixmap::fromImage(img2));
-    }
-}
-
-// Diese Methode stammt von http://www.qtcentre.org/threads/56482-efficient-way-to-display-opencv-image-into-Qt
-QImage FaceDetection::MatToQImage(const cv::Mat& mat)
-{
-    // 8-bits unsigned, NO. OF CHANNELS=1
-    if(mat.type()==CV_8UC1)
-    {
-        // Set the color table (used to translate colour indexes to qRgb values)
-        QVector<QRgb> colorTable;
-        for (int i=0; i<256; i++)
-            colorTable.push_back(qRgb(i,i,i));
-        // Copy input Mat
-        const uchar *qImageBuffer = (const uchar*)mat.data;
-        // Create QImage with same dimensions as input Mat
-        QImage img(qImageBuffer, mat.cols, mat.rows, mat.step, QImage::Format_Indexed8);
-        img.setColorTable(colorTable);
-        return img;
-    }else if(mat.type()==CV_8UC3){    // 8-bits unsigned, NO. OF CHANNELS=3
-        // Copy input Mat
-        const uchar *qImageBuffer = (const uchar*)mat.data;
-        // Create QImage with same dimensions as input Mat
-        QImage img(qImageBuffer, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
-        return img.rgbSwapped();
-    }else{
-        //        qDebug() << "ERROR: Mat could not be converted to QImage.";
-        return QImage();
     }
 }
 
@@ -381,14 +357,11 @@ void FaceDetection::LearnModel(){
     if(mImage.getNextImage(frame_col)){
         // Reading the images
         mKamera->correct_Image(frame_col);
-        cv::Mat_<float> depth_image;
         cv::Mat_<uchar> grayscale_image;
 
         cv::Mat disp_image = frame_col.clone();
 
         Image::convert_to_grayscale(frame_col,grayscale_image);
-
-        showImage(disp_image);
 
         // Detect faces in an image
         vector<cv::Rect_<double> > face_detections;
@@ -405,13 +378,18 @@ void FaceDetection::LearnModel(){
         {
             Model_Init = (Model_Init+face)%num_faces_max;
             // if there are multiple detections go through them
-            bool success = LandmarkDetector::DetectLandmarksInImage(grayscale_image, depth_image, face_detections[face], clnf_models[0], det_parameters[0]);
+            bool success = LandmarkDetector::DetectLandmarksInImage(grayscale_image, face_detections[face], clnf_models[0], det_parameters[0]);
             if(success){
                 print_Eyes(disp_image, 0);
                 print_CLNF(disp_image,0,0.5,fx,fy,cx,cy);
+                std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
             }
         }
         Model_Init++;
         showImage(disp_image);
     }
+}
+
+cv::Rect_<double> FaceDetection::getBoundingbox(){
+    return cv::Rect_<double>(155.0,280.0,36.0,42.0);
 }

@@ -2,25 +2,8 @@
 
 Image::Image()
 {
-    /*
-    std::string file = "/home/falko/Uni/Master/Film/Chor_01_Img_01.png";
-    cv::Mat read_image = cv::imread(file, -1);
-    if(!read_image.empty()){
-        cv::namedWindow("Skalliertes Bild",1);
-        cv::Mat img = get_Face_Image(read_image,155,280,36,42);
-        imshow("Skalliertes Bild", img);
-
-        std::vector<int> compression_params;
-        compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
-        compression_params.push_back(9);
-        imwrite("alpha.png", img, compression_params);
-    }else{
-        std::cout<<"Kein Bild"<<std::endl;
-    }
-    */
     mImagePaths.clear();
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_14.jpg");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_00.png");
+    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_00.png"); //erhalten durch cv::Mat img = get_Face_Image(read_image,155,280,36,42);
     mImagePaths.push_back("/home/falko/Uni/Master/Film/face_01.png");
     mImagePaths.push_back("/home/falko/Uni/Master/Film/face_02.jpg");
     mImagePaths.push_back("/home/falko/Uni/Master/Film/face_03.jpg");
@@ -34,6 +17,12 @@ Image::Image()
     mImagePaths.push_back("/home/falko/Uni/Master/Film/face_11.jpg");
     mImagePaths.push_back("/home/falko/Uni/Master/Film/face_12.jpg");
     mImagePaths.push_back("/home/falko/Uni/Master/Film/face_13.jpg");
+    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_14.png");
+    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_15.png");
+    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_16.png");
+    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_17.png");
+    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_18.png");
+    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_19.png");
 
     ID = 0;
 }
@@ -46,27 +35,54 @@ Image::~Image()
 bool Image::getNextImage(cv::Mat& out){
     if(mImagePaths.size() <= ID){
         ID = 0;
-        out = cv::Mat();
+        std::cout<<"Reset"<<std::endl;
         return false;
     }
     bool ret = getImage(out);
+
     ID++;
     return ret;
 }
 
 bool Image::getImage(cv::Mat &out){
     out = cv::imread(mImagePaths.at(ID), -1);
-    if(!out.data){
+    if(out.data){
+        if(ID >= 14 || ID==0){
+            convert_to_grayscale(out,out);
+        }
+        if(out.cols < 200){
+            int col = out.cols;
+            double fx = (200.0)/out.cols;
+            resize(out, out, cv::Size(), fx, fx, CV_INTER_LINEAR);
+            std::cout<<"Bildbreite: "<<col<<" "<<fx<<" Skalliert: "<<200.0-(ID*10.0)<<" - "<<out.cols<<"/"<<out.rows<<std::endl;
+        }
+        return true;
+    }else{
         std::cout<<"Fehler in Der ImageList"<<std::endl;
         return false;
     }
-    return true;
+}
+
+bool Image::getScallImage(cv::Mat &out){
+    convert_to_grayscale(cv::imread("/home/falko/Uni/Master/Film/face_14.png", -1),out);
+    if(out.data){
+        int col = out.cols;
+        double fx = (200.0-(ID*10.0))/out.cols;
+        resize(out, out, cv::Size(), fx, fx, CV_INTER_LINEAR);
+        std::cout<<"Bildbreite: "<<col<<" "<<fx<<" Skalliert: "<<200.0-(ID*10.0)<<" - "<<out.cols<<"/"<<out.rows<<std::endl;
+        ID++;
+        if(ID>=10){
+            ID=0;
+        }
+        return true;
+    }
+    return false;
 }
 
 cv::Mat Image::get_Face_Image(cv::Mat image, int X, int Y, int Width, int Height){
     cv::Mat image_cut = image(cv::Rect(X,Y,Width,Height));
-    if(Width < 120){
-        double fx = 120.0/Width;
+    if(Width < 150){
+        double fx = 150.0/Width;
         cv::Mat ret;
         resize(image_cut, ret, cv::Size(), fx, fx, CV_INTER_LINEAR);
         return ret;
@@ -114,4 +130,44 @@ void Image::convert_to_grayscale(const cv::Mat& in, cv::Mat& out)
             out = in.clone();
         }
     }
+}
+
+// Diese Methode stammt von http://www.qtcentre.org/threads/56482-efficient-way-to-display-opencv-image-into-Qt
+QImage Image::MatToQImage(const cv::Mat& mat)
+{
+    // 8-bits unsigned, NO. OF CHANNELS=1
+    if(mat.type()==CV_8UC1)
+    {
+        // Set the color table (used to translate colour indexes to qRgb values)
+        QVector<QRgb> colorTable;
+        for (int i=0; i<256; i++)
+            colorTable.push_back(qRgb(i,i,i));
+        // Copy input Mat
+        const uchar *qImageBuffer = (const uchar*)mat.data;
+        // Create QImage with same dimensions as input Mat
+        QImage img(qImageBuffer, mat.cols, mat.rows, mat.step, QImage::Format_Indexed8);
+        img.setColorTable(colorTable);
+        return img;
+    }else if(mat.type()==CV_8UC3){    // 8-bits unsigned, NO. OF CHANNELS=3
+        // Copy input Mat
+        const uchar *qImageBuffer = (const uchar*)mat.data;
+        // Create QImage with same dimensions as input Mat
+        QImage img(qImageBuffer, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
+        return img.rgbSwapped();
+    }else{
+        //        qDebug() << "ERROR: Mat could not be converted to QImage.";
+        return QImage();
+    }
+}
+
+void Image::saveImage(cv::Mat img, std::string name){
+    std::vector<int> compression_params;
+    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(9);
+
+    imwrite(name+".png", img, compression_params);
+}
+
+int Image::getID(){
+    return ID;
 }

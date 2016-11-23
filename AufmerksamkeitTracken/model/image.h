@@ -2,6 +2,8 @@
 #define IMAGE_H
 
 #include <opencv2/opencv.hpp>
+#include <QtGui>
+#include <QDebug>
 
 class Image
 {
@@ -15,6 +17,10 @@ public:
     static void convert_to_grayscale(const cv::Mat& in, cv::Mat& out);
     bool getNextImage(cv::Mat& out);
     bool getImage(cv::Mat& out);
+    bool getScallImage(cv::Mat& out);
+    static QImage MatToQImage(const cv::Mat& mat);
+    static void saveImage(cv::Mat img, std::string name);
+    int getID();
 };
 
 #endif // IMAGE_H
