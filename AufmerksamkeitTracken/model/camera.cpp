@@ -84,17 +84,16 @@ void Camera::camera_calibration(std::string path){
 
     std::vector<cv::VideoCapture> videos;
 
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_2688_0.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_2688_1.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_2688_2.mp4"));
+//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_2688_0.mp4"));
+//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_2688_1.mp4"));
+//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_2688_2.mp4"));
 
-    /*
-//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_1.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_0.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_1.mp4"));
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_2.mp4"));
-//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_3.mp4"));
-//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_4.mp4"));
-//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_5.mp4"));
-*/
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_3.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_4.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_5.mp4"));
 
     //    cv::namedWindow("True Image Colo",1);
     //    cv::namedWindow("False Image Colo",1);
@@ -293,7 +292,7 @@ void Camera::DisplayImage(cv::Mat &img){
 }
 
 void Camera::correct_Image(){
-    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_2688_1.mp4");
+    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_1.mp4");
     if(video.isOpened()){
         cv::namedWindow("Image Raw",1);
         cv::namedWindow("Image Correct",1);

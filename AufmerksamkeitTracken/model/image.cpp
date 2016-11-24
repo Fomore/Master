@@ -64,6 +64,7 @@ cv::Mat Image::get_Face_Image(cv::Mat image, int X, int Y, int Width, int Height
         double fx = 200.0/Width;
         cv::Mat ret;
         resize(image_cut, ret, cv::Size(), fx, fx, CV_INTER_LINEAR);
+        saveImage(ret,"face_"+std::to_string(ID));
         return ret;
     }
     return image_cut;

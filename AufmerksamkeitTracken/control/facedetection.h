@@ -13,12 +13,9 @@ class FaceDetection
 private:
     Ui::MainWindow* mTheWindow;
     void showImage(const cv::Mat image);
-    void showSmallImage(const cv::Mat image, int number, bool right);
-    QImage MatToQImage(const cv::Mat& mat);
 
     Camera* mKamera;
-    void print_Eyes(const cv::Mat img, int model);
-    void print_Eye(const cv::Mat img, int model, int pos, string name, bool right);
+    cv::Mat print_Eye(const cv::Mat img, int model, int pos, int step);
     void print_FPS_Model(int fps, int model);
     void print_CLNF(cv::Mat img, int model, double itens, double fx, double fy, double cx, double cy);
 
@@ -33,9 +30,9 @@ private:
     vector<LandmarkDetector::CLNF> clnf_models;
     vector<bool> active_models;
 
-    int num_faces_max = 4;
+    int num_faces_max = 7;
 
-    void shift_detected_landmarks(int model, double X, double Y, double fx);
+    void shift_detected_landmarks(int model, double X, double Y, double w, double h, double W, double H);
 
 public:
     FaceDetection(Ui::MainWindow *parent = 0);
