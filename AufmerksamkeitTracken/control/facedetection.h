@@ -16,8 +16,6 @@ private:
     void showSmallImage(const cv::Mat image, int number, bool right);
     QImage MatToQImage(const cv::Mat& mat);
 
-    cv::Rect_<double> getBoundingbox();
-
     Camera* mKamera;
     void print_Eyes(const cv::Mat img, int model);
     void print_Eye(const cv::Mat img, int model, int pos, string name, bool right);
@@ -26,6 +24,7 @@ private:
 
     Image mImage;
     int Model_Init;
+    int imgCount;
 
     void NonOverlapingDetections(const vector<LandmarkDetector::CLNF>& clnf_models, vector<cv::Rect_<double> >& face_detections);
 
@@ -35,6 +34,9 @@ private:
     vector<bool> active_models;
 
     int num_faces_max = 4;
+
+    void shift_detected_landmarks(int model, double X, double Y, double fx);
+
 public:
     FaceDetection(Ui::MainWindow *parent = 0);
     ~FaceDetection();

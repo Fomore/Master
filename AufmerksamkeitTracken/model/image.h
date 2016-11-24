@@ -8,7 +8,7 @@
 class Image
 {
 private:
-    std::vector<std::string> mImagePaths;
+    std::vector<cv::String> mImagePaths;
     int ID;
 public:
     Image();

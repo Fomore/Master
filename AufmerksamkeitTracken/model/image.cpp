@@ -3,26 +3,8 @@
 Image::Image()
 {
     mImagePaths.clear();
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_00.png"); //erhalten durch cv::Mat img = get_Face_Image(read_image,155,280,36,42);
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_01.png");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_02.jpg");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_03.jpg");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_04.jpg");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_05.jpg");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_06.jpg");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_07.jpg");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_08.jpg");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_09.jpg");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_10.jpg");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_11.jpg");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_12.jpg");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_13.jpg");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_14.png");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_15.png");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_16.png");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_17.png");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_18.png");
-    mImagePaths.push_back("/home/falko/Uni/Master/Film/face_19.png");
+//    cv::glob("/home/falko/Uni/Master/Bilder/*g", mImagePaths, true);
+    cv::glob("/home/falko/Uni/Master/Bilder/Learn/*g", mImagePaths, true);//erhalten durch cv::Mat img = get_Face_Image(read_image,155,280,36,42); auf Grau setzen
 
     ID = 0;
 }
@@ -39,7 +21,6 @@ bool Image::getNextImage(cv::Mat& out){
         return false;
     }
     bool ret = getImage(out);
-
     ID++;
     return ret;
 }
@@ -47,13 +28,11 @@ bool Image::getNextImage(cv::Mat& out){
 bool Image::getImage(cv::Mat &out){
     out = cv::imread(mImagePaths.at(ID), -1);
     if(out.data){
-        if(ID >= 14 || ID==0){
-            convert_to_grayscale(out,out);
-        }
         if(out.cols < 200){
             int col = out.cols;
             double fx = (200.0)/out.cols;
             resize(out, out, cv::Size(), fx, fx, CV_INTER_LINEAR);
+            convert_to_grayscale(out,out);
             std::cout<<"Bildbreite: "<<col<<" "<<fx<<" Skalliert: "<<200.0-(ID*10.0)<<" - "<<out.cols<<"/"<<out.rows<<std::endl;
         }
         return true;
@@ -81,8 +60,8 @@ bool Image::getScallImage(cv::Mat &out){
 
 cv::Mat Image::get_Face_Image(cv::Mat image, int X, int Y, int Width, int Height){
     cv::Mat image_cut = image(cv::Rect(X,Y,Width,Height));
-    if(Width < 150){
-        double fx = 150.0/Width;
+    if(Width < 200){
+        double fx = 200.0/Width;
         cv::Mat ret;
         resize(image_cut, ret, cv::Size(), fx, fx, CV_INTER_LINEAR);
         return ret;
@@ -165,7 +144,7 @@ void Image::saveImage(cv::Mat img, std::string name){
     compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
     compression_params.push_back(9);
 
-    imwrite(name+".png", img, compression_params);
+    imwrite("Image/"+name+".png", img, compression_params);
 }
 
 int Image::getID(){

@@ -72,9 +72,9 @@ void FaceDetection::FaceTracking(std::string path){
 
     // Anwendung - Berechnung der Faces
     if(path.size() < 1){
-//        path = "/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4";
-//        path = "/home/falko/Uni/Master/Film/Schulklasse_01.mp4";
-//        path = "/home/falko/Uni/Master/Film/Chor_01.mp4";
+        //        path = "/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4";
+        //        path = "/home/falko/Uni/Master/Film/Schulklasse_01.mp4";
+        //        path = "/home/falko/Uni/Master/Film/Chor_01.mp4";
         path = "/home/falko/Uni/Master/Film/Interview_640.mp4";
     }
     cv::VideoCapture video(path);
@@ -84,7 +84,7 @@ void FaceDetection::FaceTracking(std::string path){
     }
     cv::Mat frame_col;
 
-//    cv::namedWindow("tracking_result",1);
+    //    cv::namedWindow("tracking_result",1);
     /*
     cv::namedWindow("Normal",1);
     mImage.getImage(frame_col);
@@ -95,8 +95,8 @@ void FaceDetection::FaceTracking(std::string path){
     imshow("grau", frame_col);
     */
     for(int frame_count = 0;video.read(frame_col);frame_count++){
-//   for(int frame_count = 0;mImage.getScallImage(frame_col);frame_count++){
-//      for(int frame_count = 0;mImage.getImage(frame_col);frame_count++){//Hiermit bekommt am auf Chor-Face einen Wert nach einiger Zeit
+        //   for(int frame_count = 0;mImage.getScallImage(frame_col);frame_count++){
+        //      for(int frame_count = 0;mImage.getImage(frame_col);frame_count++){//Hiermit bekommt am auf Chor-Face einen Wert nach einiger Zeit
         // Reading the images
         mKamera->correct_Image(frame_col);
         cv::Mat_<uchar> grayscale_image;
@@ -201,7 +201,7 @@ void FaceDetection::FaceTracking(std::string path){
 
                 double itens = (detection_certainty + 1)/(visualisation_boundary +1);
                 print_CLNF(disp_image,model,itens,fx,fy,cx,cy);
-                std::cout<<"Gesicht: "<<clnf_models[model].GetBoundingBox()<<std::endl;
+//                std::cout<<"Gesicht: "<<clnf_models[model].GetBoundingBox()<<std::endl;
             }
         }
 
@@ -280,6 +280,8 @@ void FaceDetection::showImage(const cv::Mat image){
 void FaceDetection::print_Eyes(const cv::Mat img, int model){
     print_Eye(img,model,36,"Left Eye",false);
     print_Eye(img,model,42,"Right Eye",true);
+
+    imgCount++;
 }
 
 void FaceDetection::print_Eye(const cv::Mat img, int model, int pos, string name, bool right){
@@ -311,12 +313,20 @@ void FaceDetection::print_Eye(const cv::Mat img, int model, int pos, string name
     Width += fr_X*2;
     Height += fr_Y*2;
 
-    if(X >= 0 && Y >= 0 && Width > 0 && Height > 0 && X+Width < img.cols && Y+Height < img.rows){
+    if(X >= 0 && Y >= 0 && Width > 14 && Height > 8 && X+Width < img.cols && Y+Height < img.rows){
         cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
-
+        /*
+        std::string name = "Eye_"+std::to_string(imgCount)+"_";
+        if(right){
+            name+="R";
+        }else{
+            name+="L";
+        }
+        Image::saveImage(img_Eye,name);
+*/
         cv::Mat gray;
         Image::convert_to_grayscale(img_Eye, gray);
-    //    equalizeHist(gray, gray);
+
         cv::RotatedRect ellipse = ELSE::run(gray);
         cv::ellipse(img_Eye, ellipse, cv::Scalar(0,255,0,255), 1,1 );
 
@@ -352,11 +362,18 @@ void FaceDetection::LearnModel(){
     // Initialisiierung
     double fx,fy,cx,cy;
     mKamera->get_camera_params(fx,fy,cx,cy);
-    cv::Mat frame_col;
+    cv::Mat frame_col,frame;
 
-    if(mImage.getNextImage(frame_col)){
+    if(mImage.getImage(frame)){
         // Reading the images
-        mKamera->correct_Image(frame_col);
+        mKamera->correct_Image(frame);
+
+        if(mImage.getID() == 0){
+            frame_col = mImage.get_Face_Image(frame,230,65,48,63);
+        }else{
+            frame_col = frame;
+        }
+
         cv::Mat_<uchar> grayscale_image;
 
         cv::Mat disp_image = frame_col.clone();
@@ -382,14 +399,29 @@ void FaceDetection::LearnModel(){
             if(success){
                 print_Eyes(disp_image, 0);
                 print_CLNF(disp_image,0,0.5,fx,fy,cx,cy);
-                std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
+                //                std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
             }
         }
+
+        shift_detected_landmarks(Model_Init,230,65,200.0/48.0);
+
         Model_Init++;
         showImage(disp_image);
     }
 }
 
-cv::Rect_<double> FaceDetection::getBoundingbox(){
-    return cv::Rect_<double>(155.0,280.0,36.0,42.0);
+void FaceDetection::shift_detected_landmarks(int model, double X, double Y, double fx){
+    std::cout<<"Vorher\n"<<clnf_models[model].detected_landmarks<<std::endl;
+    cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
+
+    int n = shape2D.rows/2;
+    for(int pos = 0; pos < n; pos++){
+        double pX = shape2D.at<double>(pos);
+        double pY = shape2D.at<double>(pos + n);
+
+        shape2D.at<double>(pos) = (pX/fx)+X;
+        shape2D.at<double>(pos + n) = (pY/fx)+Y;
+    }
+    clnf_models[model].detected_landmarks = shape2D.clone();
+    std::cout<<"Danach\n"<<clnf_models[model].detected_landmarks<<std::endl;
 }
