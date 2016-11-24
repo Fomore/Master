@@ -13,8 +13,8 @@ Camera::Camera(){
 Camera::Camera(int id)
 {
     init = true;
-    setCameraParameter(id);
-//    correct_Image();
+    setCameraParameter(6);
+    correct_Image();
 }
 
 Camera::~Camera()
@@ -34,28 +34,24 @@ void Camera::setCameraParameter(int id){
                         0, 2986.23823820304, 365.9469872012109,
                         0, 0, 1 );
         distCoeffs = (cv::Mat_<double>(1,5) << -5.683648805753482, 69.69903660169872, -0.1033539021069702, -0.0165845448486779, -487.6393497545911);
-    }else if(id = 3){
+    }else if(id == 3){
         // 1920P der 4K Actioncam (1080P einstellung), naja, eher fasch
         cameraMatrix = (cv::Mat_<double>(3,3) << 2663.074079845223, 0, 947.41241748433,
                         0, 2632.404666246407, 505.9801667119421,
                         0, 0, 1);
         distCoeffs = (cv::Mat_<double>(1,5) << -0.7289272231084237, 1.215115916326713, -0.006172816529476588, 0.009414413544519131, -3.664316355386734);
-     }else if(id == 4){//2688P der 4k Actioncam (2.7K Einstellung)
+     }else if(id == 4){
+        //2688P der 4k Actioncam (2.7K Einstellung)
         cameraMatrix = (cv::Mat_<double>(3,3) << 15373.97717428267, 0, 1321.996093444815,
                         0, 17764.65120151666, 735.3988503456478,
                         0, 0, 1);
         distCoeffs = (cv::Mat_<double>(1,5) << -18.60440739952032, 523.0811532248169, 0.02032995403105285, -0.04626945929212306, 8.68919963553518);
-    }else if(id == 5){ // 3840P der 4K Actioncam (Rechte Ecken vollkomen daneben, aber sonst gut)
-        cameraMatrix = (cv::Mat_<double>(3,3) <<  5651.959129794478, 0, 1833.779346065389,
-                        0, 5613.841123206106, 962.5658045838203,
+    }else if(id == 5){
+        // 3840P der 4K Actioncam
+        cameraMatrix = (cv::Mat_<double>(3,3) << 7409.28638524711, 0, 1868.435847081091,
+                        0, 7512.705802013185, 977.0636190423108,
                         0, 0, 1);
-        distCoeffs = (cv::Mat_<double>(1,5) << -1.484996965134229, 5.748404337479958, 0.008656338023441646, -0.01457077780605927, -12.09940654367966);
-    }else if(id = 6){
-        // 3840P der 4K Actioncam (Im Randbereich krümmung des Inhaltes)
-        cameraMatrix = (cv::Mat_<double>(3,3) << 8814.572769059419, 0, 1875.385785348307,
-                        0, 8871.4437844653, 971.4901818251557,
-                        0, 0, 1);
-        distCoeffs = (cv::Mat_<double>(1,5) << -1.915891109401613, 20.49816269684929, 0.07322823783978712, -0.03882332526060985, -142.3394617487301);
+        distCoeffs = (cv::Mat_<double>(1,5) << -2.006696653082546, 14.50478814130672, 0.01196899857324854, -0.0326620616728269, -56.30904541044546);
     }else{//Default Parameter
         cameraMatrix = (cv::Mat_<double>(3,3) << 1, 0, 0,
                         0, 1, 0,

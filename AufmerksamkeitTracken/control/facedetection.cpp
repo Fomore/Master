@@ -401,10 +401,11 @@ void FaceDetection::LearnModel(){
         }else if(Model_Init == 5){
             X=516; Y=92, W=41; H=56;
         }
+
         if(X != 0){
             frame_col = mImage.get_Face_Image(frame,X,Y,W,H);
         }else{
-            frame_col = frame;
+            frame_col = frame.clone();
         }
 
         cv::Mat_<uchar> grayscale_image;
@@ -468,7 +469,8 @@ void FaceDetection::LearnModel(){
                 print_CLNF(disp_image,0,0.5,fx,fy,cx,cy);
                 //                std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
                 active_models[0] = true;
-                shift_detected_landmarks(0,X,Y,W,H,frame_col.cols, frame_col.rows);
+                if(X > 0)
+                    shift_detected_landmarks(0,X,Y,W,H,frame_col.cols, frame_col.rows);
             }
         }
         painterL->end();

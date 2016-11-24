@@ -57,3 +57,5 @@ Neue Kalibrierung:
  0, 7512.705802013185, 977.0636190423108;
  0, 0, 1]
 [-2.006696653082546, 14.50478814130672, 0.01196899857324854, -0.0326620616728269, -56.30904541044546]
+Reading the CLNF landmark detector/tracker from: model/main_clnf_general.txt
+Reading the landmark detector module from: model/clnf_general.txt
