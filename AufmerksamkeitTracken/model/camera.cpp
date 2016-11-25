@@ -3,6 +3,8 @@
 #include <iostream>
 #include <math.h>
 
+#include "model/image.h"
+
 Camera::Camera(){
     init = true;
     ID = 0;
@@ -14,6 +16,7 @@ Camera::Camera(int id)
 {
     init = true;
     setCameraParameter(6);
+//    getCorrectImageSize(5,3);
     correct_Image();
 }
 
@@ -35,12 +38,12 @@ void Camera::setCameraParameter(int id){
                         0, 0, 1 );
         distCoeffs = (cv::Mat_<double>(1,5) << -5.683648805753482, 69.69903660169872, -0.1033539021069702, -0.0165845448486779, -487.6393497545911);
     }else if(id == 3){
-        // 1920P der 4K Actioncam (1080P einstellung), naja, eher fasch
-        cameraMatrix = (cv::Mat_<double>(3,3) << 2663.074079845223, 0, 947.41241748433,
-                        0, 2632.404666246407, 505.9801667119421,
+        // 1940P der 4K Actioncam (1080P einstellung)
+        cameraMatrix = (cv::Mat_<double>(3,3) << 13343.09623288915, 0, 966.1848227467876,
+                        0, 7594.338338846001, 535.2483346076116,
                         0, 0, 1);
-        distCoeffs = (cv::Mat_<double>(1,5) << -0.7289272231084237, 1.215115916326713, -0.006172816529476588, 0.009414413544519131, -3.664316355386734);
-     }else if(id == 4){
+        distCoeffs = (cv::Mat_<double>(1,5) << -9.599320311558495, 153.5177497796487, -0.02105648553599707, -0.03765560152948207, 4.241928717530834);
+    }else if(id == 4){
         //2688P der 4k Actioncam (2.7K Einstellung)
         cameraMatrix = (cv::Mat_<double>(3,3) << 15373.97717428267, 0, 1321.996093444815,
                         0, 17764.65120151666, 735.3988503456478,
@@ -80,16 +83,9 @@ void Camera::camera_calibration(std::string path){
 
     std::vector<cv::VideoCapture> videos;
 
-//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_2688_0.mp4"));
-//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_2688_1.mp4"));
-//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_2688_2.mp4"));
-
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_0.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_1.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_2.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_3.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_4.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_5.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1920_0.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1920_1.mp4"));
+    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_1920_2.mp4"));
 
     //    cv::namedWindow("True Image Colo",1);
     //    cv::namedWindow("False Image Colo",1);
@@ -288,7 +284,7 @@ void Camera::DisplayImage(cv::Mat &img){
 }
 
 void Camera::correct_Image(){
-    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_3840_1.mp4");
+    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_1920_0.mp4");
     if(video.isOpened()){
         cv::namedWindow("Image Raw",1);
         cv::namedWindow("Image Correct",1);
@@ -311,6 +307,9 @@ void Camera::correct_Image(){
 }
 
 void Camera::correct_Image(cv::Mat frame){
+    bool tmp = init;
+    if(tmp)
+        Image::saveImage(frame,"Orginal");
     if(ID >= 0 ){
         if(init){
             cv::Size imageSize;
@@ -324,6 +323,8 @@ void Camera::correct_Image(cv::Mat frame){
         //            cv::undistort(frame,frame, cameraMatrix, distCoeffs);//Korrektur mit beschneiden
         cv::remap(frame, frame, map1, map2, cv::INTER_LINEAR);//Korrektur mit skallierung
     }
+    if(tmp)
+        Image::saveImage(frame,"Korrekt");
 }
 
 void Camera::correct_Image_Init(int height, int width){
@@ -342,4 +343,24 @@ void Camera::get_camera_params(double &fx, double &fy, double &cx, double &cy){
     fy = cameraMatrix.at<double>(1,1);
     cx = cameraMatrix.at<double>(0,2);
     cy = cameraMatrix.at<double>(1,2);
+}
+
+cv::Size Camera::getCorrectImageSize(int Width, int Height){
+    std::vector<cv::Point> points, corpoints;
+
+    for(int i = 0; i < std::max(Width,Height); i++){
+        if(i < Width){
+            points.push_back(cv::Point(i,0));
+            points.push_back(cv::Point(i,Height-1));
+        }
+        if( i < Height){
+            points.push_back(cv::Point(0,i));
+            points.push_back(cv::Point(Width-1,i));
+        }
+    }
+    cv::Mat a = cv::Mat(points);
+    cv::Mat b = cv::Mat(corpoints);
+    cv::undistortPoints(a, b, cameraMatrix, distCoeffs);
+    std::cout<<a.t()<<" | <"<<b.t()<<std::endl;
+    return cv::Size(Width,Height);
 }

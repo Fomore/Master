@@ -16,6 +16,7 @@ private:
 
     int ID;
     void setCameraParameter(int id);
+    cv::Size getCorrectImageSize(int Width, int Height);
 public:
     Camera(int id);
     Camera();
