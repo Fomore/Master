@@ -73,7 +73,7 @@ cv::Mat Image::get_Face_Image(cv::Mat image, int X, int Y, int Width, int Height
 void Image::getFaceParameter(int Face_ID, int &X, int &Y, int &Width, int &Hight){
 
     if(Face_ID == 0){
-        X=230; Y=65, Width=48; Hight=63;
+        X=230; Y=65, Width=48; Hight=64;
     }else if(Face_ID == 1){
         X=381; Y=95, Width=36; Hight=48;
     }else if(Face_ID == 2){

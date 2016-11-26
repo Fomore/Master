@@ -239,7 +239,7 @@ void FaceDetection::FaceTracking(std::string path){
 
                 double itens = (detection_certainty + 1)/(visualisation_boundary +1);
                 print_CLNF(disp_image,model,itens,fx,fy,cx,cy);
-//                std::cout<<"Gesicht "<<model<<": "<<clnf_models[model].GetBoundingBox()<<std::endl;
+                //                std::cout<<"Gesicht "<<model<<": "<<clnf_models[model].GetBoundingBox()<<std::endl;
             }
         }
         painterL->end();
@@ -389,11 +389,15 @@ void FaceDetection::LearnModel(){
         double fx,fy,cx,cy;
         mKamera->get_camera_params(fx,fy,cx,cy); // Das stimmt so nicht wenn keine paramter gesetzt sind
 
-        int X,Y,W,H;
-        mImage.getFaceParameter(0,X,Y,W,H);
+        int X,Y,W,H,nW, nH;
+        mImage.getFaceParameter(Model_Init,X,Y,W,H);
 
         if(X != 0){
-            frame_col = mImage.get_Face_Image(frame,X,Y,W,H,200);
+            int co = imgCount/2;
+            frame_col = mImage.get_Face_Image(frame,X,Y,W,H,200-(30*co));
+            Image::saveImage(frame_col,"face_"+std::to_string(Model_Init)+"_"+std::to_string(co));
+            nW = 200-30*(co+1);
+            nH = cvRound((200-30*(co+1))/W*H);
         }else{
             frame_col = frame.clone();
         }
@@ -428,19 +432,18 @@ void FaceDetection::LearnModel(){
 
         for(size_t face=0; face < face_detections.size(); ++face)
         {
-            Model_Init = (Model_Init+face)%num_faces_max;
             // if there are multiple detections go through them
-            bool success = LandmarkDetector::DetectLandmarksInImage(grayscale_image, face_detections[face], clnf_models[0], det_parameters[0]);
+            bool success = LandmarkDetector::DetectLandmarksInImage(grayscale_image, face_detections[face], clnf_models[Model_Init], det_parameters[Model_Init]);
             //            bool success = LandmarkDetector::DetectLandmarksInVideo(grayscale_image, face_detections[face], clnf_models[Model_Init], det_parameters[Model_Init]);
 
             if(success){
-                cv::Mat L = print_Eye(frame_col,0,36,6); //Left
-                cv::Mat R = print_Eye(frame_col,0,42,6); //Right
+                cv::Mat L = print_Eye(frame_col,Model_Init,36,6); //Left
+                cv::Mat R = print_Eye(frame_col,Model_Init,42,6); //Right
                 if(!L.data || !R.data){
                     if(!R.data){
-                        R = print_Eye(frame_col,0,0,27);
+                        R = print_Eye(frame_col,Model_Init,0,27);
                     }else{
-                        L = print_Eye(frame_col,0,0,27);
+                        L = print_Eye(frame_col,Model_Init,0,27);
                     }
                 }
                 if(L.data){
@@ -456,25 +459,38 @@ void FaceDetection::LearnModel(){
                     painterR->drawPixmap(0, h*face, pix);
                 }
 
-                print_CLNF(disp_image,0,0.5,fx,fy,cx,cy);
+                print_CLNF(disp_image,Model_Init,0.5,fx,fy,cx,cy);
                 //                std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
-                active_models[0] = true;
-                if(X > 0)
-                    shift_detected_landmarks(0,X,Y,W,H,frame_col.cols, frame_col.rows);
+                active_models[Model_Init] = true;
+                if(X > 0){
+                    if(nW < W){
+                        shift_detected_landmarks(Model_Init,X,Y,W,H,frame_col.cols, frame_col.rows);
+                    }
+                    if(imgCount%2 == 1){
+                        shift_detected_landmarks(Model_Init,0,0,nW,nH,frame_col.cols, frame_col.rows);
+                    }else{
+                        std::cout<<"Unverändert: "<<frame_col.cols<<" "<<frame_col.rows<<std::endl;
+                    }
+                }
             }
         }
         painterL->end();
         painterR->end();
 
-        Model_Init++;
+        imgCount++;
         showImage(disp_image);
         mTheWindow->Right_Label->setPixmap(*pixmapL);
         mTheWindow->Left_Label->setPixmap(*pixmapR);
     }
+    if(imgCount/2 == 7){
+        Model_Init++;
+        Model_Init= Model_Init%num_faces_max;
+        imgCount = 0;
+    }
 }
 
 void FaceDetection::shift_detected_landmarks(int model, double X, double Y,double w, double h, double W, double H){
-    //    std::cout<<"Vorher\n"<<clnf_models[model].detected_landmarks<<std::endl;
+    std::cout<<"Model "<<model<<": ["<<W<<", "<<H<<"] -> ["<<w<<", "<<h<<"]"<<std::endl;
     cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
 
     double centerX = X+w/2;
@@ -486,8 +502,6 @@ void FaceDetection::shift_detected_landmarks(int model, double X, double Y,doubl
     double centerW = W/2.0;
     double centerH = H/2.0;
 
-    //    std::cout<<"Werte: "<<centerX<<"/"<<centerY<<" "<<centerW<<"/"<<centerH<<" "<<fx<<"/"<<fy<<std::endl;
-
     int n = shape2D.rows/2;
     for(int pos = 0; pos < n; pos++){
         double pX = shape2D.at<double>(pos);
@@ -495,8 +509,8 @@ void FaceDetection::shift_detected_landmarks(int model, double X, double Y,doubl
 
         shape2D.at<double>(pos) = ((pX-centerW)/fx)+centerX;
         shape2D.at<double>(pos + n) = ((pY-centerH)/fy)+centerY;
-        std::cout<<"["<<pX<<", "<<pY<<"] -> ["<<shape2D.at<double>(pos)<<", "<<shape2D.at<double>(pos+n)<<"]"<<std::endl;
+        //        std::cout<<"["<<pX<<", "<<pY<<"] -> ["<<shape2D.at<double>(pos)<<", "<<shape2D.at<double>(pos+n)<<"]"<<std::endl;
     }
     clnf_models[model].detected_landmarks = shape2D.clone();
-    //    std::cout<<"Danach\n"<<clnf_models[model].detected_landmarks<<std::endl;
+
 }
