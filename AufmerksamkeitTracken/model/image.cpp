@@ -6,7 +6,7 @@ Image::Image()
 //    cv::glob("/home/falko/Uni/Master/Bilder/*g", mImagePaths, true);
     cv::glob("/home/falko/Uni/Master/Bilder/Learn/*g", mImagePaths, true);//erhalten durch cv::Mat img = get_Face_Image(read_image,155,280,36,42); auf Grau setzen
 
-    ID = 0;
+    Image_ID = 0;
 }
 
 Image::~Image()
@@ -15,25 +15,25 @@ Image::~Image()
 }
 
 bool Image::getNextImage(cv::Mat& out){
-    if(mImagePaths.size() <= ID){
-        ID = 0;
+    if(mImagePaths.size() <= Image_ID){
+        Image_ID = 0;
         std::cout<<"Reset"<<std::endl;
         return false;
     }
     bool ret = getImage(out);
-    ID++;
+    Image_ID++;
     return ret;
 }
 
 bool Image::getImage(cv::Mat &out){
-    out = cv::imread(mImagePaths.at(ID), -1);
+    out = cv::imread(mImagePaths.at(Image_ID), -1);
     if(out.data){
         if(out.cols < 200){
             int col = out.cols;
             double fx = (200.0)/out.cols;
             resize(out, out, cv::Size(), fx, fx, CV_INTER_LINEAR);
             convert_to_grayscale(out,out);
-            std::cout<<"Bildbreite: "<<col<<" "<<fx<<" Skalliert: "<<200.0-(ID*10.0)<<" - "<<out.cols<<"/"<<out.rows<<std::endl;
+            std::cout<<"Bildbreite: "<<col<<" "<<fx<<" Skalliert: "<<200.0-(Image_ID*10.0)<<" - "<<out.cols<<"/"<<out.rows<<std::endl;
         }
         return true;
     }else{
@@ -46,28 +46,47 @@ bool Image::getScallImage(cv::Mat &out){
     convert_to_grayscale(cv::imread("/home/falko/Uni/Master/Film/face_14.png", -1),out);
     if(out.data){
         int col = out.cols;
-        double fx = (200.0-(ID*10.0))/out.cols;
+        double fx = (200.0-(Image_ID*10.0))/out.cols;
         resize(out, out, cv::Size(), fx, fx, CV_INTER_LINEAR);
-        std::cout<<"Bildbreite: "<<col<<" "<<fx<<" Skalliert: "<<200.0-(ID*10.0)<<" - "<<out.cols<<"/"<<out.rows<<std::endl;
-        ID++;
-        if(ID>=10){
-            ID=0;
+        std::cout<<"Bildbreite: "<<col<<" "<<fx<<" Skalliert: "<<200.0-(Image_ID*10.0)<<" - "<<out.cols<<"/"<<out.rows<<std::endl;
+        Image_ID++;
+        if(Image_ID>=10){
+            Image_ID=0;
         }
         return true;
     }
     return false;
 }
 
-cv::Mat Image::get_Face_Image(cv::Mat image, int X, int Y, int Width, int Height){
+cv::Mat Image::get_Face_Image(cv::Mat image, int X, int Y, int Width, int Height, double MinSize){
     cv::Mat image_cut = image(cv::Rect(X,Y,Width,Height));
-    if(Width < 200){
-        double fx = 200.0/Width;
+    if(Width < MinSize){
+        double fx = MinSize/Width;
         cv::Mat ret;
         resize(image_cut, ret, cv::Size(), fx, fx, CV_INTER_LINEAR);
-        saveImage(ret,"face_"+std::to_string(ID));
+        saveImage(ret,"face_"+std::to_string(Image_ID));
         return ret;
     }
     return image_cut;
+}
+
+void Image::getFaceParameter(int Face_ID, int &X, int &Y, int &Width, int &Hight){
+
+    if(Face_ID == 0){
+        X=230; Y=65, Width=48; Hight=63;
+    }else if(Face_ID == 1){
+        X=381; Y=95, Width=36; Hight=48;
+    }else if(Face_ID == 2){
+        X=440; Y=90, Width=35; Hight=45;
+    }else if(Face_ID == 4){
+        X=304; Y=117, Width=21; Hight=37;
+    }else if(Face_ID == 3){
+        X=161; Y=72, Width=35; Hight=50;
+    }else if(Face_ID == 5){
+        X=516; Y=92, Width=41; Hight=56;
+    }else{
+        X=Y=Width=Hight=0;
+    }
 }
 
 // Diese Methode stammt von OpenFace
@@ -148,6 +167,6 @@ void Image::saveImage(cv::Mat img, std::string name){
     imwrite("Image/"+name+".png", img, compression_params);
 }
 
-int Image::getID(){
-    return ID;
+int Image::getImageID(){
+    return Image_ID;
 }

@@ -15,9 +15,8 @@ Camera::Camera(){
 Camera::Camera(int id)
 {
     init = true;
-    setCameraParameter(6);
-//    getCorrectImageSize(5,3);
-    correct_Image();
+    setCameraParameter(id);
+    //    correct_Image();
 }
 
 Camera::~Camera()
@@ -307,30 +306,32 @@ void Camera::correct_Image(){
 }
 
 void Camera::correct_Image(cv::Mat frame){
-    bool tmp = init;
-    if(tmp)
-        Image::saveImage(frame,"Orginal");
     if(ID >= 0 ){
         if(init){
-            cv::Size imageSize;
-            imageSize.height = frame.rows;
-            imageSize.width = frame.cols;
-            cv::initUndistortRectifyMap(cameraMatrix, distCoeffs, cv::Mat(),
-                                        getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize, 0), imageSize,
-                                        CV_16SC2, map1, map2);
-            init = false;
+            correct_Image_Init(frame.cols,frame.rows);
         }
         //            cv::undistort(frame,frame, cameraMatrix, distCoeffs);//Korrektur mit beschneiden
         cv::remap(frame, frame, map1, map2, cv::INTER_LINEAR);//Korrektur mit skallierung
+    }else{
+        if(init){
+            float fx = 500 * (frame.cols / 640.0);
+            float fy = 500 * (frame.rows / 480.0);
+
+            fx = (fx + fy) / 2.0;
+            cameraMatrix = (cv::Mat_<double>(3,3) << fx, 0, frame.cols/2.0,
+                            0, fx, frame.rows/2.0,
+                            0, 0, 1 );
+        }
     }
-    if(tmp)
-        Image::saveImage(frame,"Korrekt");
 }
 
 void Camera::correct_Image_Init(int height, int width){
     cv::Size imageSize;
     imageSize.height = height;
     imageSize.width = width;
+    correct_Image_Init(imageSize);
+}
+void Camera::correct_Image_Init(cv::Size imageSize){
     cv::initUndistortRectifyMap(cameraMatrix, distCoeffs, cv::Mat(),
                                 getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize, 0), imageSize,
                                 CV_16SC2, map1, map2);
@@ -345,8 +346,9 @@ void Camera::get_camera_params(double &fx, double &fy, double &cx, double &cy){
     cy = cameraMatrix.at<double>(1,2);
 }
 
+//Nutzlos, da durch die Kalibrierung die Dimensionen nicht verändert werden
 cv::Size Camera::getCorrectImageSize(int Width, int Height){
-    std::vector<cv::Point> points, corpoints;
+    std::vector<cv::Point2d> points, corpoints;
 
     for(int i = 0; i < std::max(Width,Height); i++){
         if(i < Width){
@@ -361,6 +363,16 @@ cv::Size Camera::getCorrectImageSize(int Width, int Height){
     cv::Mat a = cv::Mat(points);
     cv::Mat b = cv::Mat(corpoints);
     cv::undistortPoints(a, b, cameraMatrix, distCoeffs);
-    std::cout<<a.t()<<" | <"<<b.t()<<std::endl;
-    return cv::Size(Width,Height);
+    double Xmi, Xmx, Ymi, Ymx;
+    cv::Point2d t = b.at<cv::Point2d>(0,0);
+    Xmi = Xmx = t.x;
+    Ymi = Ymx = t.y;
+    for(int i = 1; i < b.rows; i++){
+        cv::Point2d t = b.at<cv::Point2d>(0,i);
+        Xmi = std::min(Xmi, t.x);
+        Xmx = std::max(Xmx, t.x);
+        Ymi = std::min(Ymi, t.y);
+        Ymx = std::max(Ymx, t.y);
+    }
+    return cv::Size(Xmx-Xmi+1,Ymx-Ymi+1);
 }

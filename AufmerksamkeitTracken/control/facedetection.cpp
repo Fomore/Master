@@ -66,7 +66,6 @@ FaceDetection::~FaceDetection()
 void FaceDetection::FaceTracking(std::string path){
     // Initialisiierung
     double fx,fy,cx,cy;
-    mKamera->get_camera_params(fx,fy,cx,cy);
 
     // For measuring the timings
     int64 t1,t0 = cv::getTickCount();
@@ -102,6 +101,9 @@ void FaceDetection::FaceTracking(std::string path){
         //      for(int frame_count = 0;mImage.getImage(frame_col);frame_count++){//Hiermit bekommt am auf Chor-Face einen Wert nach einiger Zeit
         // Reading the images
         mKamera->correct_Image(frame_col);
+        if(frame_count == 0){
+            mKamera->get_camera_params(fx,fy,cx,cy);
+        }
         cv::Mat_<uchar> grayscale_image;
 
         cv::Mat disp_image = frame_col.clone();
@@ -379,31 +381,19 @@ void FaceDetection::print_FPS_Model(int fps, int model){
 }
 
 void FaceDetection::LearnModel(){
-    // Initialisiierung
-    double fx,fy,cx,cy;
-    mKamera->get_camera_params(fx,fy,cx,cy);
     cv::Mat frame_col,frame;
 
     if(mImage.getImage(frame)){
-        // Reading the images
         mKamera->correct_Image(frame);
+        // Initialisiierung
+        double fx,fy,cx,cy;
+        mKamera->get_camera_params(fx,fy,cx,cy); // Das stimmt so nicht wenn keine paramter gesetzt sind
+
         int X,Y,W,H;
-        if(Model_Init == 0){
-            X=230; Y=65, W=48; H=63;
-        }else if(Model_Init == 1){
-            X=381; Y=95, W=36; H=48;
-        }else if(Model_Init == 2){
-            X=440; Y=90, W=35; H=45;
-        }else if(Model_Init == 4){
-            X=304; Y=117, W=21; H=37;
-        }else if(Model_Init == 3){
-            X=161; Y=72, W=35; H=50;
-        }else if(Model_Init == 5){
-            X=516; Y=92, W=41; H=56;
-        }
+        mImage.getFaceParameter(0,X,Y,W,H);
 
         if(X != 0){
-            frame_col = mImage.get_Face_Image(frame,X,Y,W,H);
+            frame_col = mImage.get_Face_Image(frame,X,Y,W,H,200);
         }else{
             frame_col = frame.clone();
         }

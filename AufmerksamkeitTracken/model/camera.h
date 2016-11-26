@@ -26,6 +26,7 @@ public:
     void correct_Image();
     void correct_Image(cv::Mat frame);
     void correct_Image_Init(int height, int width);
+    void correct_Image_Init(cv::Size imageSize);
 
     // Gibt ein Skalliertes Bild zurück (< 1000/600)
     static void DisplayImage(cv::Mat &img);
