@@ -382,6 +382,8 @@ void FaceDetection::print_FPS_Model(int fps, int model){
 
 void FaceDetection::LearnModel(){
     cv::Mat frame_col,frame;
+    double imgStep = 14.0;
+    int X,Y,W,H,nW, nH;
 
     if(mImage.getImage(frame)){
         mKamera->correct_Image(frame);
@@ -389,15 +391,14 @@ void FaceDetection::LearnModel(){
         double fx,fy,cx,cy;
         mKamera->get_camera_params(fx,fy,cx,cy); // Das stimmt so nicht wenn keine paramter gesetzt sind
 
-        int X,Y,W,H,nW, nH;
         mImage.getFaceParameter(Model_Init,X,Y,W,H);
 
         if(X != 0){
-            int co = imgCount/2;
-            frame_col = mImage.get_Face_Image(frame,X,Y,W,H,200-(30*co));
-            Image::saveImage(frame_col,"face_"+std::to_string(Model_Init)+"_"+std::to_string(co));
-            nW = 200-30*(co+1);
-            nH = cvRound((200-30*(co+1))/W*H);
+            int step = imgCount/2;
+            frame_col = mImage.get_Face_Image(frame,X,Y,W,H,pow(imgStep-step,2));
+            Image::saveImage(frame_col,"face_"+std::to_string(Model_Init)+"_"+std::to_string(step));
+            nW = pow(imgStep-step-1,2);
+            nH = cvRound(nW/W*H);
         }else{
             frame_col = frame.clone();
         }
@@ -407,16 +408,6 @@ void FaceDetection::LearnModel(){
         cv::Mat disp_image = frame_col.clone();
 
         Image::convert_to_grayscale(frame_col,grayscale_image);
-
-        // Detect faces in an image
-        vector<cv::Rect_<double> > face_detections;
-
-        if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
-            vector<double> confidences;
-            LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_models[0].face_detector_HOG, confidences);
-        }else{
-            LandmarkDetector::DetectFaces(face_detections, grayscale_image, clnf_models[0].face_detector_HAAR);
-        }
 
         // perform landmark detection for every face detected
         QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
@@ -430,50 +421,69 @@ void FaceDetection::LearnModel(){
         int w = mTheWindow->Right_Label->size().width();
         int h = mTheWindow->Right_Label->size().height()/num_faces_max;
 
-        for(size_t face=0; face < face_detections.size(); ++face)
-        {
-            // if there are multiple detections go through them
-            bool success = LandmarkDetector::DetectLandmarksInImage(grayscale_image, face_detections[face], clnf_models[Model_Init], det_parameters[Model_Init]);
-            //            bool success = LandmarkDetector::DetectLandmarksInVideo(grayscale_image, face_detections[face], clnf_models[Model_Init], det_parameters[Model_Init]);
+        bool success = false;
+        if(!active_models[Model_Init]){
+            // Detect faces in an image
+            vector<cv::Rect_<double> > face_detections;
 
-            if(success){
-                cv::Mat L = print_Eye(frame_col,Model_Init,36,6); //Left
-                cv::Mat R = print_Eye(frame_col,Model_Init,42,6); //Right
-                if(!L.data || !R.data){
-                    if(!R.data){
-                        R = print_Eye(frame_col,Model_Init,0,27);
-                    }else{
-                        L = print_Eye(frame_col,Model_Init,0,27);
-                    }
-                }
-                if(L.data){
-                    QImage img = Image::MatToQImage(L);
-                    QImage img2 = img.scaled(w,h,Qt::KeepAspectRatio);
-                    QPixmap pix = QPixmap::fromImage(img2);
-                    painterL->drawPixmap(0, h*face, pix);
-                }
-                if(R.data){
-                    QImage img = Image::MatToQImage(R);
-                    QImage img2 = img.scaled(w,h,Qt::KeepAspectRatio);
-                    QPixmap pix = QPixmap::fromImage(img2);
-                    painterR->drawPixmap(0, h*face, pix);
-                }
+            if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
+                vector<double> confidences;
+                LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_models[0].face_detector_HOG, confidences);
+            }else{
+                LandmarkDetector::DetectFaces(face_detections, grayscale_image, clnf_models[0].face_detector_HAAR);
+            }
 
-                print_CLNF(disp_image,Model_Init,0.5,fx,fy,cx,cy);
-                //                std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
-                active_models[Model_Init] = true;
-                if(X > 0){
-                    if(nW < W){
-                        shift_detected_landmarks(Model_Init,X,Y,W,H,frame_col.cols, frame_col.rows);
-                    }
-                    if(imgCount%2 == 1){
-                        shift_detected_landmarks(Model_Init,0,0,nW,nH,frame_col.cols, frame_col.rows);
-                    }else{
-                        std::cout<<"Unverändert: "<<frame_col.cols<<" "<<frame_col.rows<<std::endl;
-                    }
+            for(size_t face=0; face < face_detections.size(); ++face){
+                // if there are multiple detections go through them
+                success = LandmarkDetector::DetectLandmarksInImage(grayscale_image, face_detections[face], clnf_models[Model_Init], det_parameters[Model_Init]);
+                //success = LandmarkDetector::DetectLandmarksInVideo(grayscale_image, face_detections[face], clnf_models[Model_Init], det_parameters[Model_Init]);
+            }
+        }else{
+            success = LandmarkDetector::DetectLandmarksInVideo(grayscale_image, clnf_models[Model_Init], det_parameters[Model_Init]);
+        }
+
+        if(success){
+            cv::Mat L = print_Eye(frame_col,Model_Init,36,6); //Left
+            cv::Mat R = print_Eye(frame_col,Model_Init,42,6); //Right
+            if(!L.data || !R.data){
+                if(!R.data){
+                    R = print_Eye(frame_col,Model_Init,0,27);
+                }else{
+                    L = print_Eye(frame_col,Model_Init,0,27);
                 }
             }
+            if(L.data){
+                QImage img = Image::MatToQImage(L);
+                QImage img2 = img.scaled(w,h,Qt::KeepAspectRatio);
+                QPixmap pix = QPixmap::fromImage(img2);
+                painterL->drawPixmap(0, h*Model_Init, pix);
+            }
+            if(R.data){
+                QImage img = Image::MatToQImage(R);
+                QImage img2 = img.scaled(w,h,Qt::KeepAspectRatio);
+                QPixmap pix = QPixmap::fromImage(img2);
+                painterR->drawPixmap(0, h*Model_Init, pix);
+            }
+
+            print_CLNF(disp_image,Model_Init,0.5,fx,fy,cx,cy);
+            //std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
+            active_models[Model_Init] = true;
+            if(X > 0){
+                if(nW < W){
+                    shift_detected_landmarks(Model_Init,X,Y,W,H,frame_col.cols, frame_col.rows);
+                }
+                if(imgCount%2 == 1){
+                    std::cout<<imgCount<<" :";
+                    shift_detected_landmarks(Model_Init,0,0,nW,nH,frame_col.cols, frame_col.rows);
+
+                }else{
+                    std::cout<<"Unverändert: "<<frame_col.cols<<" "<<frame_col.rows<<std::endl;
+                }
+            }
+        }else{
+            std::cout<<"Kein Model: "<<imgCount<<" ["<<frame_col.cols<<", "<<frame_col.rows<<"]"<<std::endl;
         }
+
         painterL->end();
         painterR->end();
 
@@ -482,7 +492,7 @@ void FaceDetection::LearnModel(){
         mTheWindow->Right_Label->setPixmap(*pixmapL);
         mTheWindow->Left_Label->setPixmap(*pixmapR);
     }
-    if(imgCount/2 == 7){
+    if(pow(imgStep- (imgCount-1)/2,2) < W){
         Model_Init++;
         Model_Init= Model_Init%num_faces_max;
         imgCount = 0;
@@ -509,7 +519,7 @@ void FaceDetection::shift_detected_landmarks(int model, double X, double Y,doubl
 
         shape2D.at<double>(pos) = ((pX-centerW)/fx)+centerX;
         shape2D.at<double>(pos + n) = ((pY-centerH)/fy)+centerY;
-        //        std::cout<<"["<<pX<<", "<<pY<<"] -> ["<<shape2D.at<double>(pos)<<", "<<shape2D.at<double>(pos+n)<<"]"<<std::endl;
+                //std::cout<<"["<<pX<<", "<<pY<<"] -> ["<<shape2D.at<double>(pos)<<", "<<shape2D.at<double>(pos+n)<<"]"<<std::endl;
     }
     clnf_models[model].detected_landmarks = shape2D.clone();
 

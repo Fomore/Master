@@ -64,8 +64,10 @@ cv::Mat Image::get_Face_Image(cv::Mat image, int X, int Y, int Width, int Height
         double fx = MinSize/Width;
         cv::Mat ret;
         resize(image_cut, ret, cv::Size(), fx, fx, CV_INTER_LINEAR);
-        saveImage(ret,"face_"+std::to_string(Image_ID));
+        //saveImage(ret,"face_"+std::to_string(Image_ID));
         return ret;
+    }else{
+        std::cout<<"Keine Skallierung"<<std::endl;
     }
     return image_cut;
 }
