@@ -16,7 +16,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-    mFaceDetection->FaceTracking(ui->Path_lineEdit->text().toStdString());
+//    mFaceDetection->FaceTracking(ui->Path_lineEdit->text().toStdString());
+    mFaceDetection->FaceTrackingAutoSize(ui->Path_lineEdit->text().toStdString());
 }
 
 void MainWindow::on_Learn_Button_clicked()

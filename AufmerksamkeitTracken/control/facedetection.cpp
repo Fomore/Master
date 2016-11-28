@@ -210,13 +210,13 @@ void FaceDetection::FaceTracking(std::string path){
             // Only draw if the reliability is reasonable, the value is slightly ad-hoc
             if(detection_certainty < visualisation_boundary && !det_parameters[0].quiet_mode){
 
-                cv::Mat L = print_Eye(frame_col,model,36,6); //Left
-                cv::Mat R = print_Eye(frame_col,model,42,6); //Right
+                cv::Mat L = print_Eye(frame_col,model,36,6, true); //Left
+                cv::Mat R = print_Eye(frame_col,model,42,6, true); //Right
                 if(!L.data || !R.data){
                     if(!R.data){
-                        R = print_Eye(frame_col,model,0,27);
+                        R = print_Eye(frame_col,model,0,27, false);
                     }else{
-                        L = print_Eye(frame_col,model,0,27);
+                        L = print_Eye(frame_col,model,0,27, false);
                     }
                 }
                 if(L.data){
@@ -318,27 +318,35 @@ void FaceDetection::showImage(const cv::Mat image){
     mTheWindow->Main_Label->setPixmap(QPixmap::fromImage(img2));
 }
 
-cv::Mat FaceDetection::print_Eye(const cv::Mat img, int model, int pos, int step){
+void FaceDetection::getCLNFBox(int model, int pos, int step, double &X, double &Y, double &W, double &H){
     cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
 
     int n = shape2D.rows/2;
 
-    double X = cvRound(shape2D.at<double>(pos));
-    double Y = cvRound(shape2D.at<double>(pos + n));
-    double Width = cvRound(shape2D.at<double>(pos));
-    double Height = cvRound(shape2D.at<double>(pos + n));
+    X = cvRound(shape2D.at<double>(pos));
+    Y = cvRound(shape2D.at<double>(pos + n));
+    W = cvRound(shape2D.at<double>(pos));
+    H = cvRound(shape2D.at<double>(pos + n));
     for(int i = pos+1; i < pos+step; ++i)// Beginnt bei 0 das Output-Format
     {
         double x = (shape2D.at<double>(i));
         double y = (shape2D.at<double>(i + n));
         X = min(X,x);
         Y = min(Y,y);
-        Width = max(Width,x);
-        Height = max(Height,y);
+        W = max(W,x);
+        H = max(H,y);
     }
-    // To Do: Grenzen Dynamische Abmessungen für Randwerte
-    Width = Width-X;
-    Height = Height-Y;
+    W = W-X;
+    H = H-Y;
+}
+
+cv::Mat FaceDetection::print_Eye(const cv::Mat img, int model, int pos, int step, bool clacElse){
+    cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
+
+    int n = shape2D.rows/2;
+
+    double X,Y,Width,Height;
+    getCLNFBox(model, pos, step, X,Y,Width,Height);
 
     double fr_X = Width*0.35;
     double fr_Y = Height*0.4;
@@ -354,7 +362,7 @@ cv::Mat FaceDetection::print_Eye(const cv::Mat img, int model, int pos, int step
 
     if(Width > 16 && Height > 10){
         cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
-        if(step == 6){
+        if(step == 6 && clacElse){
             /*
         std::string name = "Eye_"+std::to_string(imgCount)+"_";
         if(right){
@@ -443,13 +451,13 @@ void FaceDetection::LearnModel(){
         }
 
         if(success){
-            cv::Mat L = print_Eye(frame_col,Model_Init,36,6); //Left
-            cv::Mat R = print_Eye(frame_col,Model_Init,42,6); //Right
+            cv::Mat L = print_Eye(frame_col,Model_Init,36,6, true); //Left
+            cv::Mat R = print_Eye(frame_col,Model_Init,42,6, true); //Right
             if(!L.data || !R.data){
                 if(!R.data){
-                    R = print_Eye(frame_col,Model_Init,0,27);
+                    R = print_Eye(frame_col,Model_Init,0,27, false);
                 }else{
-                    L = print_Eye(frame_col,Model_Init,0,27);
+                    L = print_Eye(frame_col,Model_Init,0,27, false);
                 }
             }
             if(L.data){
@@ -523,4 +531,143 @@ void FaceDetection::shift_detected_landmarks(int model, double X, double Y,doubl
     }
     clnf_models[model].detected_landmarks = shape2D.clone();
 
+}
+
+void FaceDetection::FaceTrackingAutoSize(string path){
+    // Initialisiierung
+    double fx,fy,cx,cy;
+
+    mImageSections.clear();
+    for (int i = 0; i < num_faces_max; ++i){
+        int x,y,w,h;
+        mImage.getFaceParameter(i,x,y,w,h);
+        mImageSections.push_back(ImageSection(x,y,w,h));
+        active_models[i] = false;
+    }
+
+    // For measuring the timings
+    int64 t1,t0 = cv::getTickCount();
+    double fps = 10;
+
+    // Anwendung - Berechnung der Faces
+    if(path.size() < 1){
+        path = "/home/falko/Uni/Master/Film/Interview_640.mp4";
+    }
+    cv::VideoCapture video(path);
+    if(!video.isOpened()){
+        cout<<"Kein Video"<<std::endl;
+        return;
+    }
+    cv::Mat frame_colore;
+
+    QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
+    pixmapL->fill(Qt::transparent);
+    QPainter *painterL=new QPainter(pixmapL);
+
+    QPixmap *pixmapR=new QPixmap(mTheWindow->Right_Label->size());
+    pixmapR->fill(Qt::transparent);
+    QPainter *painterR=new QPainter(pixmapR);
+
+    int sImageW = mTheWindow->Right_Label->size().width();
+    int sImageH = mTheWindow->Right_Label->size().height()/num_faces_max;
+
+    for(int frame_count = 0;video.read(frame_colore);frame_count++){
+        mKamera->correct_Image(frame_colore);
+        if(frame_count == 0){
+            mKamera->get_camera_params(fx,fy,cx,cy);
+        }
+        cv::Mat disp_image = frame_colore.clone();
+
+        int num_active_models = 0;
+
+        for(int model = 0; model < num_faces_max; model++){
+            int x,y,w,h;
+            mImageSections[model].getSection(x,y,w,h);
+            cv::Mat_<uchar> faceImage;
+            cv::Mat faceImageColore = mImage.get_Face_Image(frame_colore,x,y,w,h,200);
+            Image::convert_to_grayscale(faceImageColore,faceImage);
+
+            bool detection_success;
+
+            if(!active_models[model]){
+                vector<cv::Rect_<double> > face_detections;
+                if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
+                    vector<double> confidences;
+                    LandmarkDetector::DetectFacesHOG(face_detections, faceImage, clnf_models[0].face_detector_HOG, confidences);
+                }else{
+                    LandmarkDetector::DetectFaces(face_detections, faceImage, clnf_models[0].face_detector_HAAR);
+                }
+                if(face_detections.size() == 1){
+                        // Reinitialise the model
+                        clnf_models[model].Reset();
+
+                        // This ensures that a wider window is used for the initial landmark localisation
+                        clnf_models[model].detection_success = false;
+
+                        detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, face_detections[0], clnf_models[model], det_parameters[model]);
+
+                        // This activates the model
+                        active_models[model] = true;
+                }
+            }else{
+                detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, clnf_models[model], det_parameters[model]);
+            }
+            double detection_certainty = clnf_models[model].detection_certainty; // Qualität der detection: -1 perfekt und 1 falsch
+            double visualisation_boundary = -0.1;
+
+            // Only draw if the reliability is reasonable, the value is slightly ad-hoc
+            double itens = 0;
+            if(detection_certainty < visualisation_boundary){
+                double nX,nY,nW,nH;
+                getCLNFBox(model,0,27,nX,nY,nW,nH);
+
+
+                cv::Mat L = print_Eye(faceImageColore,model,36,6, false); //Left
+                cv::Mat R = print_Eye(faceImageColore,model,42,6, false); //Right
+                if(!L.data || !R.data){
+                    if(!R.data){
+                        R = print_Eye(faceImageColore,model,0,27, false);
+                    }else{
+                        L = print_Eye(faceImageColore,model,0,27, false);
+                    }
+                }
+                if(L.data){
+                    QImage img = Image::MatToQImage(L);
+                    QImage img2 = img.scaled(sImageW,sImageH,Qt::KeepAspectRatio);
+                    QPixmap pix = QPixmap::fromImage(img2);
+                    painterL->drawPixmap(0, sImageH*model, pix);
+                }
+                if(R.data){
+                    QImage img = Image::MatToQImage(R);
+                    QImage img2 = img.scaled(sImageW,sImageH,Qt::KeepAspectRatio);
+                    QPixmap pix = QPixmap::fromImage(img2);
+                    painterR->drawPixmap(0, sImageH*model, pix);
+                }
+
+                if(detection_certainty > 1)
+                    detection_certainty = 1;
+                if(detection_certainty < -1)
+                    detection_certainty = -1;
+                itens = (detection_certainty + 1)/(visualisation_boundary +1);
+                num_active_models++;
+            }
+            cv::rectangle(disp_image,cv::Rect(x,y,w,h),cv::Scalar((1-itens)*255.0,0,itens*255));
+        }
+        if(frame_count % 10 == 0)
+        {
+            t1 = cv::getTickCount();
+            fps = 10.0 / (double(t1-t0)/cv::getTickFrequency());
+            t0 = t1;
+        }
+        painterL->end();
+        painterR->end();
+
+        showImage(disp_image);
+        mTheWindow->Right_Label->setPixmap(*pixmapL);
+        mTheWindow->Left_Label->setPixmap(*pixmapR);
+
+        print_FPS_Model(cvRound(fps),num_active_models);
+        if(cv::waitKey(30) >= 0) break;
+        return;
+    }
 }

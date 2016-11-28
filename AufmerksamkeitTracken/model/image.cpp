@@ -64,10 +64,7 @@ cv::Mat Image::get_Face_Image(cv::Mat image, int X, int Y, int Width, int Height
         double fx = MinSize/Width;
         cv::Mat ret;
         resize(image_cut, ret, cv::Size(), fx, fx, CV_INTER_LINEAR);
-        //saveImage(ret,"face_"+std::to_string(Image_ID));
         return ret;
-    }else{
-        std::cout<<"Keine Skallierung"<<std::endl;
     }
     return image_cut;
 }
@@ -86,8 +83,11 @@ void Image::getFaceParameter(int Face_ID, int &X, int &Y, int &Width, int &Hight
         X=161; Y=72, Width=35; Hight=50;
     }else if(Face_ID == 5){
         X=516; Y=92, Width=41; Hight=56;
+    }else if(Face_ID == 6){
+        X=80; Y=90, Width=27; Hight=47;
     }else{
-        X=Y=Width=Hight=0;
+        X=Y=0;
+        Width=Hight=1;
     }
 }
 
