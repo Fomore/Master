@@ -20,6 +20,8 @@ private:
     void print_FPS_Model(int fps, int model);
     void print_CLNF(cv::Mat img, int model, double itens, double fx, double fy, double cx, double cy);
     void getCLNFBox(int model, int pos, int step, double &X, double &Y, double &W, double &H);
+    void printSmallImage(cv::Mat img, int model, QPainter &painterR, QPainter &painterL);
+    void getImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY);
 
     Image mImage;
     int Model_Init;
@@ -35,7 +37,8 @@ private:
 
     int num_faces_max = 7;
 
-    void shift_detected_landmarks(int model, double X, double Y, double w, double h, double W, double H);
+    void shift_detected_landmarks_toWorld(int model, int worldX, int worldY, int worldW, int worldH, int imgW, int imgH); //f skallierung img/world
+    void shift_detected_landmarks_toImage(int model, int worldX, int worldY, int worldW, int worldH, int minSize); //f skallierung world/img
 
 public:
     FaceDetection(Ui::MainWindow *parent = 0);
