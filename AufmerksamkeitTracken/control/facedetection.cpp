@@ -123,7 +123,7 @@ void FaceDetection::FaceTracking(std::string path){
         }
 
         // Get the detections (every 8th frame and when there are free models available for tracking) //Nun wird jedes Frame (%1) Berechent
-        if(frame_count % 1 == 0 && !all_models_active)
+        if(frame_count % 8 == 0 && !all_models_active)
         {
             if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR)
             {
@@ -149,7 +149,7 @@ void FaceDetection::FaceTracking(std::string path){
             bool detection_success = false;
 
             // If the current model has failed more than 4 times in a row, remove it
-            if(clnf_models[model].failures_in_a_row > 4*8)
+            if(clnf_models[model].failures_in_a_row > 4)
             {
                 active_models[model] = false;
                 clnf_models[model].Reset();
@@ -317,9 +317,9 @@ void FaceDetection::getCLNFBox(int model, int pos, int step, double &X, double &
     H = H-Y;
 }
 
-void FaceDetection::getImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY){
-    double fr_X = min(Width*0.35,40.0);
-    double fr_Y = min(Height*0.4,60.0);
+void FaceDetection::getImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY, double sX, double sY, double sMaxX, double sMaxY){
+    double fr_X = min(Width*sX, sMaxX);
+    double fr_Y = min(Height*sY,sMaxY);
     X -= fr_X;
     Y -= fr_Y;
     Width += fr_X*2;
@@ -345,7 +345,7 @@ cv::Mat FaceDetection::print_Eye(const cv::Mat img, int model, int pos, int step
     double X,Y,Width,Height;
     getCLNFBox(model, pos, step, X,Y,Width,Height);
 
-    getImageSize(X,Y,Width,Height,img.cols, img.rows);
+    getImageSize(X,Y,Width,Height,img.cols, img.rows,0.35,0.4,30,30);
 
     if(Width > 16 && Height > 10){
         cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
@@ -484,7 +484,7 @@ void FaceDetection::shift_detected_landmarks_toWorld(int model, int worldX, int 
 
     double f = (double)worldW/(double)imgW;
 
-    std::cout<<"Model tW "<<model<<": "<<worldX<<"/"<<worldY<<" ["<<worldW<<", "<<worldH<<"] -> ["<<imgW<<", "<<imgH<<"] "<<f<<std::endl;
+    //    std::cout<<"Model tW "<<model<<": "<<worldX<<"/"<<worldY<<" ["<<worldW<<", "<<worldH<<"] -> ["<<imgW<<", "<<imgH<<"] "<<f<<std::endl;
 
     int n = shape2D.rows/2;
     for(int pos = 0; pos < n; pos++){
@@ -511,7 +511,7 @@ void FaceDetection::shift_detected_landmarks_toImage(int model, int worldX, int 
     double centerImgX = worldW*f/2.0;
     double centerImgY = worldH*f/2.0;
 
-    std::cout<<"Model tI "<<model<<": "<<worldX<<"/"<<worldY<<" ["<<worldW<<", "<<worldH<<"] -> ["<<centerImgX*2<<", "<<centerImgY*2<<"] "<<f<<std::endl;
+    //    std::cout<<"Model tI "<<model<<": "<<worldX<<"/"<<worldY<<" ["<<worldW<<", "<<worldH<<"] -> ["<<centerImgX*2<<", "<<centerImgY*2<<"] "<<f<<std::endl;
 
     int n = shape2D.rows/2;
     for(int pos = 0; pos < n; pos++){
@@ -576,6 +576,21 @@ void FaceDetection::FaceTrackingAutoSize(string path){
         for(int model = 0; model < num_faces_max; model++){
             int x,y,w,h;
             mImageSections[model].getSection(x,y,w,h);
+            // If the current model has failed more than 4 times in a row, remove it
+            if(clnf_models[model].failures_in_a_row > 4)
+            {
+                active_models[model] = false;
+                clnf_models[model].Reset();
+                double nX = x;
+                double nY = y;
+                double nW = w;
+                double nH = h;
+                mImageSections[model].getAvgSection(nX,nY,nW,nH);
+                x = cvRound(nX); y = cvRound(nY);
+                w = cvRound(nW); h = cvRound(nH);
+//                std::cout<<"Korrektur Lost "<<frame_count<<": "<<model<<std::endl;
+            }
+
             cv::Mat_<uchar> faceImage;
             cv::Mat faceImageColore = mImage.get_Face_Image(frame_colore,x,y,w,h,minSize);
             Image::convert_to_grayscale(faceImageColore,faceImage);
@@ -619,19 +634,21 @@ void FaceDetection::FaceTrackingAutoSize(string path){
 
                 shift_detected_landmarks_toWorld(model,x,y,w,h,faceImage.cols, faceImage.rows);
 
-                printSmallImage(disp_image,model,*painterR,*painterL);
-                print_CLNF(disp_image,model,itens,fx,fy,cx,cy);
+                printSmallImage(frame_colore,model,*painterR,*painterL);
+                //                print_CLNF(disp_image,model,itens,fx,fy,cx,cy);
 
-                double nX,nY,nW,nH;
-                getCLNFBox(model,0,27,nX,nY,nW,nH);
-                getImageSize(nX,nY,nW,nH,frame_colore.cols, frame_colore.rows);
+                cv::Rect_<double> box = clnf_models[model].GetBoundingBox();
 
-                shift_detected_landmarks_toImage(model,nX,nY,nW,nH,minSize);
-                mImageSections[model].setSection(nX,nY,nW,nH);
+                getImageSize(box.x,box.y,box.width,box.height,frame_colore.cols, frame_colore.rows,0.3,0.4,40,60);
+
+                if(!mImageSections[model].setSection(box.x,box.y,box.width,box.height)){//Wenn die Grenzen überschritten werden
+                    active_models[model] = false; //Soll sichergestellt werden, dass nächstesmal ein Gesicht erkannt wird
+                    mImageSections[model].getAvgSection(box.x,box.y,box.width,box.height);
+//                    std::cout<<"Autoreset "<<frame_count<<std::endl;
+                }
+                shift_detected_landmarks_toImage(model,box.x,box.y,box.width,box.height,minSize);
 
                 num_active_models++;
-
-                cv::rectangle(disp_image,cv::Rect(nX,nY,nW,nH),cv::Scalar(0,255,0));
             }
             cv::rectangle(disp_image,cv::Rect(x,y,w,h),cv::Scalar((1-itens)*255.0,0,itens*255));
         }
@@ -650,7 +667,6 @@ void FaceDetection::FaceTrackingAutoSize(string path){
 
         print_FPS_Model(cvRound(fps),num_active_models);
         if(cv::waitKey(30) >= 0) break;
-        std::cout<<"Neues Frame"<<std::endl;
     }
 }
 

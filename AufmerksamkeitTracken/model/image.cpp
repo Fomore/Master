@@ -84,7 +84,7 @@ void Image::getFaceParameter(int Face_ID, int &X, int &Y, int &Width, int &Hight
     }else if(Face_ID == 5){
         X=516; Y=92, Width=41; Hight=56;
     }else if(Face_ID == 6){
-        X=80; Y=90, Width=27; Hight=47;
+        X=75; Y=80, Width=40; Hight=50;
     }else{
         X=Y=0;
         Width=Hight=1;
