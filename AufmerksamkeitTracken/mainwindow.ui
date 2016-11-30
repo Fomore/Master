@@ -47,9 +47,9 @@
     <property name="geometry">
      <rect>
       <x>800</x>
-      <y>129</y>
+      <y>159</y>
       <width>70</width>
-      <height>471</height>
+      <height>441</height>
      </rect>
     </property>
     <property name="text">
@@ -63,9 +63,9 @@
     <property name="geometry">
      <rect>
       <x>870</x>
-      <y>129</y>
+      <y>159</y>
       <width>70</width>
-      <height>471</height>
+      <height>441</height>
      </rect>
     </property>
     <property name="text">
@@ -154,6 +154,22 @@
     </property>
     <property name="text">
      <string>Lernen</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_Autorun">
+    <property name="geometry">
+     <rect>
+      <x>810</x>
+      <y>130</y>
+      <width>97</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Autorun</string>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
     </property>
    </widget>
   </widget>

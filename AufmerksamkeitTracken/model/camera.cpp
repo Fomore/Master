@@ -308,10 +308,10 @@ void Camera::correct_Image(){
 void Camera::correct_Image(cv::Mat frame){
     if(ID >= 0 ){
         if(init){
-            correct_Image_Init(frame.cols,frame.rows);
+                        correct_Image_Init(frame.cols,frame.rows);
         }
-        //            cv::undistort(frame,frame, cameraMatrix, distCoeffs);//Korrektur mit beschneiden
-        cv::remap(frame, frame, map1, map2, cv::INTER_LINEAR);//Korrektur mit skallierung
+        cv::undistort(frame.clone(),frame, cameraMatrix, distCoeffs);//Korrektur mit beschneiden
+        //cv::remap(frame, frame, map1, map2, cv::INTER_LINEAR);//Korrektur mit skallierung
     }else{
         if(init){
             float fx = 500 * (frame.cols / 640.0);

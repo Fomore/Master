@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     control/facedetection.cpp \
     model/image.cpp \
     src/stdafx.cpp \
-    model/imagesection.cpp
+    model/imagesection.cpp \
+    control/atentiontracer.cpp
 #    FaceLandmarkVidMulti.cpp
 #    FaceLandmarkImg.cpp
 
@@ -32,7 +33,8 @@ HEADERS  += mainwindow.h \
     src/algo.h \
     src/blob_gen.h \
     src/stdafx.h \
-    model/imagesection.h
+    model/imagesection.h \
+    control/atentiontracer.h
 
 FORMS    += mainwindow.ui
 

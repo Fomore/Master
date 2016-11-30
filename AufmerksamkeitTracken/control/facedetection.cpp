@@ -73,11 +73,11 @@ void FaceDetection::FaceTracking(std::string path){
 
     // Anwendung - Berechnung der Faces
     if(path.size() < 1){
-        //        path = "/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4";
+                path = "/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4";
         //        path = "/home/falko/Uni/Master/Film/Schulklasse_01.mp4";
         //        path = "/home/falko/Uni/Master/Film/Chor_01.mp4";
         //        path = "/home/falko/Uni/Master/Film/Interview_640.mp4";
-        path = "/home/falko/Uni/Master/Film/Interview_1280.mp4";
+        //path = "/home/falko/Uni/Master/Film/Interview_1280.mp4";
     }
     cv::VideoCapture video(path);
     if(!video.isOpened()){
@@ -217,6 +217,10 @@ void FaceDetection::FaceTracking(std::string path){
                 double itens = (detection_certainty + 1)/(visualisation_boundary +1);
                 print_CLNF(disp_image,model,itens,fx,fy,cx,cy);
                 //                std::cout<<"Gesicht "<<model<<": "<<clnf_models[model].GetBoundingBox()<<std::endl;
+                // Estimate head pose and eye gaze
+//                std::cout<<clnf_models[model].params_global<<std::endl;
+                cv::Vec6d headPose = LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy);
+                mAtentionTracer.newEulerPosition(model, headPose);
             }
         }
         painterL->end();
@@ -263,6 +267,16 @@ void FaceDetection::print_CLNF(cv::Mat img, int model, double itens, double fx, 
 
     // Draw it in reddish if uncertain, blueish if certain
     LandmarkDetector::DrawBox(img, pose_estimate, cv::Scalar((1-itens)*255.0,0, itens*255), thickness, fx, fy, cx, cy);
+    print_Orientation(img,model);
+}
+void FaceDetection::print_Orientation(cv::Mat img, int model){
+    // A rough heuristic for box around the face width
+    int thickness = (int)std::ceil(2.0* ((double)img.cols) / 640.0);
+    cv::Vec6d gparam = clnf_models[model].params_global;
+    cv::Matx33d rot = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(gparam[1],gparam[2],gparam[3]));
+    cv::Vec3d ln = rot*cv::Vec3d(0,0,(-(double)img.cols)/20.0);
+    cv::line(img, cv::Point(gparam[4],gparam[5]),cv::Point(gparam[4]+ln(0),gparam[5]+ln(1)), cv::Scalar(0,255,0), thickness);
+    std::cout<<"Orient "<<model<<gparam<<std::endl;
 }
 
 // Dieser Teil ist aus OpenFace/FaceLandmarkVidMulti.cpp übernommen
@@ -496,6 +510,10 @@ void FaceDetection::shift_detected_landmarks_toWorld(int model, int worldX, int 
         //std::cout<<"["<<pX<<", "<<pY<<"] -> ["<<shape2D.at<double>(pos)<<", "<<shape2D.at<double>(pos+n)<<"]"<<std::endl;
     }
     clnf_models[model].detected_landmarks = shape2D.clone();
+
+    clnf_models[model].params_global[4] = ((clnf_models[model].params_global[4]-centerImgX)*f)+centerWorldX;
+    clnf_models[model].params_global[5] = ((clnf_models[model].params_global[5]-centerImgY)*f)+centerWorldY;
+    //ToDo: Skallierung anpassen
 }
 void FaceDetection::shift_detected_landmarks_toImage(int model, int worldX, int worldY, int worldW, int worldH, int minSize){
     cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
@@ -523,6 +541,10 @@ void FaceDetection::shift_detected_landmarks_toImage(int model, int worldX, int 
         //std::cout<<"["<<pX<<", "<<pY<<"] -> ["<<shape2D.at<double>(pos)<<", "<<shape2D.at<double>(pos+n)<<"]"<<std::endl;
     }
     clnf_models[model].detected_landmarks = shape2D.clone();
+
+    clnf_models[model].params_global[4] = ((clnf_models[model].params_global[4]-centerWorldX)*f)+centerImgX;
+    clnf_models[model].params_global[5] = ((clnf_models[model].params_global[5]-centerWorldY)*f)+centerImgY;
+    //ToDo: Skallierung anpassen
 }
 
 void FaceDetection::FaceTrackingAutoSize(string path){
@@ -636,6 +658,10 @@ void FaceDetection::FaceTrackingAutoSize(string path){
 
                 printSmallImage(frame_colore,model,*painterR,*painterL);
                 //                print_CLNF(disp_image,model,itens,fx,fy,cx,cy);
+                // Estimate head pose and eye gaze
+                cv::Vec6d headPose = LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy);
+                mAtentionTracer.newEulerPosition(model, headPose);
+                print_Orientation(disp_image,model);
 
                 cv::Rect_<double> box = clnf_models[model].GetBoundingBox();
 
