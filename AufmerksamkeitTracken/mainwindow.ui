@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>940</width>
-    <height>650</height>
+    <height>857</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -170,6 +170,54 @@
     </property>
     <property name="checked">
      <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ImageBottomLeft_label">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>600</y>
+      <width>312</width>
+      <height>208</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ImageBottomCenter_label">
+    <property name="geometry">
+     <rect>
+      <x>314</x>
+      <y>600</y>
+      <width>312</width>
+      <height>208</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ImageBottomRight_label">
+    <property name="geometry">
+     <rect>
+      <x>628</x>
+      <y>600</y>
+      <width>312</width>
+      <height>208</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>

@@ -29,7 +29,7 @@ private:
     int Model_Init;
     int imgCount;
 
-    AtentionTracer mAtentionTracer;
+    AtentionTracer *mAtentionTracer;
 
     void NonOverlapingDetections(const vector<LandmarkDetector::CLNF>& clnf_models, vector<cv::Rect_<double> >& face_detections);
 

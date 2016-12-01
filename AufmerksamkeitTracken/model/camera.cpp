@@ -26,7 +26,7 @@ Camera::~Camera()
 
 void Camera::setCameraParameter(int id){
     ID = id;
-    if(id == 1){ //Webcam
+    if(id == 1){ //Webcam (fx und fy besser bei OpenFace wenn halb so groß)
         cameraMatrix = (cv::Mat_<double>(3,3) << 2288.8872146151, 0, 326.4366918263556,
                         0, 2186.84347316115, 240.4137245062925,
                         0, 0, 1);
@@ -321,15 +321,13 @@ void Camera::correct_Image(cv::Mat frame){
             cameraMatrix = (cv::Mat_<double>(3,3) << fx, 0, frame.cols/2.0,
                             0, fx, frame.rows/2.0,
                             0, 0, 1 );
+            init = false;
         }
     }
 }
 
 void Camera::correct_Image_Init(int height, int width){
-    cv::Size imageSize;
-    imageSize.height = height;
-    imageSize.width = width;
-    correct_Image_Init(imageSize);
+    correct_Image_Init(cv::Size(height,width));
 }
 void Camera::correct_Image_Init(cv::Size imageSize){
     cv::initUndistortRectifyMap(cameraMatrix, distCoeffs, cv::Mat(),

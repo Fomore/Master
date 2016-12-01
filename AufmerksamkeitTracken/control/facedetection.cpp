@@ -10,6 +10,8 @@ FaceDetection::FaceDetection(Ui::MainWindow *mWindow)
 {
     mTheWindow = mWindow;
 
+    mAtentionTracer = new AtentionTracer(mWindow);
+
     mKamera = new Camera(-1);
     Model_Init = 0;
     imgCount = 0;
@@ -73,10 +75,13 @@ void FaceDetection::FaceTracking(std::string path){
 
     // Anwendung - Berechnung der Faces
     if(path.size() < 1){
-                path = "/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4";
+        //path = "/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4";
+        //path = "/home/falko/Uni/Master/Film/Selbst_Webcam_02.mp4";
+        //path = "/home/falko/Uni/Master/Film/Selbst_Webcam_03.mp4";
+        path = "/home/falko/Uni/Master/Film/Selbst_Webcam_04.mp4";
         //        path = "/home/falko/Uni/Master/Film/Schulklasse_01.mp4";
         //        path = "/home/falko/Uni/Master/Film/Chor_01.mp4";
-        //        path = "/home/falko/Uni/Master/Film/Interview_640.mp4";
+        //path = "/home/falko/Uni/Master/Film/Interview_640.mp4";
         //path = "/home/falko/Uni/Master/Film/Interview_1280.mp4";
     }
     cv::VideoCapture video(path);
@@ -86,23 +91,14 @@ void FaceDetection::FaceTracking(std::string path){
     }
     cv::Mat frame_col;
 
-    //    cv::namedWindow("tracking_result",1);
-    /*
-    cv::namedWindow("Normal",1);
-    mImage.getImage(frame_col);
-    imshow("Normal", frame_col);
-
-    cv::namedWindow("grau",1);
-    mImage.convert_to_grayscale(frame_col,frame_col);
-    imshow("grau", frame_col);
-    */
     for(int frame_count = 0;video.read(frame_col);frame_count++){
-        //   for(int frame_count = 0;mImage.getScallImage(frame_col);frame_count++){
-        //      for(int frame_count = 0;mImage.getImage(frame_col);frame_count++){//Hiermit bekommt am auf Chor-Face einen Wert nach einiger Zeit
         // Reading the images
+        //resize(frame_col, frame_col, cv::Size(), 2, 2, CV_INTER_LINEAR);//stumpf aber geht bei kleinen Gesichtern
+
         mKamera->correct_Image(frame_col);
         if(frame_count == 0){
             mKamera->get_camera_params(fx,fy,cx,cy);
+            mAtentionTracer->setImageSize(frame_col.cols, frame_col.rows);
         }
         cv::Mat_<uchar> grayscale_image;
 
@@ -113,25 +109,18 @@ void FaceDetection::FaceTracking(std::string path){
         vector<cv::Rect_<double> > face_detections;
 
         bool all_models_active = true;
-        for(unsigned int model = 0; model < clnf_models.size(); ++model)
-        {
-            if(!active_models[model])
-            {
+        for(unsigned int model = 0; model < clnf_models.size(); ++model){
+            if(!active_models[model]){
                 all_models_active = false;
             }
-
         }
 
         // Get the detections (every 8th frame and when there are free models available for tracking) //Nun wird jedes Frame (%1) Berechent
-        if(frame_count % 8 == 0 && !all_models_active)
-        {
-            if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR)
-            {
+        if(frame_count % 8 == 0 && !all_models_active){
+            if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
                 vector<double> confidences;
                 LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_models[0].face_detector_HOG, confidences);
-            }
-            else
-            {
+            }else{
                 LandmarkDetector::DetectFaces(face_detections, grayscale_image, clnf_models[0].face_detector_HAAR);
             }
         }
@@ -143,27 +132,21 @@ void FaceDetection::FaceTracking(std::string path){
 
         // Go through every model and update the tracking
         tbb::parallel_for(0, (int)clnf_models.size(), [&](int model){
-            //for(unsigned int model = 0; model < clnf_models.size(); ++model)
-            //{
+            //for(unsigned int model = 0; model < clnf_models.size(); ++model){
 
             bool detection_success = false;
 
             // If the current model has failed more than 4 times in a row, remove it
-            if(clnf_models[model].failures_in_a_row > 4)
-            {
+            if(clnf_models[model].failures_in_a_row > 4){
                 active_models[model] = false;
                 clnf_models[model].Reset();
             }
 
             // If the model is inactive reactivate it with new detections
-            if(!active_models[model])
-            {
-
-                for(size_t detection_ind = 0; detection_ind < face_detections.size(); ++detection_ind)
-                {
+            if(!active_models[model]){
+                for(size_t detection_ind = 0; detection_ind < face_detections.size(); ++detection_ind){
                     // if it was not taken by another tracker take it (if it is false swap it to true and enter detection, this makes it parallel safe)
-                    if(face_detections_used[detection_ind].compare_and_swap(true, false) == false)
-                    {
+                    if(face_detections_used[detection_ind].compare_and_swap(true, false) == false){
                         // Reinitialise the model
                         clnf_models[model].Reset();
 
@@ -179,9 +162,7 @@ void FaceDetection::FaceTracking(std::string path){
                         break;
                     }
                 }
-            }
-            else
-            {
+            }else{
                 // The actual facial landmark detection / tracking
                 detection_success = LandmarkDetector::DetectLandmarksInVideo(grayscale_image, clnf_models[model], det_parameters[model]);
             }
@@ -196,8 +177,7 @@ void FaceDetection::FaceTracking(std::string path){
         pixmapR->fill(Qt::transparent);
         QPainter *painterR=new QPainter(pixmapR);
 
-        for(size_t model = 0; model < clnf_models.size(); ++model)
-        {
+        for(size_t model = 0; model < clnf_models.size(); ++model){
             // Visualising the results
             // Drawing the facial landmarks on the face and the bounding box around it if tracking is successful and initialised
             double detection_certainty = clnf_models[model].detection_certainty; // Qualität der detection: -1 perfekt und 1 falsch
@@ -205,9 +185,9 @@ void FaceDetection::FaceTracking(std::string path){
             double visualisation_boundary = -0.1;
 
             // Only draw if the reliability is reasonable, the value is slightly ad-hoc
-            if(detection_certainty < visualisation_boundary && !det_parameters[0].quiet_mode){
+            if(detection_certainty < visualisation_boundary){
 
-                printSmallImage(disp_image,model,*painterR,*painterL);
+                printSmallImage(frame_col,model,*painterR,*painterL);
 
                 if(detection_certainty > 1)
                     detection_certainty = 1;
@@ -216,19 +196,17 @@ void FaceDetection::FaceTracking(std::string path){
 
                 double itens = (detection_certainty + 1)/(visualisation_boundary +1);
                 print_CLNF(disp_image,model,itens,fx,fy,cx,cy);
-                //                std::cout<<"Gesicht "<<model<<": "<<clnf_models[model].GetBoundingBox()<<std::endl;
-                // Estimate head pose and eye gaze
-//                std::cout<<clnf_models[model].params_global<<std::endl;
-                cv::Vec6d headPose = LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy);
-                mAtentionTracer.newEulerPosition(model, headPose);
+
+                mAtentionTracer->newPosition((double)model/num_faces_max,
+                                             LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy),
+                                             clnf_models[model].params_global);
             }
         }
         painterL->end();
         painterR->end();
 
         // Work out the framerate
-        if(frame_count % 10 == 0)
-        {
+        if(frame_count % 10 == 0){
             t1 = cv::getTickCount();
             fps = 10.0 / (double(t1-t0)/cv::getTickFrequency());
             t0 = t1;
@@ -242,17 +220,15 @@ void FaceDetection::FaceTracking(std::string path){
             }
         }
 
-        if(!det_parameters[0].quiet_mode)
-        {
-            //            imshow("tracking_result", disp_image);
-            print_FPS_Model(cvRound(fps),num_active_models);
-            showImage(disp_image);
-            mTheWindow->Right_Label->setPixmap(*pixmapL);
-            mTheWindow->Left_Label->setPixmap(*pixmapR);
-        }else{
-            cout<<"Lol Quiet-Mode aktiv!"<<endl;
-        }
-        if(cv::waitKey(30) >= 0) break;
+        print_FPS_Model(cvRound(fps),num_active_models);
+        showImage(disp_image);
+        mTheWindow->Right_Label->setPixmap(*pixmapL);
+        mTheWindow->Left_Label->setPixmap(*pixmapR);
+
+        mAtentionTracer->print();
+
+        if(cv::waitKey(30) >= 0)
+            return;
     }
 }
 
@@ -267,16 +243,18 @@ void FaceDetection::print_CLNF(cv::Mat img, int model, double itens, double fx, 
 
     // Draw it in reddish if uncertain, blueish if certain
     LandmarkDetector::DrawBox(img, pose_estimate, cv::Scalar((1-itens)*255.0,0, itens*255), thickness, fx, fy, cx, cy);
+
+    // Stellt die Gesichtsorientierung dar
     print_Orientation(img,model);
 }
 void FaceDetection::print_Orientation(cv::Mat img, int model){
     // A rough heuristic for box around the face width
-    int thickness = (int)std::ceil(2.0* ((double)img.cols) / 640.0);
+    int thickness = (int)std::ceil(1.2* ((double)img.cols) / 640.0);
     cv::Vec6d gparam = clnf_models[model].params_global;
     cv::Matx33d rot = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(gparam[1],gparam[2],gparam[3]));
-    cv::Vec3d ln = rot*cv::Vec3d(0,0,(-(double)img.cols)/20.0);
-    cv::line(img, cv::Point(gparam[4],gparam[5]),cv::Point(gparam[4]+ln(0),gparam[5]+ln(1)), cv::Scalar(0,255,0), thickness);
-    std::cout<<"Orient "<<model<<gparam<<std::endl;
+    cv::Vec3d ln = rot*cv::Vec3d(0,0,(-(double)img.cols)/15.0);
+    cv::Scalar colore(255/num_faces_max*(num_faces_max-model),255/num_faces_max*model,0);
+    cv::arrowedLine(img, cv::Point(gparam[4],gparam[5]),cv::Point(gparam[4]+ln(0),gparam[5]+ln(1)), colore,thickness);
 }
 
 // Dieser Teil ist aus OpenFace/FaceLandmarkVidMulti.cpp übernommen
@@ -399,6 +377,7 @@ void FaceDetection::LearnModel(){
         // Initialisiierung
         double fx,fy,cx,cy;
         mKamera->get_camera_params(fx,fy,cx,cy); // Das stimmt so nicht wenn keine paramter gesetzt sind
+        mAtentionTracer->setImageSize(frame_col.cols, frame_col.rows);
 
         mImage.getFaceParameter(Model_Init,X,Y,W,H);
 
@@ -449,7 +428,7 @@ void FaceDetection::LearnModel(){
         }
 
         if(success){
-            printSmallImage(disp_image,Model_Init,*painterR,*painterL);
+            printSmallImage(frame_col,Model_Init,*painterR,*painterL);
 
             print_CLNF(disp_image,Model_Init,0.5,fx,fy,cx,cy);
             //std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
@@ -580,6 +559,7 @@ void FaceDetection::FaceTrackingAutoSize(string path){
         mKamera->correct_Image(frame_colore);
         if(frame_count == 0){
             mKamera->get_camera_params(fx,fy,cx,cy);
+            mAtentionTracer->setImageSize(frame_colore.cols, frame_colore.rows);
         }
 
 
@@ -610,7 +590,7 @@ void FaceDetection::FaceTrackingAutoSize(string path){
                 mImageSections[model].getAvgSection(nX,nY,nW,nH);
                 x = cvRound(nX); y = cvRound(nY);
                 w = cvRound(nW); h = cvRound(nH);
-//                std::cout<<"Korrektur Lost "<<frame_count<<": "<<model<<std::endl;
+                //                std::cout<<"Korrektur Lost "<<frame_count<<": "<<model<<std::endl;
             }
 
             cv::Mat_<uchar> faceImage;
@@ -659,8 +639,11 @@ void FaceDetection::FaceTrackingAutoSize(string path){
                 printSmallImage(frame_colore,model,*painterR,*painterL);
                 //                print_CLNF(disp_image,model,itens,fx,fy,cx,cy);
                 // Estimate head pose and eye gaze
-                cv::Vec6d headPose = LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy);
-                mAtentionTracer.newEulerPosition(model, headPose);
+
+                mAtentionTracer->newPosition((double)model/num_faces_max,
+                                             LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy),
+                                             clnf_models[model].params_global);
+
                 print_Orientation(disp_image,model);
 
                 cv::Rect_<double> box = clnf_models[model].GetBoundingBox();
@@ -670,7 +653,7 @@ void FaceDetection::FaceTrackingAutoSize(string path){
                 if(!mImageSections[model].setSection(box.x,box.y,box.width,box.height)){//Wenn die Grenzen überschritten werden
                     active_models[model] = false; //Soll sichergestellt werden, dass nächstesmal ein Gesicht erkannt wird
                     mImageSections[model].getAvgSection(box.x,box.y,box.width,box.height);
-//                    std::cout<<"Autoreset "<<frame_count<<std::endl;
+                    //                    std::cout<<"Autoreset "<<frame_count<<std::endl;
                 }
                 shift_detected_landmarks_toImage(model,box.x,box.y,box.width,box.height,minSize);
 
@@ -692,6 +675,9 @@ void FaceDetection::FaceTrackingAutoSize(string path){
         mTheWindow->Left_Label->setPixmap(*pixmapR);
 
         print_FPS_Model(cvRound(fps),num_active_models);
+
+        mAtentionTracer->print();
+
         if(cv::waitKey(30) >= 0) break;
     }
 }
@@ -700,8 +686,8 @@ void FaceDetection::printSmallImage(cv::Mat img, int model, QPainter &painterR, 
     int sImageW = mTheWindow->Right_Label->size().width();
     int sImageH = mTheWindow->Right_Label->size().height()/num_faces_max;
 
-    cv::Mat L = print_Eye(img,model,36,6, false); //Left
-    cv::Mat R = print_Eye(img,model,42,6, false); //Right
+    cv::Mat R = print_Eye(img,model,36,6, false); //Left
+    cv::Mat L = print_Eye(img,model,42,6, false); //Right
     if(!L.data || !R.data){
         if(!R.data){
             R = print_Eye(img,model,0,27, false);
