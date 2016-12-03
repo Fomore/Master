@@ -11,6 +11,7 @@ private:
     Ui::MainWindow* mTheWindow;
 
     std::vector<double> mColores;
+    //Positives linkshändiges Koordinatensystem
     std::vector<cv::Vec6d> mCamPose;
     std::vector<cv::Vec6d> mImgPose;
 
@@ -26,9 +27,12 @@ private:
     cv::Point calcArrowEndImage(cv::Vec6d headPose);
     cv::Point calcPose2Image(cv::Vec3d point, cv::Vec6d pose);
 
+    cv::Vec3d unitVector(cv::Vec3d vec);
+
     void printImageOrientation();
     void printWorld();
     void printAttention();
+    void printCirclePoints(cv::Mat &img, cv::Vec3d center, cv::Vec3b color, cv::Vec3d position, cv::Vec3d orientation);
 public:
     AtentionTracer(Ui::MainWindow *parent = 0);
     ~AtentionTracer();
