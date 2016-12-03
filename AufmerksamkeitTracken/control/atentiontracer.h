@@ -24,7 +24,7 @@ private:
     cv::Vec6d mAttentionPose;
 
     cv::Point calcArrowEndImage(cv::Vec6d headPose);
-    cv::Point calcWorlt2Image(cv::Vec3d point);
+    cv::Point calcPose2Image(cv::Vec3d point, cv::Vec6d pose);
 
     void printImageOrientation();
     void printWorld();

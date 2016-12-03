@@ -11,7 +11,8 @@ AtentionTracer::AtentionTracer(Ui::MainWindow *parent)
     mWorldSize = cv::Size(312,208);
     mAtentSize = cv::Size(312,208);
 
-    mWorldPose = cv::Vec6d(0,100,400,1,-0.5,0);
+    mWorldPose = cv::Vec6d(0,200,1200,1,-0.5,0);
+    mAttentionPose = cv::Vec6d(0,-50,1200,0,0,0);
 }
 
 AtentionTracer::~AtentionTracer()
@@ -38,9 +39,9 @@ cv::Point AtentionTracer::calcArrowEndImage(cv::Vec6d headPose){
     return cv::Point(cvRound(p[0]+headPose[4]),cvRound(p[1]+headPose[5]));
 }
 
-cv::Point AtentionTracer::calcWorlt2Image(cv::Vec3d point){
-    cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(mWorldPose[3],mWorldPose[4],mWorldPose[5]));
-    cv::Vec3d p = R*(point-cv::Vec3d(mWorldPose[0],mWorldPose[1],mWorldPose[2]));
+cv::Point AtentionTracer::calcPose2Image(cv::Vec3d point, cv::Vec6d pose){
+    cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pose[3],pose[4],pose[5]));
+    cv::Vec3d p = R*(point-cv::Vec3d(pose[0],pose[1],pose[2]));
     return cv::Point(mWorldSize.width*p[0]/p[2]+mWorldSize.width/2.0,
             mWorldSize.width*p[1]/p[2]+mWorldSize.height/2.0);
 }
@@ -76,11 +77,12 @@ void AtentionTracer::printWorld(){
     for(int i = 0; i < mCamPose.size(); i++){
         cv::Scalar color(255.0*(1.0-mColores[i]),255.0*mColores[i],255.0*(1.0-mColores[i]));
         cv::Vec6d pos = mCamPose[i];
-        cv::Point p1 = calcWorlt2Image(cv::Vec3d(pos[0],pos[1],pos[2]));
+        cv::Point p1 = calcPose2Image(cv::Vec3d(pos[0],pos[1],pos[2]), mWorldPose);
         cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pos[3],pos[4],pos[5]));
-        cv::Point p2 = calcWorlt2Image(cv::Vec3d(pos[0],pos[1],pos[2])+(R*cv::Vec3d(0,0,-20)));
+        cv::Vec3d pose2(cv::Vec3d(pos[0],pos[1],pos[2])+(R*cv::Vec3d(0,0,-30)));
+        cv::Point p2 = calcPose2Image(pose2, mWorldPose);
         cv::arrowedLine(img, p1,p2, color);
-        std::cout<<"Welt: "<<pos<<std::endl;
+        std::cout<<pos<< pose2<<std::endl;
     }
 
     QImage img2 = Image::MatToQImage(img);
@@ -89,9 +91,19 @@ void AtentionTracer::printWorld(){
 }
 
 void AtentionTracer::printAttention(){
-    cv::Mat img(mAtentSize, CV_8UC3, cv::Scalar(255,0,0));
+    cv::Mat img(mAtentSize, CV_8UC3, cv::Scalar(0,0,0));
+    for(int i = 0; i < mCamPose.size(); i++){
+        cv::Scalar color(255.0*(1.0-mColores[i]),255.0*mColores[i],255.0*(1.0-mColores[i]));
+        cv::Vec6d pos = mCamPose[i];
+        cv::Point p1 = calcPose2Image(cv::Vec3d(pos[0],pos[1],pos[2]),mAttentionPose);
+        cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pos[3],pos[4],pos[5]));
+        cv::Point p2 = calcPose2Image(cv::Vec3d(pos[0],pos[1],pos[2])+(R*cv::Vec3d(0,0,-30)),mAttentionPose);
+        cv::arrowedLine(img, p1,p2, color);
+    }
 
     QImage img2 = Image::MatToQImage(img);
     QPixmap pix = QPixmap::fromImage(img2);
     mTheWindow->ImageBottomRight_label->setPixmap(pix);
 }
+
+void

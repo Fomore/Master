@@ -12,7 +12,7 @@ FaceDetection::FaceDetection(Ui::MainWindow *mWindow)
 
     mAtentionTracer = new AtentionTracer(mWindow);
 
-    mKamera = new Camera(-1);
+    mKamera = new Camera(1);
     Model_Init = 0;
     imgCount = 0;
 
