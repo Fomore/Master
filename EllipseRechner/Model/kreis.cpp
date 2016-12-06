@@ -80,7 +80,7 @@ cv::Mat Kreis::print(int alpha_x, int alpha_y, int radius, int distanz, int skal
             bgra[3] = UCHAR_MAX;
         }
     }
-    cv::vector<int> compression_params;
+    std::vector<int> compression_params;
     compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
     compression_params.push_back(9);
 
@@ -94,7 +94,7 @@ void Kreis::build_Table(){
     double distanz = 100;
     int s = 1000000;
 
-    cv::vector<int> compression_params;
+    std::vector<int> compression_params;
     compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
     compression_params.push_back(9);
 
@@ -103,7 +103,7 @@ void Kreis::build_Table(){
             cv::Mat matImg = cv::Mat::zeros(cv::Size(420,420), CV_8UC4);
             double step = 700;
 
-            cv::vector<cv::Point> point;
+            std::vector<cv::Point> point;
 
             for(double a = 0; a < step*2; a++){
                 double pos[3];

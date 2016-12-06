@@ -15,7 +15,7 @@ Ellipse::~Ellipse()
 
 cv::RotatedRect Ellipse::calculate_Ellipse(cv::Mat image){
 
-    cv::vector<cv::Point> pos;
+    std::vector<cv::Point> pos;
     for(int i = 0; i < image.cols; i++){
         for(int j = 0; j < image.rows; j++){
             cv::Vec4b& bgra = image.at<cv::Vec4b>(i, j);
