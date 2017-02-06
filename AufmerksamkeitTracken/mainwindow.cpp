@@ -17,7 +17,7 @@ MainWindow::~MainWindow()
 void MainWindow::on_pushButton_clicked()
 {
     if(!ui->checkBox_Autorun->isChecked()){
-        mFaceDetection->FaceTracking(ui->Path_lineEdit->text().toStdString());
+        mFaceDetection->FaceTracking(ui->Path_lineEdit->text());
     }else{
         mFaceDetection->FaceTrackingAutoSize(ui->Path_lineEdit->text().toStdString());
     }

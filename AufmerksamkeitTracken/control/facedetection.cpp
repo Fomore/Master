@@ -67,9 +67,10 @@ FaceDetection::~FaceDetection()
 
 }
 
-void FaceDetection::FaceTracking(std::string path){
+void FaceDetection::FaceTracking(QString path){
     // Initialisiierung
     double fx,fy,cx,cy;
+    int x,y;
 
     // For measuring the timings
     int64 t1,t0 = cv::getTickCount();
@@ -88,22 +89,18 @@ void FaceDetection::FaceTracking(std::string path){
         //path = "/home/falko/Uni/Master/Film/Interview_640.mp4";
         //path = "/home/falko/Uni/Master/Film/Interview_1280.mp4";
     }
-    cv::VideoCapture video(path);
-    if(!video.isOpened()){
+
+    if(!mKamera->setPath(path)){
         cout<<"Kein Video"<<std::endl;
         return;
     }
     cv::Mat frame_col;
+    mKamera->get_camera_params(fx,fy,cx,cy,x,y);
+    mAtentionTracer->setImageSize(x,y);
 
-    for(int frame_count = 0;video.read(frame_col);frame_count++){
+    for(int frame_count = 0;mKamera->getFrame(frame_col);frame_count++){
         // Reading the images
-        //resize(frame_col, frame_col, cv::Size(), 2, 2, CV_INTER_LINEAR);//stumpf aber geht bei kleinen Gesichtern
 
-        mKamera->correct_Image(frame_col);
-        if(frame_count == 0){
-            mKamera->get_camera_params(fx,fy,cx,cy);
-            mAtentionTracer->setImageSize(frame_col.cols, frame_col.rows);
-        }
         cv::Mat_<uchar> grayscale_image;
 
         cv::Mat disp_image = frame_col.clone();
@@ -374,13 +371,13 @@ void FaceDetection::print_FPS_Model(int fps, int model){
 void FaceDetection::LearnModel(){
     cv::Mat frame_col,frame;
     double imgStep = 14.0;
-    int X,Y,W,H,nW, nH;
+    int X,Y,W,H,nW,nH,x,y;
 
     if(mImage.getImage(frame)){
         mKamera->correct_Image(frame);
         // Initialisiierung
         double fx,fy,cx,cy;
-        mKamera->get_camera_params(fx,fy,cx,cy); // Das stimmt so nicht wenn keine paramter gesetzt sind
+        mKamera->get_camera_params(fx,fy,cx,cy,x,y); // Das stimmt so nicht wenn keine paramter gesetzt sind
         mAtentionTracer->setImageSize(frame_col.cols, frame_col.rows);
 
         mImage.getFaceParameter(Model_Init,X,Y,W,H);
@@ -533,6 +530,7 @@ void FaceDetection::shift_detected_landmarks_toImage(int model, int worldX, int 
 void FaceDetection::FaceTrackingAutoSize(string path){
     // Initialisiierung
     double fx,fy,cx,cy;
+    int x,y;
 
     mImageSections.clear();
     for (int i = 0; i < num_faces_max; ++i){
@@ -562,7 +560,7 @@ void FaceDetection::FaceTrackingAutoSize(string path){
     for(int frame_count = 0;video.read(frame_colore);frame_count++){
         mKamera->correct_Image(frame_colore);
         if(frame_count == 0){
-            mKamera->get_camera_params(fx,fy,cx,cy);
+            mKamera->get_camera_params(fx,fy,cx,cy,x,y);
             mAtentionTracer->setImageSize(frame_colore.cols, frame_colore.rows);
         }
 

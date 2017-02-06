@@ -1,7 +1,6 @@
 #include "frameevents.h"
 #include <QFile>
 #include <QDebug>
-#include <QString>
 
 #include <iostream>
 
@@ -37,6 +36,12 @@ size_t FrameEvents::getBoxSizeInFrame(size_t frameID)
 cv::Rect FrameEvents::getRect(size_t frameID, size_t boxID)
 {
     return mFrames[frameID].getBox(boxID);
+}
+
+bool FrameEvents::isNextFrame(size_t frame)
+{
+    int pos = getFramePos(frame+1);
+    return pos >= 0 && frame+1 == mFrames[pos].getFrame();
 }
 
 int FrameEvents::addFrame(size_t frame)
