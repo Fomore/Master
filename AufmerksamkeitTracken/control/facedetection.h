@@ -49,7 +49,7 @@ private:
 public:
     FaceDetection(Ui::MainWindow *parent = 0);
     ~FaceDetection();
-    void FaceTracking(std::string path);
+    void FaceTracking(QString path);
     void FaceTrackingAutoSize(std::string path);
     void LearnModel();
 };

@@ -3,6 +3,7 @@
 
 #include <QXmlStreamReader>
 #include <QtXml>
+#include <QString>
 
 #include <opencv2/opencv.hpp>
 #include "model/frame.h"
@@ -28,6 +29,8 @@ public:
     size_t getBoxSizeInFrame(size_t frameID);
 
     cv::Rect getRect(size_t frameID,size_t boxID);
+
+    bool isNextFrame(size_t frame);
 };
 
 #endif // FRAMEEVENTS_H
