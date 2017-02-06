@@ -8,6 +8,7 @@ class Frame
 private:
     std::vector<cv::Rect> mBoxes;
     size_t mFrame;
+
 public:
     Frame(size_t frame);
     size_t getSize();
@@ -16,6 +17,7 @@ public:
     void deleteBox(int p);
     size_t getFrame();
     cv::Rect getBox(int i);
+    void printAll();
 };
 
 #endif // FRAME_H

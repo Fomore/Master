@@ -7,6 +7,7 @@
 #include "LandmarkCoreIncludes.h"
 #include "src/algo.h"
 #include "control/atentiontracer.h"
+#include <control/frameevents.h>
 
 #include "ui_mainwindow.h"
 
@@ -30,6 +31,7 @@ private:
     int imgCount;
 
     AtentionTracer *mAtentionTracer;
+    FrameEvents *mFrameEvents;
 
     void NonOverlapingDetections(const vector<LandmarkDetector::CLNF>& clnf_models, vector<cv::Rect_<double> >& face_detections);
 

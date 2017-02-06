@@ -1,4 +1,5 @@
 #include "frame.h"
+#include <iostream>
 
 Frame::Frame(size_t frame):
     mFrame(frame)
@@ -36,4 +37,12 @@ cv::Rect Frame::getBox(int i)
 {
     if(i >= 0 && i < mBoxes.size())
         return mBoxes[i];
+}
+
+void Frame::printAll()
+{
+    for(size_t i = 0; i < mBoxes.size(); i++){
+        std::cout<<i<<": "<<mBoxes[i]<<" ";
+    }
+    std::cout<<std::endl;
 }

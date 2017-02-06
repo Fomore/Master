@@ -11,6 +11,8 @@ FaceDetection::FaceDetection(Ui::MainWindow *mWindow)
     mTheWindow = mWindow;
 
     mAtentionTracer = new AtentionTracer(mWindow);
+    mFrameEvents = new FrameEvents();
+    mFrameEvents->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_1_Label.xml");
 
     mKamera = new Camera(5);
     Model_Init = 0;

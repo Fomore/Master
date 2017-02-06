@@ -1,6 +1,9 @@
 #ifndef FRAMEEVENTS_H
 #define FRAMEEVENTS_H
 
+#include <QXmlStreamReader>
+#include <QtXml>
+
 #include <opencv2/opencv.hpp>
 #include "model/frame.h"
 
@@ -10,10 +13,17 @@ private:
     std::vector<Frame> mFrames;
 
     int getFramePos(size_t frame);
-    void addFrame(size_t frame);
+
+    int filnameToFrame(QString file);
+    void boxAttributToValue(QXmlStreamAttributes att, int &height, int &left, int &top, int &width);
+
+    int addFrame(size_t frame);
+    void addBox(int id, int x, int y, int w, int h);
+
+    void printAll();
 public:
     FrameEvents();
-    void loadXML(std::string path);
+    void loadXML(QString path);
 };
 
 #endif // FRAMEEVENTS_H
