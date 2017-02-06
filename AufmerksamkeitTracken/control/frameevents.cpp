@@ -29,6 +29,16 @@ int FrameEvents::getFramePos(size_t frame)
     return pos;
 }
 
+size_t FrameEvents::getBoxSizeInFrame(size_t frameID)
+{
+    return mFrames[frameID].getSize();
+}
+
+cv::Rect FrameEvents::getRect(size_t frameID, size_t boxID)
+{
+    return mFrames[frameID].getBox(boxID);
+}
+
 int FrameEvents::addFrame(size_t frame)
 {
     if(mFrames.size() == 0){
@@ -73,7 +83,7 @@ void FrameEvents::boxAttributToValue(QXmlStreamAttributes att, int &height, int 
 
 void FrameEvents::loadXML(QString path)
 {
-    std::cout<<"ToDo: Load XML: "<<path.toStdString()<<std::endl;
+    std::cout<<"Load XML: "<<path.toStdString()<<std::endl;
 
     QXmlStreamReader xml;
     QFile xmlFile(path);
@@ -107,12 +117,11 @@ void FrameEvents::loadXML(QString path)
                     xml.skipCurrentElement();
                 }
             }
+            std::cout<<"Fertig XML"<<std::endl;
         }else{
             std::cout<<"Fehler bei Name dataset: "<<xml.name().toString().toStdString()<<std::endl;
         }
     }else{
         qDebug()<< "Fehler in XML beim öffen von XML: "<<path;
     }
-
-    printAll();
 }

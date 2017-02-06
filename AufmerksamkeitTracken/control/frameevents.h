@@ -12,8 +12,6 @@ class FrameEvents
 private:
     std::vector<Frame> mFrames;
 
-    int getFramePos(size_t frame);
-
     int filnameToFrame(QString file);
     void boxAttributToValue(QXmlStreamAttributes att, int &height, int &left, int &top, int &width);
 
@@ -24,6 +22,12 @@ private:
 public:
     FrameEvents();
     void loadXML(QString path);
+
+    int getFramePos(size_t frame);
+
+    size_t getBoxSizeInFrame(size_t frameID);
+
+    cv::Rect getRect(size_t frameID,size_t boxID);
 };
 
 #endif // FRAMEEVENTS_H
