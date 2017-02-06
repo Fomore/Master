@@ -25,7 +25,9 @@ SOURCES += main.cpp\
     model/image.cpp \
     src/stdafx.cpp \
     model/imagesection.cpp \
-    control/atentiontracer.cpp
+    control/atentiontracer.cpp \
+    control/frameevents.cpp \
+    model/frame.cpp
 #    FaceLandmarkVidMulti.cpp
 #    FaceLandmarkImg.cpp
 
@@ -37,7 +39,9 @@ HEADERS  += mainwindow.h \
     src/blob_gen.h \
     src/stdafx.h \
     model/imagesection.h \
-    control/atentiontracer.h
+    control/atentiontracer.h \
+    control/frameevents.h \
+    model/frame.h
 
 FORMS    += mainwindow.ui
 
