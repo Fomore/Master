@@ -6,13 +6,11 @@
 #include "model/image.h"
 
 Camera::Camera(){
-    init = true;
     setCameraParameter(0);
 }
 
 Camera::Camera(int id)
 {
-    init = true;
     setCameraParameter(id);
 }
 
@@ -77,8 +75,8 @@ void Camera::setCameraParameter(int id){
                                 CV_16SC2, map1, map2);
 }
 
-void Camera::correct_Image(cv::Mat frame){
-        cv::undistort(frame.clone(),frame, cameraMatrix, distCoeffs);//Korrektur mit beschneiden
+void Camera::correct_Image(cv::Mat img){
+        cv::undistort(img.clone(),img, cameraMatrix, distCoeffs);//Korrektur mit beschneiden
         //cv::remap(frame, frame, map1, map2, cv::INTER_LINEAR);//Korrektur mit skallierung
 }
 

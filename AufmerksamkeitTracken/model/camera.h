@@ -18,7 +18,7 @@ public:
     Camera();
     ~Camera();
     void get_camera_params(double &fx, double &fy, double &cx, double &cy);
-    void correct_Image_Init(cv::Size imageSize);
+    void correct_Image(cv::Mat img);
 };
 
 #endif // CAMERA_H
