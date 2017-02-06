@@ -39,7 +39,7 @@ private:
     vector<bool> active_models;
     vector<ImageSection> mImageSections;
 
-    int num_faces_max = 7;
+    int num_faces_max = 2;
 
     void shift_detected_landmarks_toWorld(int model, int worldX, int worldY, int worldW, int worldH, int imgW, int imgH); //f skallierung img/world
     void shift_detected_landmarks_toImage(int model, int worldX, int worldY, int worldW, int worldH, int minSize); //f skallierung world/img

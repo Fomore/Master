@@ -1,7 +1,8 @@
 #include "atentiontracer.h"
 
 #include <iostream>
-#include "FaceAnalyser.h"
+//#include "FaceAnalyser.h"
+#include "LandmarkCoreIncludes.h"
 #include "model/image.h"
 
 AtentionTracer::AtentionTracer(Ui::MainWindow *parent)

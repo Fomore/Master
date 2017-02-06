@@ -12,7 +12,7 @@ FaceDetection::FaceDetection(Ui::MainWindow *mWindow)
 
     mAtentionTracer = new AtentionTracer(mWindow);
 
-    mKamera = new Camera(1);
+    mKamera = new Camera(5);
     Model_Init = 0;
     imgCount = 0;
 
@@ -78,7 +78,9 @@ void FaceDetection::FaceTracking(std::string path){
         //path = "/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4";
         //path = "/home/falko/Uni/Master/Film/Selbst_Webcam_02.mp4";
         //path = "/home/falko/Uni/Master/Film/Selbst_Webcam_03.mp4";
-        path = "/home/falko/Uni/Master/Film/Selbst_Webcam_04.mp4";
+        //path = "/home/falko/Uni/Master/Film/Selbst_Webcam_04.mp4";
+        path = "/home/falko/Uni/Master/Film/Test_Positionen_1.mp4";
+        //path = "/home/falko/Uni/Master/Film/Test_Positionen_2.mp4";
         //        path = "/home/falko/Uni/Master/Film/Schulklasse_01.mp4";
         //        path = "/home/falko/Uni/Master/Film/Chor_01.mp4";
         //path = "/home/falko/Uni/Master/Film/Interview_640.mp4";
