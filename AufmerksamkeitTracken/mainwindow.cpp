@@ -75,3 +75,13 @@ void MainWindow::on_actionSelect_Camera_triggered()
                                  mKamera->getCameraID(),0,10,1);
     mKamera->setCameraParameter(i);
 }
+
+void MainWindow::on_actionUse_Boxes_triggered(bool checked)
+{
+    mFaceDetection->setUseBox(checked);
+}
+
+void MainWindow::on_actionCorrect_Image_triggered(bool checked)
+{
+    mKamera->setUseCorrection(checked);
+}

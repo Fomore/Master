@@ -11,6 +11,7 @@ private:
     cv::Mat map1, map2;
     int ImageWight, ImageHeight;
     int ID;
+    bool mUseCorrection = true;
 
     cv::VideoCapture video;
 
@@ -27,6 +28,8 @@ public:
     void setCameraParameter(int id);
 
     void correct_Image(cv::Mat img);
+
+    void setUseCorrection(bool c);
 };
 
 #endif // CAMERA_H

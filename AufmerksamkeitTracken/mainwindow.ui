@@ -185,6 +185,8 @@
     </property>
     <addaction name="actionSelect_Camera"/>
     <addaction name="actionMax_Faces"/>
+    <addaction name="actionUse_Boxes"/>
+    <addaction name="actionCorrect_Image"/>
     <addaction name="actionAuto_Size"/>
    </widget>
    <addaction name="menuFace_Detection"/>
@@ -225,6 +227,25 @@
   <action name="actionSelect_Camera">
    <property name="text">
     <string>Select Camera</string>
+   </property>
+  </action>
+  <action name="actionUse_Boxes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Use Boxes</string>
+   </property>
+  </action>
+  <action name="actionCorrect_Image">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Correct Image</string>
    </property>
   </action>
  </widget>

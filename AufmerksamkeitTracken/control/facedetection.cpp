@@ -38,7 +38,7 @@ void FaceDetection::FaceTracking(){
     mKamera->get_camera_params(fx,fy,cx,cy,x,y);
     mAtentionTracer->setImageSize(x,y);
 
-    for(int frame_count = 0;mKamera->getFrame(frame_col);frame_count++){
+    for(int frame_count = 0;getFrame(frame_col);frame_count++){
         // Reading the images
 
         cv::Mat_<uchar> grayscale_image;
@@ -458,6 +458,11 @@ void FaceDetection::setAutoSize(bool a)
     mAutoSize = a;
 }
 
+void FaceDetection::setUseBox(bool b)
+{
+    mUseBox = b;
+}
+
 void FaceDetection::shift_detected_landmarks_toWorld(int model, int worldX, int worldY, int worldW, int worldH, int imgW, int imgH){
     cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
 
@@ -518,6 +523,11 @@ void FaceDetection::shift_detected_landmarks_toImage(int model, int worldX, int 
     //ToDo: Skallierung anpassen
 }
 
+bool FaceDetection::getFrame(cv::Mat &img)
+{
+    return mKamera->getFrame(img);
+}
+
 void FaceDetection::FaceTrackingAutoSize(){
     // Initialisiierung
     double fx,fy,cx,cy;
@@ -541,7 +551,7 @@ void FaceDetection::FaceTrackingAutoSize(){
 
     double minSize = 200;
 
-    for(int frame_count = 0;mKamera->getFrame(frame_colore);frame_count++){
+    for(int frame_count = 0;getFrame(frame_colore);frame_count++){
         QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
         pixmapL->fill(Qt::transparent);
         QPainter *painterL=new QPainter(pixmapL);

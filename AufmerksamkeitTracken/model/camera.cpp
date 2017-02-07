@@ -93,6 +93,11 @@ void Camera::correct_Image(cv::Mat img){
         //cv::remap(frame, frame, map1, map2, cv::INTER_LINEAR);//Korrektur mit skallierung
 }
 
+void Camera::setUseCorrection(bool c)
+{
+    mUseCorrection = c;
+}
+
 // Gibt die Werte der Kamera aus
 void Camera::get_camera_params(double &fx, double &fy, double &cx, double &cy, int &x, int &y){
     fx = cameraMatrix.at<double>(0,0);
@@ -112,7 +117,7 @@ bool Camera::getFrame(cv::Mat &img)
 {
     if(video.isOpened()){
         bool ret = video.read(img);
-        if(ret){
+        if(ret && mUseCorrection){
             correct_Image(img);
         }
         return ret;

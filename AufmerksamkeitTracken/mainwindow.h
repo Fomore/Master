@@ -37,6 +37,10 @@ private slots:
 
     void on_actionSelect_Camera_triggered();
 
+    void on_actionUse_Boxes_triggered(bool checked);
+
+    void on_actionCorrect_Image_triggered(bool checked);
+
 private:
     Ui::MainWindow *ui;
 //    Image mImage;
