@@ -44,6 +44,14 @@ bool FrameEvents::isNextFrame(size_t frame)
     return pos >= 0 && frame+1 == mFrames[pos].getFrame();
 }
 
+void FrameEvents::clearAll()
+{
+    for(size_t i = 0; i < mFrames.size(); i++){
+        mFrames[i].clearAll();
+    }
+    mFrames.clear();
+}
+
 int FrameEvents::addFrame(size_t frame)
 {
     if(mFrames.size() == 0){
@@ -88,6 +96,7 @@ void FrameEvents::boxAttributToValue(QXmlStreamAttributes att, int &height, int 
 
 void FrameEvents::loadXML(QString path)
 {
+    clearAll();
     std::cout<<"Load XML: "<<path.toStdString()<<std::endl;
 
     QXmlStreamReader xml;

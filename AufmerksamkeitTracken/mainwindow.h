@@ -4,6 +4,7 @@
 #include "ui_mainwindow.h"
 
 #include "control/facedetection.h"
+#include "control/frameevents.h"
 #include "model/camera.h"
 #include "model/image.h"
 
@@ -26,11 +27,17 @@ private slots:
 
     void on_Learn_Button_clicked();
 
+    void on_actionOpen_Video_triggered();
+
+    void on_actionOpen_XML_triggered();
+
 private:
     Ui::MainWindow *ui;
 //    Camera mKamera;
 //    Image mImage;
     FaceDetection *mFaceDetection;
+    FrameEvents *mFrameEvents;
+    Camera* mKamera;
 };
 
 #endif // MAINWINDOW_H

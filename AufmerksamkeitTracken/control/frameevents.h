@@ -20,6 +20,7 @@ private:
     void addBox(int id, int x, int y, int w, int h);
 
     void printAll();
+
 public:
     FrameEvents();
     void loadXML(QString path);
@@ -31,6 +32,7 @@ public:
     cv::Rect getRect(size_t frameID,size_t boxID);
 
     bool isNextFrame(size_t frame);
+    void clearAll();
 };
 
 #endif // FRAMEEVENTS_H

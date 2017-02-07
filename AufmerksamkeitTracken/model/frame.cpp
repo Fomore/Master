@@ -46,3 +46,8 @@ void Frame::printAll()
     }
     std::cout<<std::endl;
 }
+
+void Frame::clearAll()
+{
+    mBoxes.clear();
+}

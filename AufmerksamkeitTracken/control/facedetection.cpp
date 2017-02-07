@@ -6,15 +6,14 @@
 
 using namespace std;
 
-FaceDetection::FaceDetection(Ui::MainWindow *mWindow)
+FaceDetection::FaceDetection(Ui::MainWindow *mWindow, FrameEvents *frameEV, Camera *cam)
 {
     mTheWindow = mWindow;
 
     mAtentionTracer = new AtentionTracer(mWindow);
-    mFrameEvents = new FrameEvents();
-    mFrameEvents->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_1_Label.xml");
+    mFrameEvents = frameEV;
+    mKamera = cam;
 
-    mKamera = new Camera(5);
     Model_Init = 0;
     imgCount = 0;
 
@@ -67,7 +66,7 @@ FaceDetection::~FaceDetection()
 
 }
 
-void FaceDetection::FaceTracking(QString path){
+void FaceDetection::FaceTracking(){
     // Initialisiierung
     double fx,fy,cx,cy;
     int x,y;
@@ -76,24 +75,6 @@ void FaceDetection::FaceTracking(QString path){
     int64 t1,t0 = cv::getTickCount();
     double fps = 10;
 
-    // Anwendung - Berechnung der Faces
-    if(path.size() < 1){
-        //path = "/home/falko/Uni/Master/Film/Selbst_Webcam_01.mp4";
-        //path = "/home/falko/Uni/Master/Film/Selbst_Webcam_02.mp4";
-        //path = "/home/falko/Uni/Master/Film/Selbst_Webcam_03.mp4";
-        //path = "/home/falko/Uni/Master/Film/Selbst_Webcam_04.mp4";
-        path = "/home/falko/Uni/Master/Film/Test_Positionen_1.mp4";
-        //path = "/home/falko/Uni/Master/Film/Test_Positionen_2.mp4";
-        //        path = "/home/falko/Uni/Master/Film/Schulklasse_01.mp4";
-        //        path = "/home/falko/Uni/Master/Film/Chor_01.mp4";
-        //path = "/home/falko/Uni/Master/Film/Interview_640.mp4";
-        //path = "/home/falko/Uni/Master/Film/Interview_1280.mp4";
-    }
-
-    if(!mKamera->setPath(path)){
-        cout<<"Kein Video"<<std::endl;
-        return;
-    }
     cv::Mat frame_col;
     mKamera->get_camera_params(fx,fy,cx,cy,x,y);
     mAtentionTracer->setImageSize(x,y);

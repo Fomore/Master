@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Aufmerksamkeit - Messung</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="20,1">
@@ -177,8 +177,10 @@
    </property>
    <widget class="QMenu" name="menuFace_Detection">
     <property name="title">
-     <string>Face Detection</string>
+     <string>File</string>
     </property>
+    <addaction name="actionOpen_Video"/>
+    <addaction name="actionOpen_XML"/>
    </widget>
    <addaction name="menuFace_Detection"/>
   </widget>
@@ -191,6 +193,16 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionOpen_Video">
+   <property name="text">
+    <string>Open Video</string>
+   </property>
+  </action>
+  <action name="actionOpen_XML">
+   <property name="text">
+    <string>Open XML</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

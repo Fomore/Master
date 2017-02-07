@@ -18,6 +18,7 @@ public:
     size_t getFrame();
     cv::Rect getBox(int i);
     void printAll();
+    void clearAll();
 };
 
 #endif // FRAME_H

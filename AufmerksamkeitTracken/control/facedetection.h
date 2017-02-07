@@ -7,7 +7,7 @@
 #include "LandmarkCoreIncludes.h"
 #include "src/algo.h"
 #include "control/atentiontracer.h"
-#include <control/frameevents.h>
+#include "control/frameevents.h"
 
 #include "ui_mainwindow.h"
 
@@ -17,7 +17,6 @@ private:
     Ui::MainWindow* mTheWindow;
     void showImage(const cv::Mat image);
 
-    Camera* mKamera;
     cv::Mat print_Eye(const cv::Mat img, int model, int pos, int step, bool clacElse);
     void print_FPS_Model(int fps, int model);
     void print_CLNF(cv::Mat img, int model, double itens, double fx, double fy, double cx, double cy);
@@ -32,6 +31,7 @@ private:
 
     AtentionTracer *mAtentionTracer;
     FrameEvents *mFrameEvents;
+    Camera* mKamera;
 
     void NonOverlapingDetections(const vector<LandmarkDetector::CLNF>& clnf_models, vector<cv::Rect_<double> >& face_detections);
 
@@ -47,9 +47,9 @@ private:
     void shift_detected_landmarks_toImage(int model, int worldX, int worldY, int worldW, int worldH, int minSize); //f skallierung world/img
 
 public:
-    FaceDetection(Ui::MainWindow *parent = 0);
+    FaceDetection(Ui::MainWindow *parent = 0, FrameEvents *frameEV = 0, Camera* cam = 0);
     ~FaceDetection();
-    void FaceTracking(QString path);
+    void FaceTracking();
     void FaceTrackingAutoSize(std::string path);
     void LearnModel();
 };
