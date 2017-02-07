@@ -453,6 +453,11 @@ int FaceDetection::getMaxFaces()
     return num_faces_max;
 }
 
+void FaceDetection::setAutoSize(bool a)
+{
+    mAutoSize = a;
+}
+
 void FaceDetection::shift_detected_landmarks_toWorld(int model, int worldX, int worldY, int worldW, int worldH, int imgW, int imgH){
     cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
 

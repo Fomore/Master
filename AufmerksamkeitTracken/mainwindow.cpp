@@ -63,3 +63,8 @@ void MainWindow::on_actionMax_Faces_triggered()
                                  mFaceDetection->getMaxFaces(),1,100,1);
     mFaceDetection->setMaxFaces(i);
 }
+
+void MainWindow::on_actionAuto_Size_triggered(bool checked)
+{
+    mFaceDetection->setAutoSize(checked);
+}

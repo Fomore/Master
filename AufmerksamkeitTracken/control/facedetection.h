@@ -48,6 +48,8 @@ private:
     void shift_detected_landmarks_toWorld(int model, int worldX, int worldY, int worldW, int worldH, int imgW, int imgH); //f skallierung img/world
     void shift_detected_landmarks_toImage(int model, int worldX, int worldY, int worldW, int worldH, int minSize); //f skallierung world/img
 
+    bool mAutoSize = false;
+
 public:
     FaceDetection(Ui::MainWindow *parent = 0, FrameEvents *frameEV = 0, Camera* cam = 0);
     ~FaceDetection();
@@ -57,6 +59,8 @@ public:
 
     void setMaxFaces(int i);
     int getMaxFaces();
+
+    void setAutoSize(bool a);
 };
 
 #endif // FACEDETECTION_H

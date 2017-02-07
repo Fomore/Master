@@ -184,6 +184,7 @@
      <string>Einstellungen</string>
     </property>
     <addaction name="actionMax_Faces"/>
+    <addaction name="actionAuto_Size"/>
    </widget>
    <addaction name="menuFace_Detection"/>
    <addaction name="menuEinstellungen"/>
@@ -210,6 +211,14 @@
   <action name="actionMax_Faces">
    <property name="text">
     <string>Max Faces</string>
+   </property>
+  </action>
+  <action name="actionAuto_Size">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Auto Size</string>
    </property>
   </action>
  </widget>

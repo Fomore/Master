@@ -33,6 +33,8 @@ private slots:
 
     void on_actionMax_Faces_triggered();
 
+    void on_actionAuto_Size_triggered(bool checked);
+
 private:
     Ui::MainWindow *ui;
 //    Camera mKamera;
