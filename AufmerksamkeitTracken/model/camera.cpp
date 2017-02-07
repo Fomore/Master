@@ -65,7 +65,13 @@ void Camera::setCameraParameter(int id){
                         0, 5979.120910258862, 763.7137371523507,
                         0, 0, 1);
         distCoeffs = (cv::Mat_<double>(1,5) << -1.97804942570734, -2.119731335786197, -0.05503551191292154, -0.0192320523439882, 43.87783092626537);
-    }else if(id == 7){ // 3840P der 4K Actioncam
+    }else if (id == 6){ //2688P der 4k Actioncam (2.7K Einstellung in Box, Neu 2)
+        ImageWight = 2688; ImageHeight = 1520;
+        cameraMatrix = (cv::Mat_<double>(3,3) << 6900.555681192552, 0, 1337.61573087611,
+                        0, 7444.153586551173, 749.1908462284828,
+                        0, 0, 1);
+        distCoeffs = (cv::Mat_<double>(1,5) << -1.917718077998721, -20.47575286011954, -0.03300201474788447, 0.00172225776199838, 236.2651786331631);
+    }else if(id == 9){ // 3840P der 4K Actioncam
         ImageWight = 3840; ImageHeight = 2160;
         cameraMatrix = (cv::Mat_<double>(3,3) << 7409.28638524711, 0, 1868.435847081091,
                         0, 7512.705802013185, 977.0636190423108,

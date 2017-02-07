@@ -57,7 +57,7 @@ void FaceDetection::FaceTracking(){
         }
 
         // Get the detections (every 8th frame and when there are free models available for tracking) //Nun wird jedes Frame (%1) Berechent
-        if(frame_count % 8 == 0 && !all_models_active){
+        if(frame_count % 3 == 0 && !all_models_active){
             if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
                 vector<double> confidences;
                 LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_models[0].face_detector_HOG, confidences);
