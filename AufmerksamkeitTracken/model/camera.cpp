@@ -98,6 +98,16 @@ void Camera::setUseCorrection(bool c)
     mUseCorrection = c;
 }
 
+void Camera::setFrame(size_t frame)
+{
+    video.set(CV_CAP_PROP_POS_FRAMES,(double)frame-1);
+}
+
+size_t Camera::getFrameNr()
+{
+    return (size_t)video.get(CV_CAP_PROP_POS_FRAMES);
+}
+
 // Gibt die Werte der Kamera aus
 void Camera::get_camera_params(double &fx, double &fy, double &cx, double &cy, int &x, int &y){
     fx = cameraMatrix.at<double>(0,0);

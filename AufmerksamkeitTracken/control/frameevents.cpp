@@ -28,6 +28,17 @@ int FrameEvents::getFramePos(size_t frame)
     return pos;
 }
 
+bool FrameEvents::getNextFrame(size_t &frame)
+{
+    int pos = getFramePos(frame)+1;
+    if(pos > 0 && mFrames.size() > pos){
+        frame = mFrames[pos].getFrame();
+        return true;
+    }else{
+        return false;
+    }
+}
+
 size_t FrameEvents::getBoxSizeInFrame(size_t frameID)
 {
     return mFrames[frameID].getSize();
@@ -42,6 +53,12 @@ bool FrameEvents::isNextFrame(size_t frame)
 {
     int pos = getFramePos(frame+1);
     return pos >= 0 && frame+1 == mFrames[pos].getFrame();
+}
+
+bool FrameEvents::isFrameUsed(size_t frame)
+{
+    int pos = getFramePos(frame);
+    return pos >= 0 && frame == mFrames[pos].getFrame();
 }
 
 void FrameEvents::clearAll()

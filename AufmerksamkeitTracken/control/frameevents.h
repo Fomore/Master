@@ -26,12 +26,14 @@ public:
     void loadXML(QString path);
 
     int getFramePos(size_t frame);
+    bool getNextFrame(size_t &frame);
 
     size_t getBoxSizeInFrame(size_t frameID);
 
     cv::Rect getRect(size_t frameID,size_t boxID);
 
     bool isNextFrame(size_t frame);
+    bool isFrameUsed(size_t frame);
     void clearAll();
 };
 

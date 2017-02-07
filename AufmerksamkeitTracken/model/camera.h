@@ -30,6 +30,10 @@ public:
     void correct_Image(cv::Mat img);
 
     void setUseCorrection(bool c);
+
+    void setFrame(size_t frame);
+
+    size_t getFrameNr();
 };
 
 #endif // CAMERA_H

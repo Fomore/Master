@@ -525,7 +525,19 @@ void FaceDetection::shift_detected_landmarks_toImage(int model, int worldX, int 
 
 bool FaceDetection::getFrame(cv::Mat &img)
 {
-    return mKamera->getFrame(img);
+    bool ret =  mKamera->getFrame(img);
+    if(ret && mUseBox){
+        size_t frame = mKamera->getFrameNr();
+        if(mFrameEvents->isFrameUsed(frame)){
+            return true;
+        }else if(mFrameEvents->getNextFrame(frame)){
+            mKamera->setFrame(frame);
+            return mKamera->getFrame(img);
+        }else{
+            return false;
+        }
+    }
+    return ret;
 }
 
 void FaceDetection::FaceTrackingAutoSize(){
