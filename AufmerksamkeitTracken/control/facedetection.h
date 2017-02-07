@@ -52,7 +52,7 @@ public:
     FaceDetection(Ui::MainWindow *parent = 0, FrameEvents *frameEV = 0, Camera* cam = 0);
     ~FaceDetection();
     void FaceTracking();
-    void FaceTrackingAutoSize(std::string path);
+    void FaceTrackingAutoSize();
     void LearnModel();
 
     void setMaxFaces(int i);

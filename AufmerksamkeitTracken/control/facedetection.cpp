@@ -513,7 +513,7 @@ void FaceDetection::shift_detected_landmarks_toImage(int model, int worldX, int 
     //ToDo: Skallierung anpassen
 }
 
-void FaceDetection::FaceTrackingAutoSize(string path){
+void FaceDetection::FaceTrackingAutoSize(){
     // Initialisiierung
     double fx,fy,cx,cy;
     int x,y;
@@ -530,20 +530,11 @@ void FaceDetection::FaceTrackingAutoSize(string path){
     int64 t1,t0 = cv::getTickCount();
     double fps = 10;
 
-    // Anwendung - Berechnung der Faces
-    if(path.size() < 1){
-        path = "/home/falko/Uni/Master/Film/Interview_640.mp4";
-    }
-    cv::VideoCapture video(path);
-    if(!video.isOpened()){
-        cout<<"Kein Video"<<std::endl;
-        return;
-    }
     cv::Mat frame_colore;
 
     double minSize = 200;
 
-    for(int frame_count = 0;video.read(frame_colore);frame_count++){
+    for(int frame_count = 0;mKamera->getFrame(frame_colore);frame_count++){
         mKamera->correct_Image(frame_colore);
         if(frame_count == 0){
             mKamera->get_camera_params(fx,fy,cx,cy,x,y);

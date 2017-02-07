@@ -64,10 +64,7 @@
      </layout>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,1,1,1,1,10">
-      <item>
-       <widget class="QLineEdit" name="Path_lineEdit"/>
-      </item>
+     <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,1,1,1,10">
       <item>
        <widget class="QPushButton" name="pushButton">
         <property name="text">
