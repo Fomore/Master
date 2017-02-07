@@ -182,7 +182,14 @@
     <addaction name="actionOpen_Video"/>
     <addaction name="actionOpen_XML"/>
    </widget>
+   <widget class="QMenu" name="menuEinstellungen">
+    <property name="title">
+     <string>Einstellungen</string>
+    </property>
+    <addaction name="actionMax_Faces"/>
+   </widget>
    <addaction name="menuFace_Detection"/>
+   <addaction name="menuEinstellungen"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -201,6 +208,11 @@
   <action name="actionOpen_XML">
    <property name="text">
     <string>Open XML</string>
+   </property>
+  </action>
+  <action name="actionMax_Faces">
+   <property name="text">
+    <string>Max Faces</string>
    </property>
   </action>
  </widget>

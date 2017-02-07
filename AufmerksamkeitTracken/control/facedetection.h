@@ -41,6 +41,8 @@ private:
     vector<bool> active_models;
     vector<ImageSection> mImageSections;
 
+    void initCLNF();
+
     int num_faces_max = 2;
 
     void shift_detected_landmarks_toWorld(int model, int worldX, int worldY, int worldW, int worldH, int imgW, int imgH); //f skallierung img/world
@@ -52,6 +54,9 @@ public:
     void FaceTracking();
     void FaceTrackingAutoSize(std::string path);
     void LearnModel();
+
+    void setMaxFaces(int i);
+    int getMaxFaces();
 };
 
 #endif // FACEDETECTION_H

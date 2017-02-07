@@ -31,6 +31,8 @@ private slots:
 
     void on_actionOpen_XML_triggered();
 
+    void on_actionMax_Faces_triggered();
+
 private:
     Ui::MainWindow *ui;
 //    Camera mKamera;

@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QFileDialog>
+#include <QInputDialog>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -54,4 +55,11 @@ void MainWindow::on_actionOpen_XML_triggered()
     if(!filename.isEmpty() && filename.size() > 0){
         mFrameEvents->loadXML(filename);
     }
+}
+
+void MainWindow::on_actionMax_Faces_triggered()
+{
+    int i = QInputDialog::getInt(this,"Max Faces","Anzahl der gleichzeitig erkannten Gesichter",
+                                 mFaceDetection->getMaxFaces(),1,100,1);
+    mFaceDetection->setMaxFaces(i);
 }

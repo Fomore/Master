@@ -17,48 +17,7 @@ FaceDetection::FaceDetection(Ui::MainWindow *mWindow, FrameEvents *frameEV, Came
     Model_Init = 0;
     imgCount = 0;
 
-    vector<string> arguments;
-    arguments.push_back(""); // Hat arguments keine Werte kann wes wegoptimiert werden und dadurch wirft die Initilaisierung unten Fehler
-
-    /*
-    -mloc - the location of landmark detection models
-    -sigma -UpdateModelParameters
-    -w_reg -
-    -reg -
-    -multi_view -
-    -validate_detections -
-    -n_iter -
-    -gaze - indicate that gaze estimation should be performed
-    -q - specifying to use quiet mode not visualizing output
-    -wild - flag specifies when the images are more difficult, model considers extended search regions
-    */
-    // im build-Ordner muss das model von OpenFace sein
-    LandmarkDetector::FaceModelParameters det_params(arguments); // Sollte Parameter beinhalten
-
-    det_params.use_face_template = true;
-    // This is so that the model would not try re-initialising itself
-    det_params.reinit_video_every = -1;
-
-    det_params.curr_face_detector = LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR;
-
-    det_parameters.push_back(det_params);
-
-    // Maximale Gesichter im Fil, Achtung: Schnitte und vieles Wechseln scherschlechtert die Qualität
-    LandmarkDetector::CLNF clnf_model(det_parameters[0].model_location);
-    clnf_model.face_detector_HAAR.load(det_parameters[0].face_detector_location);
-    clnf_model.face_detector_location = det_parameters[0].face_detector_location;
-
-    clnf_models.reserve(num_faces_max);
-
-    clnf_models.push_back(clnf_model);
-    active_models.push_back(false);
-
-    for (int i = 1; i < num_faces_max; ++i)
-    {
-        clnf_models.push_back(clnf_model);
-        active_models.push_back(false);
-        det_parameters.push_back(det_params);
-    }
+    initCLNF();
 }
 
 FaceDetection::~FaceDetection()
@@ -263,6 +222,52 @@ void FaceDetection::NonOverlapingDetections(const vector<LandmarkDetector::CLNF>
     }
 }
 
+void FaceDetection::initCLNF()
+{    vector<string> arguments;
+     arguments.push_back(""); // Hat arguments keine Werte kann wes wegoptimiert werden und dadurch wirft die Initilaisierung unten Fehler
+
+     /*
+     -mloc - the location of landmark detection models
+     -sigma -UpdateModelParameters
+     -w_reg -
+     -reg -
+     -multi_view -
+     -validate_detections -
+     -n_iter -
+     -gaze - indicate that gaze estimation should be performed
+     -q - specifying to use quiet mode not visualizing output
+     -wild - flag specifies when the images are more difficult, model considers extended search regions
+     */
+     // im build-Ordner muss das model von OpenFace sein
+     LandmarkDetector::FaceModelParameters det_params(arguments); // Sollte Parameter beinhalten
+
+     det_params.use_face_template = true;
+     // This is so that the model would not try re-initialising itself
+     det_params.reinit_video_every = -1;
+
+     det_params.curr_face_detector = LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR;
+
+     det_parameters.push_back(det_params);
+
+     // Maximale Gesichter im Fil, Achtung: Schnitte und vieles Wechseln scherschlechtert die Qualität
+     LandmarkDetector::CLNF clnf_model(det_parameters[0].model_location);
+     clnf_model.face_detector_HAAR.load(det_parameters[0].face_detector_location);
+     clnf_model.face_detector_location = det_parameters[0].face_detector_location;
+
+     clnf_models.reserve(num_faces_max);
+
+     clnf_models.push_back(clnf_model);
+     active_models.push_back(false);
+
+     for (int i = 1; i < num_faces_max; ++i)
+     {
+         clnf_models.push_back(clnf_model);
+         active_models.push_back(false);
+         det_parameters.push_back(det_params);
+     }
+
+}
+
 void FaceDetection::showImage(const cv::Mat image){
     QImage img = Image::MatToQImage(image);
     QImage img2 = img.scaled(mTheWindow->Main_Label->size().width(),mTheWindow->Main_Label->size().height(),Qt::KeepAspectRatio);
@@ -312,10 +317,6 @@ void FaceDetection::getImageSize(double &X, double &Y, double &Width, double &He
 }
 
 cv::Mat FaceDetection::print_Eye(const cv::Mat img, int model, int pos, int step, bool clacElse){
-    cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
-
-    int n = shape2D.rows/2;
-
     double X,Y,Width,Height;
     getCLNFBox(model, pos, step, X,Y,Width,Height);
 
@@ -324,15 +325,6 @@ cv::Mat FaceDetection::print_Eye(const cv::Mat img, int model, int pos, int step
     if(Width > 16 && Height > 10){
         cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
         if(step == 6 && clacElse){
-            /*
-        std::string name = "Eye_"+std::to_string(imgCount)+"_";
-        if(right){
-            name+="R";
-        }else{
-            name+="L";
-        }
-        Image::saveImage(img_Eye,name);
-*/
             cv::Mat gray;
             Image::convert_to_grayscale(img_Eye, gray);
 
@@ -446,6 +438,19 @@ void FaceDetection::LearnModel(){
         Model_Init= Model_Init%num_faces_max;
         imgCount = 0;
     }
+}
+
+void FaceDetection::setMaxFaces(int i)
+{
+    if(i > 0 && i != num_faces_max){
+        num_faces_max = i;
+        initCLNF();
+    }
+}
+
+int FaceDetection::getMaxFaces()
+{
+    return num_faces_max;
 }
 
 void FaceDetection::shift_detected_landmarks_toWorld(int model, int worldX, int worldY, int worldW, int worldH, int imgW, int imgH){
