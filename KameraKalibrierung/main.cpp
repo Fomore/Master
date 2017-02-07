@@ -150,7 +150,7 @@ int main()
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_3.mp4"));
 
     for(size_t i = 0; i < videos.size(); i++){ // Könnte parallel werden
-        std::cout<<"Lade Video "<<i<<" - "<<m.size()<<" / "<<del<<std::endl;
+        std::cout<<"Lade Video "<<i<<std::endl;
         cv::VideoCapture video = videos.at(i);
         if(video.isOpened()){
             std::vector<cv::Mat> img;
@@ -206,6 +206,7 @@ int main()
                     }
                 }
             });
+            std::cout<<"Gefunden: "<<m.size()<<" / "<<del<<std::endl;
         }else{
             std::cout<<"Datei nicht gefunden"<<std::endl;
         }
