@@ -183,6 +183,7 @@
     <property name="title">
      <string>Einstellungen</string>
     </property>
+    <addaction name="actionSelect_Camera"/>
     <addaction name="actionMax_Faces"/>
     <addaction name="actionAuto_Size"/>
    </widget>
@@ -219,6 +220,11 @@
    </property>
    <property name="text">
     <string>Auto Size</string>
+   </property>
+  </action>
+  <action name="actionSelect_Camera">
+   <property name="text">
+    <string>Select Camera</string>
    </property>
   </action>
  </widget>

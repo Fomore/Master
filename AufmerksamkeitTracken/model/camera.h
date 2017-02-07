@@ -19,6 +19,8 @@ public:
     ~Camera();
     void get_camera_params(double &fx, double &fy, double &cx, double &cy, int &x, int &y);
 
+    int getCameraID();
+
     bool getFrame(cv::Mat &img);
 
     bool setPath(QString path);

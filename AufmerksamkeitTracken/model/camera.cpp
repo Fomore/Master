@@ -103,6 +103,11 @@ void Camera::get_camera_params(double &fx, double &fy, double &cx, double &cy, i
     y = ImageHeight;
 }
 
+int Camera::getCameraID()
+{
+    return ID;
+}
+
 bool Camera::getFrame(cv::Mat &img)
 {
     if(video.isOpened()){

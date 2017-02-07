@@ -536,17 +536,12 @@ void FaceDetection::FaceTrackingAutoSize(){
     double fps = 10;
 
     cv::Mat frame_colore;
+    mKamera->get_camera_params(fx,fy,cx,cy,x,y);
+    mAtentionTracer->setImageSize(x,y);
 
     double minSize = 200;
 
     for(int frame_count = 0;mKamera->getFrame(frame_colore);frame_count++){
-        mKamera->correct_Image(frame_colore);
-        if(frame_count == 0){
-            mKamera->get_camera_params(fx,fy,cx,cy,x,y);
-            mAtentionTracer->setImageSize(frame_colore.cols, frame_colore.rows);
-        }
-
-
         QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
         pixmapL->fill(Qt::transparent);
         QPainter *painterL=new QPainter(pixmapL);
@@ -577,8 +572,8 @@ void FaceDetection::FaceTrackingAutoSize(){
                 //                std::cout<<"Korrektur Lost "<<frame_count<<": "<<model<<std::endl;
             }
 
-            cv::Mat_<uchar> faceImage;
             cv::Mat faceImageColore = mImage.get_Face_Image(frame_colore,x,y,w,h,minSize);
+            cv::Mat_<uchar> faceImage;
             Image::convert_to_grayscale(faceImageColore,faceImage);
 
             bool detection_success;

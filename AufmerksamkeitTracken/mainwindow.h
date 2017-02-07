@@ -35,9 +35,10 @@ private slots:
 
     void on_actionAuto_Size_triggered(bool checked);
 
+    void on_actionSelect_Camera_triggered();
+
 private:
     Ui::MainWindow *ui;
-//    Camera mKamera;
 //    Image mImage;
     FaceDetection *mFaceDetection;
     FrameEvents *mFrameEvents;

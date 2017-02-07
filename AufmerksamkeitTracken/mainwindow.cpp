@@ -68,3 +68,10 @@ void MainWindow::on_actionAuto_Size_triggered(bool checked)
 {
     mFaceDetection->setAutoSize(checked);
 }
+
+void MainWindow::on_actionSelect_Camera_triggered()
+{
+    int i = QInputDialog::getInt(this,"Kamera","Wähle eine Kamera-Einstellung:\n1: Webcam\n2: 1280P der 4k Actioncam (als Webcam)\n3: 1940P der 4K Actioncam (1080P Einstellung)\n4: 2688P der 4k Actioncam (2.7K Einstellung)\n5: 2688P der 4k Actioncam (2.7K Einstellung in Box)\n7: 3840P der 4K Actioncam",
+                                 mKamera->getCameraID(),0,10,1);
+    mKamera->setCameraParameter(i);
+}
