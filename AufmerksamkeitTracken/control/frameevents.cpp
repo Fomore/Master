@@ -81,9 +81,10 @@ int FrameEvents::addFrame(size_t frame)
     }
 }
 
-void FrameEvents::addBox(int id, int x, int y, int w, int h)
+void FrameEvents::addBox(int id, int x, int y, int w, int h, QString name, QString event)
 {
-    mFrames[id].addBox(x,y,w,h);
+    std::cout<<"Box: "<<name.toStdString()<<" "<<event.toStdString()<<" ["<<x<<", "<<y<<", "<<w<<", "<<h<<"]"<<std::endl;
+    mFrames[id].addBox(x,y,w,h,name.toStdString(),event.toStdString());
 }
 
 void FrameEvents::printAll()
@@ -134,7 +135,20 @@ void FrameEvents::loadXML(QString path)
                                 if (xml.name() == "box"){
                                     int height, left, top, width;
                                     boxAttributToValue(xml.attributes(),height,left,top,width);
-                                    addBox(f_id,left,top,width,height);
+                                    QString name = "";
+                                    QString event = "";
+                                    while(xml.readNextStartElement()){
+                                        if(xml.name() == "label"){
+                                            xml.readNext();
+                                            name = xml.text().toString();
+                                            xml.skipCurrentElement();
+                                        }else if(xml.name() == "event"){
+                                            event = xml.attributes().value("name").toString();
+                                        }else{
+                                            xml.skipCurrentElement();
+                                        }
+                                    }
+                                    addBox(f_id,left,top,width,height,name,event);
                                     xml.skipCurrentElement();
                                 }else{
                                     xml.skipCurrentElement();

@@ -14,17 +14,22 @@ size_t Frame::getSize()
 
 void Frame::addBox(int x, int y, int w, int h)
 {
-    addBox(cv::Rect(x,y,w,h));
+    addBox(cv::Rect(x,y,w,h),"","");
 }
 
-void Frame::addBox(cv::Rect rec)
+void Frame::addBox(int x, int y, int w, int h, std::string name, std::string event)
 {
-    mBoxes.push_back(cv::Rect(rec));
+    addBox(cv::Rect(x,y,w,h), name, event);
+}
+
+void Frame::addBox(cv::Rect rec, std::string name, std::string event)
+{
+    mBoxes.push_back(*(new Box(rec,name,event)));
 }
 
 void Frame::deleteBox(int p)
 {
-    if(p >= 0 && p < mBoxes.size())
+    if(p >= 0 && p < (int)mBoxes.size())
         mBoxes.erase(mBoxes.begin() + p);
 }
 
@@ -35,14 +40,14 @@ size_t Frame::getFrame()
 
 cv::Rect Frame::getBox(int i)
 {
-    if(i >= 0 && i < mBoxes.size())
-        return mBoxes[i];
+    if(i >= 0 && i < (int)mBoxes.size())
+        return mBoxes[i].getRect();
 }
 
 void Frame::printAll()
 {
     for(size_t i = 0; i < mBoxes.size(); i++){
-        std::cout<<i<<": "<<mBoxes[i]<<" ";
+        std::cout<<i<<": "<<mBoxes[i].getRect()<<" ";
     }
     std::cout<<std::endl;
 }

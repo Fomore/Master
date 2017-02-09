@@ -17,7 +17,7 @@ private:
     void boxAttributToValue(QXmlStreamAttributes att, int &height, int &left, int &top, int &width);
 
     int addFrame(size_t frame);
-    void addBox(int id, int x, int y, int w, int h);
+    void addBox(int id, int x, int y, int w, int h, QString name, QString event);
 
     void printAll();
 
