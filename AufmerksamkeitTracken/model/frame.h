@@ -19,6 +19,7 @@ public:
     void deleteBox(int p);
     size_t getFrame();
     cv::Rect getBox(int i);
+    bool hasEventPart(std::string event, size_t start, size_t size, size_t &pos);
     void printAll();
     void clearAll();
 };

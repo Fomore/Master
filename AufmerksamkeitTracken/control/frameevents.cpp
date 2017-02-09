@@ -61,6 +61,24 @@ bool FrameEvents::isFrameUsed(size_t frame)
     return pos >= 0 && frame == mFrames[pos].getFrame();
 }
 
+bool FrameEvents::getNextImageFrame(size_t &frame, cv::Rect &rec)
+{
+    for(int i = getFramePos(frame)+1;
+        i <= (int)mFrames.size(); i++){
+        size_t pos;
+        if(mFrames[i].hasEventPart("Img",0,3,pos)){
+            cv::Rect r = mFrames[i].getBox(pos);
+            rec.x = r.x;
+            rec.y = r.y;
+            rec.width = r.width;
+            rec.height = r.height;
+            frame = mFrames[i].getFrame();
+            return true;
+        }
+    }
+    return false;
+}
+
 void FrameEvents::clearAll()
 {
     for(size_t i = 0; i < mFrames.size(); i++){
@@ -83,7 +101,6 @@ int FrameEvents::addFrame(size_t frame)
 
 void FrameEvents::addBox(int id, int x, int y, int w, int h, QString name, QString event)
 {
-    std::cout<<"Box: "<<name.toStdString()<<" "<<event.toStdString()<<" ["<<x<<", "<<y<<", "<<w<<", "<<h<<"]"<<std::endl;
     mFrames[id].addBox(x,y,w,h,name.toStdString(),event.toStdString());
 }
 

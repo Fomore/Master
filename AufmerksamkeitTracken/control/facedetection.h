@@ -22,7 +22,7 @@ private:
     void print_CLNF(cv::Mat img, int model, double itens, double fx, double fy, double cx, double cy);
     void print_Orientation(cv::Mat img, int model);
     void getCLNFBox(int model, int pos, int step, double &X, double &Y, double &W, double &H);
-    void printSmallImage(cv::Mat img, int model, QPainter &painterR, QPainter &painterL);
+    void printSmallImage(cv::Mat img, int model, QPainter &painterR, QPainter &painterL, bool print);
     void getImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY, double sX, double sY, double sMaxX, double sMaxY);
 
     Image mImage;
@@ -50,6 +50,7 @@ private:
 
     bool mAutoSize = false;
     bool mUseBox = false;
+    bool mLearn = false;
 
     bool getFrame(cv::Mat &img);
 
@@ -65,6 +66,7 @@ public:
 
     void setAutoSize(bool a);
     void setUseBox(bool b);
+    void setLearn(bool l);
 };
 
 #endif // FACEDETECTION_H

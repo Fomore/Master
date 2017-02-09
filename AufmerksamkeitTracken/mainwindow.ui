@@ -187,6 +187,7 @@
     <addaction name="actionMax_Faces"/>
     <addaction name="actionUse_Boxes"/>
     <addaction name="actionCorrect_Image"/>
+    <addaction name="actionLearn_Model"/>
     <addaction name="actionAuto_Size"/>
    </widget>
    <addaction name="menuFace_Detection"/>
@@ -246,6 +247,14 @@
    </property>
    <property name="text">
     <string>Correct Image</string>
+   </property>
+  </action>
+  <action name="actionLearn_Model">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Learn Model</string>
    </property>
   </action>
  </widget>

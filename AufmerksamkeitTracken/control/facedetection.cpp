@@ -128,7 +128,7 @@ void FaceDetection::FaceTracking(){
             // Only draw if the reliability is reasonable, the value is slightly ad-hoc
             if(detection_certainty < visualisation_boundary){
 
-                printSmallImage(frame_col,model,*painterR,*painterL);
+                printSmallImage(frame_col,model,*painterR,*painterL, false);
 
                 if(detection_certainty > 1)
                     detection_certainty = 1;
@@ -343,45 +343,26 @@ void FaceDetection::print_FPS_Model(int fps, int model){
 
 void FaceDetection::LearnModel(){
     cv::Mat frame_col,frame;
-    double imgStep = 14.0;
-    int X,Y,W,H,nW,nH,x,y;
+    cv::Rect rec;
 
-    if(mImage.getImage(frame)){
-        mKamera->correct_Image(frame);
-        // Initialisiierung
-        double fx,fy,cx,cy;
-        mKamera->get_camera_params(fx,fy,cx,cy,x,y); // Das stimmt so nicht wenn keine paramter gesetzt sind
-        mAtentionTracer->setImageSize(frame_col.cols, frame_col.rows);
+    // Initialisiierung
+    double fx,fy,cx,cy;
+    int x,y;
+    mKamera->get_camera_params(fx,fy,cx,cy,x,y);
 
-        mImage.getFaceParameter(Model_Init,X,Y,W,H);
+    size_t frm = 0;
+    while(mFrameEvents->getNextImageFrame(frm,rec)){
+        std::cout<<"While: "<<frm<<" "<<rec<<std::endl;
+        mKamera->getFrame(frame,frm);
 
-        if(X != 0){
-            int step = imgCount/2;
-            frame_col = mImage.get_Face_Image(frame,X,Y,W,H,pow(imgStep-step,2));
-            Image::saveImage(frame_col,"face_"+std::to_string(Model_Init)+"_"+std::to_string(step));
-            nW = pow(imgStep-step-1,2);
-            nH = cvRound(nW/W*H);
-        }else{
-            frame_col = frame.clone();
-        }
-
-        cv::Mat_<uchar> grayscale_image;
-
+        frame_col = mImage.get_Face_Image(frame,rec,1);
         cv::Mat disp_image = frame_col.clone();
 
+        cv::Mat_<uchar> grayscale_image;
         Image::convert_to_grayscale(frame_col,grayscale_image);
 
-        // perform landmark detection for every face detected
-        QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
-        pixmapL->fill(Qt::transparent);
-        QPainter *painterL=new QPainter(pixmapL);
-
-        QPixmap *pixmapR=new QPixmap(mTheWindow->Right_Label->size());
-        pixmapR->fill(Qt::transparent);
-        QPainter *painterR=new QPainter(pixmapR);
-
         bool success = false;
-        if(!active_models[Model_Init]){
+        if(!mLearn || !active_models[Model_Init]){
             // Detect faces in an image
             vector<cv::Rect_<double> > face_detections;
 
@@ -401,25 +382,24 @@ void FaceDetection::LearnModel(){
             success = LandmarkDetector::DetectLandmarksInVideo(grayscale_image, clnf_models[Model_Init], det_parameters[Model_Init]);
         }
 
+        // perform landmark detection for every face detected
+        QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
+        pixmapL->fill(Qt::transparent);
+        QPainter *painterL=new QPainter(pixmapL);
+
+        QPixmap *pixmapR=new QPixmap(mTheWindow->Right_Label->size());
+        pixmapR->fill(Qt::transparent);
+        QPainter *painterR=new QPainter(pixmapR);
+
         if(success){
-            printSmallImage(frame_col,Model_Init,*painterR,*painterL);
+            printSmallImage(frame_col,Model_Init,*painterR,*painterL, !mLearn);
 
             print_CLNF(disp_image,Model_Init,0.5,fx,fy,cx,cy);
             //std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
             active_models[Model_Init] = true;
-            if(X > 0){
-                if(nW < W){
-                    shift_detected_landmarks_toWorld(Model_Init,X,Y,W,H,frame.cols,frame.rows);
-                    shift_detected_landmarks_toImage(Model_Init,X,Y,W,H,W);
-                }
-                if(imgCount%2 == 1){
-                    std::cout<<imgCount<<" :";
-                    shift_detected_landmarks_toWorld(Model_Init,X,Y,W,H,frame.cols,frame.rows);
-                    shift_detected_landmarks_toImage(Model_Init,X,Y,W,H,nW);
-
-                }else{
-                    std::cout<<"Unverändert: "<<frame_col.cols<<" "<<frame_col.rows<<std::endl;
-                }
+            if(mLearn){
+                shift_detected_landmarks_toWorld(Model_Init,rec.x,rec.y,rec.width,rec.height,x,y);
+                shift_detected_landmarks_toImage(Model_Init,rec.x,rec.y,rec.width,rec.height,1);
             }
         }else{
             std::cout<<"Kein Model: "<<imgCount<<" ["<<frame_col.cols<<", "<<frame_col.rows<<"]"<<std::endl;
@@ -432,12 +412,11 @@ void FaceDetection::LearnModel(){
         showImage(disp_image);
         mTheWindow->Right_Label->setPixmap(*pixmapL);
         mTheWindow->Left_Label->setPixmap(*pixmapR);
+
+        if(cv::waitKey(30) >= 0)
+            return;
     }
-    if(pow(imgStep- (imgCount-1)/2,2) < W){
-        Model_Init++;
-        Model_Init= Model_Init%num_faces_max;
-        imgCount = 0;
-    }
+    Model_Init= Model_Init%num_faces_max;
 }
 
 void FaceDetection::setMaxFaces(int i)
@@ -461,6 +440,11 @@ void FaceDetection::setAutoSize(bool a)
 void FaceDetection::setUseBox(bool b)
 {
     mUseBox = b;
+}
+
+void FaceDetection::setLearn(bool l)
+{
+    mLearn = l;
 }
 
 void FaceDetection::shift_detected_landmarks_toWorld(int model, int worldX, int worldY, int worldW, int worldH, int imgW, int imgH){
@@ -637,7 +621,7 @@ void FaceDetection::FaceTrackingAutoSize(){
 
                 shift_detected_landmarks_toWorld(model,x,y,w,h,faceImage.cols, faceImage.rows);
 
-                printSmallImage(frame_colore,model,*painterR,*painterL);
+                printSmallImage(frame_colore,model,*painterR,*painterL, false);
                 //                print_CLNF(disp_image,model,itens,fx,fy,cx,cy);
                 // Estimate head pose and eye gaze
 
@@ -683,9 +667,13 @@ void FaceDetection::FaceTrackingAutoSize(){
     }
 }
 
-void FaceDetection::printSmallImage(cv::Mat img, int model, QPainter &painterR, QPainter &painterL){
+void FaceDetection::printSmallImage(cv::Mat img, int model, QPainter &painterR, QPainter &painterL, bool print){
     int sImageW = mTheWindow->Right_Label->size().width();
     int sImageH = mTheWindow->Right_Label->size().height()/num_faces_max;
+
+    if(print){
+
+    }
 
     cv::Mat R = print_Eye(img,model,36,6, false); //Left
     cv::Mat L = print_Eye(img,model,42,6, false); //Right

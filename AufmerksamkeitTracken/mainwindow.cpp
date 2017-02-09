@@ -85,3 +85,7 @@ void MainWindow::on_actionCorrect_Image_triggered(bool checked)
 {
     mKamera->setUseCorrection(checked);
 }
+void MainWindow::on_actionLearn_Model_triggered(bool checked)
+{
+    mFaceDetection->setLearn(checked);
+}

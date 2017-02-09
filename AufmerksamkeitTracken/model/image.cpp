@@ -59,9 +59,14 @@ bool Image::getScallImage(cv::Mat &out){
 }
 
 cv::Mat Image::get_Face_Image(cv::Mat image, int X, int Y, int Width, int Height, double MinSize){
-    cv::Mat image_cut = image(cv::Rect(X,Y,Width,Height));
-    if(Width < MinSize){
-        double fx = MinSize/Width;
+    return get_Face_Image(image,cv::Rect(X,Y,Width,Height),MinSize);
+}
+
+cv::Mat Image::get_Face_Image(cv::Mat image, cv::Rect rec, double MinSize)
+{
+    cv::Mat image_cut = image(rec);
+    if(rec.width < MinSize){
+        double fx = MinSize/rec.width;
         cv::Mat ret;
         resize(image_cut, ret, cv::Size(), fx, fx, CV_INTER_LINEAR);
         return ret;

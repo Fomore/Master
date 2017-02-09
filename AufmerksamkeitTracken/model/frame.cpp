@@ -44,6 +44,17 @@ cv::Rect Frame::getBox(int i)
         return mBoxes[i].getRect();
 }
 
+bool Frame::hasEventPart(std::string event, size_t start, size_t size, size_t &pos)
+{
+    for(size_t i = 0; i < mBoxes.size(); i++){
+        if(mBoxes[i].getEvent().compare(start,size,event) == 0){
+            pos = i;
+            return true;
+        }
+    }
+    return false;
+}
+
 void Frame::printAll()
 {
     for(size_t i = 0; i < mBoxes.size(); i++){

@@ -34,6 +34,9 @@ public:
 
     bool isNextFrame(size_t frame);
     bool isFrameUsed(size_t frame);
+
+    bool getNextImageFrame(size_t &frame, cv::Rect &rec);
+
     void clearAll();
 };
 

@@ -23,6 +23,7 @@ public:
     int getCameraID();
 
     bool getFrame(cv::Mat &img);
+    bool getFrame(cv::Mat &img, size_t pos);
 
     bool setPath(QString path);
     void setCameraParameter(int id);
