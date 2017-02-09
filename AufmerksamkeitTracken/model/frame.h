@@ -22,6 +22,8 @@ public:
     bool hasEventPart(std::string event, size_t start, size_t size, size_t &pos);
     void printAll();
     void clearAll();
+    std::string getEvent(int i);
+    std::string getName(int i);
 };
 
 #endif // FRAME_H

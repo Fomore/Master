@@ -128,7 +128,7 @@ void FaceDetection::FaceTracking(){
             // Only draw if the reliability is reasonable, the value is slightly ad-hoc
             if(detection_certainty < visualisation_boundary){
 
-                printSmallImage(frame_col,model,*painterR,*painterL, false);
+                printSmallImage(frame_col,model,*painterR,*painterL, false,"");
 
                 if(detection_certainty > 1)
                     detection_certainty = 1;
@@ -409,7 +409,7 @@ void FaceDetection::LearnModel(){
         if(success){
             shift_detected_landmarks(Model_Init,rec.x,rec.y);
 
-            printSmallImage(disp_image,Model_Init,*painterR,*painterL, !mLearn);
+            printSmallImage(disp_image,Model_Init,*painterR,*painterL, !mLearn, mFrameEvents->getTitel(frm));
 
             print_CLNF(disp_image,Model_Init,0.5,fx,fy,cx,cy);
             //std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
@@ -635,7 +635,7 @@ void FaceDetection::FaceTrackingAutoSize(){
 
                 shift_detected_landmarks_toWorld(model,x,y,w,h,faceImage.cols, faceImage.rows);
 
-                printSmallImage(frame_colore,model,*painterR,*painterL, false);
+                printSmallImage(frame_colore,model,*painterR,*painterL, false,"");
                 //                print_CLNF(disp_image,model,itens,fx,fy,cx,cy);
                 // Estimate head pose and eye gaze
 
@@ -681,12 +681,15 @@ void FaceDetection::FaceTrackingAutoSize(){
     }
 }
 
-void FaceDetection::printSmallImage(cv::Mat img, int model, QPainter &painterR, QPainter &painterL, bool print){
+void FaceDetection::printSmallImage(cv::Mat img, int model, QPainter &painterR, QPainter &painterL, bool print, std::string titel){
     int sImageW = mTheWindow->Right_Label->size().width();
     int sImageH = mTheWindow->Right_Label->size().height()/num_faces_max;
 
     if(print){
-
+        vector<int> compression_params;
+            compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+            compression_params.push_back(9);
+        cv::imwrite(titel+".png",print_Eye(img,model,0,27, false),compression_params);
     }
 
     cv::Mat R = print_Eye(img,model,36,6, false); //Left

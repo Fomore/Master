@@ -67,3 +67,15 @@ void Frame::clearAll()
 {
     mBoxes.clear();
 }
+
+std::string Frame::getEvent(int i)
+{
+    if(i >= 0 && i < (int)mBoxes.size())
+        return mBoxes[i].getEvent();
+}
+
+std::string Frame::getName(int i)
+{
+    if(i >= 0 && i < (int)mBoxes.size())
+        return mBoxes[i].getName();
+}

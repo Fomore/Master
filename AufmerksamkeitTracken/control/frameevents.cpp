@@ -79,6 +79,18 @@ bool FrameEvents::getNextImageFrame(size_t &frame, cv::Rect &rec)
     return false;
 }
 
+std::string FrameEvents::getTitel(size_t frame)
+{
+    int pos = getFramePos(frame);
+    for(size_t i = 0; i < mFrames[pos].getSize(); i++){
+        size_t pos;
+        if(mFrames[i].hasEventPart("Img",0,3,pos)){
+            return mFrames[i].getEvent(pos)+mFrames[i].getName(pos);
+        }
+    }
+    return "NotFoun"+std::to_string(frame);
+}
+
 void FrameEvents::clearAll()
 {
     for(size_t i = 0; i < mFrames.size(); i++){

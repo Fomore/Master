@@ -22,7 +22,7 @@ private:
     void print_CLNF(cv::Mat img, int model, double itens, double fx, double fy, double cx, double cy);
     void print_Orientation(cv::Mat img, int model);
     void getCLNFBox(int model, int pos, int step, double &X, double &Y, double &W, double &H);
-    void printSmallImage(cv::Mat img, int model, QPainter &painterR, QPainter &painterL, bool print);
+    void printSmallImage(cv::Mat img, int model, QPainter &painterR, QPainter &painterL, bool print, string titel);
     void getImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY, double sX, double sY, double sMaxX, double sMaxY);
 
     Image mImage;
