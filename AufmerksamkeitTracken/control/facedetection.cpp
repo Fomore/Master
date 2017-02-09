@@ -392,6 +392,9 @@ void FaceDetection::LearnModel(){
         QPainter *painterR=new QPainter(pixmapR);
 
         if(success){
+
+            cv::Rect_<double> box = clnf_models[Model_Init].GetBoundingBox();
+
             shift_detected_landmarks_toImage(Model_Init,rec.x,rec.y,rec.width,rec.height,1);
 
             printSmallImage(disp_image,Model_Init,*painterR,*painterL, !mLearn);
