@@ -268,6 +268,21 @@ void FaceDetection::initCLNF()
 
 }
 
+void FaceDetection::shift_detected_landmarks(int model, int X, int Y)
+{
+    cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
+
+    int n = shape2D.rows/2;
+    for(int pos = 0; pos < n; pos++){
+        shape2D.at<double>(pos) += X;
+        shape2D.at<double>(pos + n) += Y;
+    }
+    clnf_models[model].detected_landmarks = shape2D.clone();
+
+    clnf_models[model].params_global[4] += X;
+    clnf_models[model].params_global[5] += Y;
+}
+
 void FaceDetection::showImage(const cv::Mat image){
     QImage img = Image::MatToQImage(image);
     QImage img2 = img.scaled(mTheWindow->Main_Label->size().width(),mTheWindow->Main_Label->size().height(),Qt::KeepAspectRatio);
@@ -392,10 +407,7 @@ void FaceDetection::LearnModel(){
         QPainter *painterR=new QPainter(pixmapR);
 
         if(success){
-
-            cv::Rect_<double> box = clnf_models[Model_Init].GetBoundingBox();
-
-            shift_detected_landmarks_toImage(Model_Init,rec.x,rec.y,rec.width,rec.height,1);
+            shift_detected_landmarks(Model_Init,rec.x,rec.y);
 
             printSmallImage(disp_image,Model_Init,*painterR,*painterL, !mLearn);
 
