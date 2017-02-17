@@ -185,6 +185,7 @@
     </property>
     <addaction name="actionSelect_Camera"/>
     <addaction name="actionMax_Faces"/>
+    <addaction name="actionFrom_XML_File"/>
     <addaction name="actionUse_Boxes"/>
     <addaction name="actionCorrect_Image"/>
     <addaction name="actionLearn_Model"/>
@@ -255,6 +256,17 @@
    </property>
    <property name="text">
     <string>Learn Model</string>
+   </property>
+  </action>
+  <action name="actionFrom_XML_File">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>From XML-File</string>
    </property>
   </action>
  </widget>

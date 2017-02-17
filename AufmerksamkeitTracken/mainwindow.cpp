@@ -12,8 +12,8 @@ MainWindow::MainWindow(QWidget *parent) :
     mKamera = new Camera(5);
     mFrameEvents = new FrameEvents();
 
-    mKamera->setPath("/home/falko/Uni/Master/Film/Test_Positionen_1.mp4");
-    mFrameEvents->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_1_Label.xml");
+    mKamera->setPath("/home/falko/Uni/Master/Film/Test_Positionen_2.mp4");
+    mFrameEvents->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_2_Label.xml");
 
     mFaceDetection = new FaceDetection(ui,mFrameEvents,mKamera);
 }
@@ -34,7 +34,11 @@ void MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_Learn_Button_clicked()
 {
-    mFaceDetection->LearnModel();
+    if(ui->actionFrom_XML_File->isChecked()){
+        mFaceDetection->ShowFromeFile();
+    }else{
+        mFaceDetection->LearnModel();
+    }
 }
 
 void MainWindow::on_actionOpen_Video_triggered()

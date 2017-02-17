@@ -359,6 +359,7 @@ void FaceDetection::print_FPS_Model(int fps, int model){
 void FaceDetection::LearnModel(){
     cv::Mat frame_col,frame;
     cv::Rect rec;
+    std::string name = "";
 
     // Initialisiierung
     double fx,fy,cx,cy;
@@ -366,8 +367,8 @@ void FaceDetection::LearnModel(){
     mKamera->get_camera_params(fx,fy,cx,cy,x,y);
 
     size_t frm = 0;
-    while(mFrameEvents->getNextImageFrame(frm,rec)){
-        std::cout<<"While: "<<frm<<" "<<rec<<std::endl;
+    while(mFrameEvents->getNextImageFrame(frm,rec,name)){
+        name = "img/"+name;
         mKamera->getFrame(frame,frm);
 
         frame_col = mImage.get_Face_Image(frame,rec,1);
@@ -409,13 +410,17 @@ void FaceDetection::LearnModel(){
         if(success){
             shift_detected_landmarks(Model_Init,rec.x,rec.y);
 
-            printSmallImage(disp_image,Model_Init,*painterR,*painterL, !mLearn, mFrameEvents->getTitel(frm));
+            printSmallImage(disp_image,Model_Init,*painterR,*painterL, !mLearn, name);
 
             print_CLNF(disp_image,Model_Init,0.5,fx,fy,cx,cy);
             //std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
             active_models[Model_Init] = true;
 
         }else{
+            vector<int> compression_params;
+                compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+                compression_params.push_back(9);
+            cv::imwrite(name+"_NF.png",disp_image(rec),compression_params);
             std::cout<<"Kein Model: "<<imgCount<<" ["<<frame_col.cols<<", "<<frame_col.rows<<"]"<<std::endl;
         }
 
@@ -431,6 +436,41 @@ void FaceDetection::LearnModel(){
             return;
     }
     Model_Init= Model_Init%num_faces_max;
+}
+
+void FaceDetection::ShowFromeFile()
+{
+    cv::Mat frame;
+
+    // Initialisiierung
+    double fx,fy,cx,cy;
+    int x,y;
+    mKamera->get_camera_params(fx,fy,cx,cy,x,y);
+
+    size_t frm = 0;
+    size_t frameID = 0;
+    while(mFrameEvents->getNextFrame(frm,frameID)){
+        mKamera->getFrame(frame,frm);
+
+        for(size_t i = 0; i < mFrameEvents->getBoxSizeInFrame(frameID); i++){
+            cv::Rect box = mFrameEvents->getRect(frameID,i);
+            cv::rectangle(frame,box,cv::Scalar(0,255,0),3);
+
+            if(mFrameEvents->isLandmark(frameID,i)){
+                double land[5][2];
+                mFrameEvents->getLandmarks(frameID,i,land);
+                for(int j = 0; j < 5; j++){
+                cv::circle(frame, cv::Point2d(land[j][0],land[j][1]),3,cv::Scalar(0,255,0),-1);
+                }
+
+            }
+        }
+
+        showImage(frame);
+
+        if(cv::waitKey(30) >= 0)
+            return;
+    }
 }
 
 void FaceDetection::setMaxFaces(int i)

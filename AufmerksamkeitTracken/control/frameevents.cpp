@@ -39,6 +39,17 @@ bool FrameEvents::getNextFrame(size_t &frame)
     }
 }
 
+bool FrameEvents::getNextFrame(size_t &frame, size_t &frameID)
+{
+    frameID++;
+    if(frameID < mFrames.size()){
+        frame = mFrames[frameID].getFrame();
+        return true;
+    }else{
+        return false;
+    }
+}
+
 size_t FrameEvents::getBoxSizeInFrame(size_t frameID)
 {
     return mFrames[frameID].getSize();
@@ -47,6 +58,16 @@ size_t FrameEvents::getBoxSizeInFrame(size_t frameID)
 cv::Rect FrameEvents::getRect(size_t frameID, size_t boxID)
 {
     return mFrames[frameID].getBox(boxID);
+}
+
+void FrameEvents::getLandmarks(size_t frameID, size_t boxID, double land[5][2])
+{
+    mFrames[frameID].getLandmarks(boxID,land);
+}
+
+bool FrameEvents::isLandmark(size_t frameID, size_t boxID)
+{
+    return mFrames[frameID].isLandmark(boxID);
 }
 
 bool FrameEvents::isNextFrame(size_t frame)
@@ -61,7 +82,7 @@ bool FrameEvents::isFrameUsed(size_t frame)
     return pos >= 0 && frame == mFrames[pos].getFrame();
 }
 
-bool FrameEvents::getNextImageFrame(size_t &frame, cv::Rect &rec)
+bool FrameEvents::getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &name)
 {
     for(int i = getFramePos(frame)+1;
         i <= (int)mFrames.size(); i++){
@@ -73,6 +94,8 @@ bool FrameEvents::getNextImageFrame(size_t &frame, cv::Rect &rec)
             rec.width = r.width;
             rec.height = r.height;
             frame = mFrames[i].getFrame();
+            name = mFrames[i].getEvent(pos)+"_"+mFrames[i].getName(pos);
+            name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
             return true;
         }
     }
@@ -114,6 +137,11 @@ int FrameEvents::addFrame(size_t frame)
 void FrameEvents::addBox(int id, int x, int y, int w, int h, QString name, QString event)
 {
     mFrames[id].addBox(x,y,w,h,name.toStdString(),event.toStdString());
+}
+
+void FrameEvents::addBox(int id, int x, int y, int w, int h, QString name, QString event, double land[5][2])
+{
+    mFrames[id].addBox(x,y,w,h,name.toStdString(),event.toStdString(), land);
 }
 
 void FrameEvents::printAll()
@@ -166,6 +194,8 @@ void FrameEvents::loadXML(QString path)
                                     boxAttributToValue(xml.attributes(),height,left,top,width);
                                     QString name = "";
                                     QString event = "";
+                                    bool land = false;
+                                    double landmarks[5][2];
                                     while(xml.readNextStartElement()){
                                         if(xml.name() == "label"){
                                             xml.readNext();
@@ -173,12 +203,28 @@ void FrameEvents::loadXML(QString path)
                                             xml.skipCurrentElement();
                                         }else if(xml.name() == "event"){
                                             event = xml.attributes().value("name").toString();
+                                            xml.skipCurrentElement();
+                                        }else if(xml.name() == "landmarks"){
+                                            land = true;
+                                            while (xml.readNextStartElement()) {
+                                                if(xml.name() == "point"){
+                                                    int p = xml.attributes().value("idx").toInt();
+                                                    double x = xml.attributes().value("x").toDouble();
+                                                    double y = xml.attributes().value("y").toDouble();
+                                                    landmarks[p-1][0]=x;
+                                                    landmarks[p-1][1]=y;
+                                                }
+                                                xml.skipCurrentElement();
+                                            }
                                         }else{
                                             xml.skipCurrentElement();
                                         }
                                     }
-                                    addBox(f_id,left,top,width,height,name,event);
-                                    xml.skipCurrentElement();
+                                    if(land){
+                                        addBox(f_id,left,top,width,height,name,event,landmarks);
+                                    }else{
+                                        addBox(f_id,left,top,width,height,name,event);
+                                    }
                                 }else{
                                     xml.skipCurrentElement();
                                 }

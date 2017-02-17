@@ -22,9 +22,19 @@ void Frame::addBox(int x, int y, int w, int h, std::string name, std::string eve
     addBox(cv::Rect(x,y,w,h), name, event);
 }
 
+void Frame::addBox(int x, int y, int w, int h, std::string name, std::string event, double land[5][2])
+{
+    addBox(cv::Rect(x,y,w,h), name, event, land);
+}
+
 void Frame::addBox(cv::Rect rec, std::string name, std::string event)
 {
     mBoxes.push_back(*(new Box(rec,name,event)));
+}
+
+void Frame::addBox(cv::Rect rec, std::string name, std::string event, double land[5][2])
+{
+    mBoxes.push_back(*(new Box(rec,name,event,land)));
 }
 
 void Frame::deleteBox(int p)
@@ -42,6 +52,18 @@ cv::Rect Frame::getBox(int i)
 {
     if(i >= 0 && i < (int)mBoxes.size())
         return mBoxes[i].getRect();
+}
+
+void Frame::getLandmarks(size_t id, double land[5][2])
+{
+    if(mBoxes.size() > id){
+        mBoxes[id].getLandmarks(land);
+    }
+}
+
+bool Frame::isLandmark(size_t id)
+{
+    return mBoxes[id].isLandmark();
 }
 
 bool Frame::hasEventPart(std::string event, size_t start, size_t size, size_t &pos)

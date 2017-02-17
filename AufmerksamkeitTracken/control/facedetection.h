@@ -62,6 +62,8 @@ public:
     void FaceTrackingAutoSize();
     void LearnModel();
 
+    void ShowFromeFile();
+
     void setMaxFaces(int i);
     int getMaxFaces();
 
