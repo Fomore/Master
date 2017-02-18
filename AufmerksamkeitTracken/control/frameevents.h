@@ -39,7 +39,7 @@ public:
     bool isNextFrame(size_t frame);
     bool isFrameUsed(size_t frame);
 
-    bool getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &name);
+    bool getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &name, int &id);
     std::string getTitel(size_t frame);
 
     void clearAll();

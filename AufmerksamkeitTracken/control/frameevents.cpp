@@ -82,7 +82,7 @@ bool FrameEvents::isFrameUsed(size_t frame)
     return pos >= 0 && frame == mFrames[pos].getFrame();
 }
 
-bool FrameEvents::getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &name)
+bool FrameEvents::getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &name, int &id)
 {
     for(int i = getFramePos(frame)+1;
         i <= (int)mFrames.size(); i++){
@@ -96,6 +96,7 @@ bool FrameEvents::getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &n
             frame = mFrames[i].getFrame();
             name = mFrames[i].getEvent(pos)+"_"+mFrames[i].getName(pos);
             name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
+            id = pos;
             return true;
         }
     }

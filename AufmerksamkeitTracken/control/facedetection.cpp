@@ -285,7 +285,7 @@ void FaceDetection::shift_detected_landmarks(int model, int X, int Y)
 
 void FaceDetection::showImage(const cv::Mat image){
     QImage img = Image::MatToQImage(image);
-    QImage img2 = img.scaled(mTheWindow->Main_Label->size().width(),mTheWindow->Main_Label->size().height(),Qt::KeepAspectRatio);
+    QImage img2 = img.scaled(mTheWindow->Main_Label->size(),Qt::KeepAspectRatio);
     mTheWindow->Main_Label->setPixmap(QPixmap::fromImage(img2));
 }
 
@@ -357,6 +357,7 @@ void FaceDetection::print_FPS_Model(int fps, int model){
 }
 
 void FaceDetection::LearnModel(){
+    std::cout<<"Lern"<<std::endl;
     cv::Mat frame_col,frame;
     cv::Rect rec;
     std::string name = "";
@@ -367,7 +368,8 @@ void FaceDetection::LearnModel(){
     mKamera->get_camera_params(fx,fy,cx,cy,x,y);
 
     size_t frm = 0;
-    while(mFrameEvents->getNextImageFrame(frm,rec,name)){
+    int BoxID = -1;
+    while(mFrameEvents->getNextImageFrame(frm,rec,name, BoxID)){
         name = "img/"+name;
         mKamera->getFrame(frame,frm);
 
@@ -449,23 +451,42 @@ void FaceDetection::ShowFromeFile()
 
     size_t frm = 0;
     size_t frameID = 0;
+    std::string name = "";
+//    cv::Rect box;
+//    int i = -1;
+//    while(mFrameEvents->getNextImageFrame(frm,box,name, i)){
+//        name = "img/"+name;
     while(mFrameEvents->getNextFrame(frm,frameID)){
         mKamera->getFrame(frame,frm);
+        // perform landmark detection for every face detected
+        QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
+        pixmapL->fill(Qt::transparent);
+        QPainter *painterL=new QPainter(pixmapL);
+
+        QPixmap *pixmapR=new QPixmap(mTheWindow->Right_Label->size());
+        pixmapR->fill(Qt::transparent);
+        QPainter *painterR=new QPainter(pixmapR);
 
         for(size_t i = 0; i < mFrameEvents->getBoxSizeInFrame(frameID); i++){
             cv::Rect box = mFrameEvents->getRect(frameID,i);
-            cv::rectangle(frame,box,cv::Scalar(0,255,0),3);
 
+            printSmallImage(frame,box,i,*painterL, false, name);
+
+//            frameID = mFrameEvents->getFramePos(frm);
             if(mFrameEvents->isLandmark(frameID,i)){
                 double land[5][2];
                 mFrameEvents->getLandmarks(frameID,i,land);
                 for(int j = 0; j < 5; j++){
                 cv::circle(frame, cv::Point2d(land[j][0],land[j][1]),3,cv::Scalar(0,255,0),-1);
                 }
-
             }
+            printSmallImage(frame,box,i,*painterR, false, name);
+
+            cv::rectangle(frame,box,cv::Scalar(0,255,0),3);
         }
 
+        mTheWindow->Right_Label->setPixmap(*pixmapR);
+        mTheWindow->Left_Label->setPixmap(*pixmapL);
         showImage(frame);
 
         if(cv::waitKey(30) >= 0)
@@ -753,4 +774,22 @@ void FaceDetection::printSmallImage(cv::Mat img, int model, QPainter &painterR, 
         QPixmap pix = QPixmap::fromImage(img2);
         painterR.drawPixmap(0, sImageH*model, pix);
     }
+}
+
+void FaceDetection::printSmallImage(cv::Mat img, cv::Rect rec, int id, QPainter &paint, bool save, std::string titel)
+{
+    if(save){
+        vector<int> compression_params;
+            compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+            compression_params.push_back(9);
+        cv::imwrite(titel+".png",img(rec),compression_params);
+    }
+
+    int sImageW = mTheWindow->Right_Label->size().width();
+    int sImageH = mTheWindow->Right_Label->size().height()/num_faces_max;
+
+    QImage img1 = Image::MatToQImage(img(rec));
+    QImage img2 = img1.scaled(sImageW,sImageH,Qt::KeepAspectRatio);
+    QPixmap pix = QPixmap::fromImage(img2);
+    paint.drawPixmap(0, sImageH*id, pix);
 }
