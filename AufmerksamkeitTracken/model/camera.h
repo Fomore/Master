@@ -33,6 +33,7 @@ public:
     void setUseCorrection(bool c);
 
     void setFrame(size_t frame);
+    void setImageSize(int Wight, int Height);
 
     size_t getFrameNr();
 };

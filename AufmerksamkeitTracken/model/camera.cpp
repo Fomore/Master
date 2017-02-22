@@ -109,6 +109,29 @@ void Camera::setFrame(size_t frame)
     video.set(CV_CAP_PROP_POS_FRAMES,(double)frame-1);
 }
 
+void Camera::setImageSize(int Wight, int Height)
+{
+    bool calc = false;
+    if(ImageWight != Wight){
+        ImageWight = Wight;
+        calc = true;
+    }
+    if(ImageHeight != Height){
+        ImageHeight = Height;
+        calc = true;
+    }
+    if(calc){
+        float fx = 500 * (ImageWight / 640.0);
+        float fy = 500 * (ImageHeight / 480.0);
+
+        fx = (fx + fy) / 2.0;
+        cameraMatrix = (cv::Mat_<double>(3,3) << fx, 0, ImageWight/2.0,
+                        0, fx, ImageHeight/2.0,
+                        0, 0, 1 );
+        distCoeffs = (cv::Mat_<double>(1,5) << 0, 0, 0, 0, 0);
+    }
+}
+
 size_t Camera::getFrameNr()
 {
     return (size_t)video.get(CV_CAP_PROP_POS_FRAMES);
