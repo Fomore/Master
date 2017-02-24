@@ -59,12 +59,33 @@ bool Image::getScallImage(cv::Mat &out){
     return false;
 }
 
-cv::Mat Image::get_Face_Image(cv::Mat image, int X, int Y, int Width, int Height, double MinSize){
-    return get_Face_Image(image,cv::Rect(X,Y,Width,Height),MinSize);
+cv::Mat Image::get_Face_Image(cv::Mat image, int &X, int &Y, int &Width, int &Height, double MinSize){
+    cv::Rect rec(X,Y,Width,Height);
+    cv::Mat ret = get_Face_Image(image,rec,MinSize);
+
+    X = rec.x;
+    Y = rec.y;
+    Width = rec.width;
+    Height = rec.height;
+    return ret;
 }
 
-cv::Mat Image::get_Face_Image(cv::Mat image, cv::Rect rec, double MinSize)
+cv::Mat Image::get_Face_Image(cv::Mat image, cv::Rect &rec, double MinSize)
 {
+    if(rec.x < 0){
+        rec.width += rec.x;
+        rec.x = 0;
+    }
+    if(rec.y < 0){
+        rec.height += rec.y;
+        rec.y = 0;
+    }
+    if(rec.x+rec.width > image.cols){
+        rec.width = image.cols-rec.x;
+    }
+    if(rec.y+rec.height > image.rows){
+        rec.height = image.rows-rec.y;
+    }
     cv::Mat image_cut = image(rec);
     if(rec.width < MinSize){
         double fx = MinSize/rec.width;

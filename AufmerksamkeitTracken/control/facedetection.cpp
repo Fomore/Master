@@ -358,8 +358,8 @@ void FaceDetection::print_FPS_Model(int fps, int model){
 
 void FaceDetection::LearnModel(){
     std::cout<<"Lern"<<std::endl;
-    cv::Mat frame_col,frame;
-//    cv::Rect rec;
+    cv::Mat frame;
+    cv::Rect rec;
     std::string name = "";
 
     // Initialisiierung
@@ -367,22 +367,24 @@ void FaceDetection::LearnModel(){
     int x,y;
 //    mKamera->get_camera_params(fx,fy,cx,cy,x,y);
 
-    size_t frm = 0;
+    size_t frm;
     int BoxID = -1;
     while(mImage.getNextImage(frame)){
         mKamera->setImageSize(frame.cols,frame.rows);
         mKamera->get_camera_params(fx,fy,cx,cy,x,y);
+
+        rec = mFrameEvents->getRect(mImage.getImageID()-1,0);
 //    while(mFrameEvents->getNextImageFrame(frm,rec,name, BoxID)){
-//        name = "img/"+name;
-        name = "img/"+ std::to_string(mImage.getImageID());
+        name = "img/"+name;
+//        name = "img/"+ std::to_string(mImage.getImageID());
 //        mKamera->getFrame(frame,frm);
 
-//        frame_col = mImage.get_Face_Image(frame,rec,1);
+        cv::Mat frame_col = mImage.get_Face_Image(frame,rec,1);
         cv::Mat disp_image = frame.clone();
 
         cv::Mat_<uchar> grayscale_image;
-//        Image::convert_to_grayscale(frame_col,grayscale_image);
-        Image::convert_to_grayscale(frame,grayscale_image);
+        Image::convert_to_grayscale(frame_col,grayscale_image);
+//        Image::convert_to_grayscale(frame,grayscale_image);
 
         bool success = false;
         if(!mLearn || !active_models[Model_Init]){
@@ -415,7 +417,7 @@ void FaceDetection::LearnModel(){
         QPainter *painterR=new QPainter(pixmapR);
 
         if(success){
-//            shift_detected_landmarks(Model_Init,rec.x,rec.y);
+            shift_detected_landmarks(Model_Init,rec.x,rec.y);
 
             printSmallImage(disp_image,Model_Init,*painterR,*painterL, !mLearn, name);
 
