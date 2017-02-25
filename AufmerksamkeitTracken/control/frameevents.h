@@ -41,6 +41,7 @@ public:
 
     bool getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &name, int &id);
     std::string getTitel(size_t frame);
+    std::string getTitel(size_t frameID, size_t boxID);
 
     void clearAll();
 };

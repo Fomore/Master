@@ -55,6 +55,7 @@ private:
     bool mAutoSize = false;
     bool mUseBox = false;
     bool mLearn = false;
+    bool mCLAHE = true;
 
     bool getFrame(cv::Mat &img);
 
@@ -73,6 +74,8 @@ public:
     void setAutoSize(bool a);
     void setUseBox(bool b);
     void setLearn(bool l);
+    void setCLAHE(bool c);
+
 };
 
 #endif // FACEDETECTION_H

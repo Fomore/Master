@@ -22,6 +22,7 @@ public:
     static QImage MatToQImage(const cv::Mat& mat);
     static void saveImage(cv::Mat img, std::string name);
     int getImageID();
+    static void CLAHE(cv::Mat in, cv::Mat &out, double clip);
     void getFaceParameter(int Face_ID, int &X, int &Y, int &Width, int &Hight);
 };
 

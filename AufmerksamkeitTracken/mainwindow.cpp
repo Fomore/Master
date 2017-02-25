@@ -94,3 +94,8 @@ void MainWindow::on_actionLearn_Model_triggered(bool checked)
 {
     mFaceDetection->setLearn(checked);
 }
+
+void MainWindow::on_actionUse_CLAHE_triggered(bool checked)
+{
+    mFaceDetection->setCLAHE(checked);
+}

@@ -199,3 +199,10 @@ void Image::saveImage(cv::Mat img, std::string name){
 int Image::getImageID(){
     return Image_ID;
 }
+
+void Image::CLAHE(cv::Mat in, cv::Mat &out, double clip)
+{
+    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
+    clahe->setClipLimit(clip);
+    clahe->apply(in,out);
+}

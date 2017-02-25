@@ -112,7 +112,17 @@ std::string FrameEvents::getTitel(size_t frame)
             return mFrames[i].getEvent(pos)+mFrames[i].getName(pos);
         }
     }
-    return "NotFoun"+std::to_string(frame);
+    return "NotFound"+std::to_string(frame);
+}
+
+std::string FrameEvents::getTitel(size_t frameID, size_t boxID)
+{
+    if(mFrames.size() > frameID && mFrames[frameID].getSize() > boxID){
+        std::string name = mFrames[frameID].getEvent(boxID)+mFrames[frameID].getName(boxID);
+        name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
+        return name;
+    }
+    return "NotFound"+std::to_string(frameID)+"_"+std::to_string(boxID);
 }
 
 void FrameEvents::clearAll()

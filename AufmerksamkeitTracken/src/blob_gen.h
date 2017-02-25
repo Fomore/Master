@@ -1,13 +1,3 @@
-/*
-  Version 1.0, 17.12.2015, Copyright University of Tübingen.
-
-  The Code is created based on the method from the paper:
-  "Evaluation of State-of-the-Art Pupil Detection Algorithms on Remote Eye Images", W. Fuhl, D. Geisler, T. Santini, E. Kasneci
-  ACM International Joint Conference on Pervasive and Ubiquitous Computing: Adjunct publication -- PETMEI 2016
- 
-  The code and the algorithm are for non-comercial use only.
-
-*/
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
@@ -162,6 +152,10 @@ static void gen_blob_neu(int rad, cv::Mat *all_mat, cv::Mat *all_mat_neg){
 
 }
 
+
+
+
+
 static bool is_good_ellipse_evaluation(cv::RotatedRect *ellipse, cv::Mat *pic){
 
 
@@ -241,6 +235,9 @@ static bool is_good_ellipse_evaluation(cv::RotatedRect *ellipse, cv::Mat *pic){
 	else return false;
 }
 
+
+
+
 static cv::RotatedRect blob_finder(cv::Mat *pic, float border){
 
 	cv::Point pos(0,0);
@@ -250,8 +247,8 @@ static cv::RotatedRect blob_finder(cv::Mat *pic, float border){
 	cv::Mat blob_mat, blob_mat_neg;
 
 
-	int fak_mum=4;
-	int fakk=12;
+	int fak_mum=4;//4
+	int fakk=12;//12
 
 	cv::Mat img;
 	mum(pic, &img, fak_mum);
@@ -266,7 +263,10 @@ static cv::RotatedRect blob_finder(cv::Mat *pic, float border){
 	gen_blob_neu(fakk,&blob_mat,&blob_mat_neg);
 	
 	img.convertTo(img, CV_32FC1);
+
+
 	filter2D(img, result, -1 , blob_mat, cv::Point( -1, -1 ), 0, cv::BORDER_REPLICATE );
+
 
 	
 	float * p_res, *p_neg_res;
@@ -282,12 +282,12 @@ static cv::RotatedRect blob_finder(cv::Mat *pic, float border){
 	filter2D(img, result_neg, -1 , blob_mat_neg, cv::Point( -1, -1 ), 0, cv::BORDER_REPLICATE );
 	
 
-	for(int i=result.rows*(border); i<result.rows*(1.0-border);i++){
+	for(int i=result.rows*(border*2); i<result.rows*(1.0-border*2);i++){
 		p_res=result.ptr<float>(i);
 		p_neg_res=result_neg.ptr<float>(i);
 		p_erg=erg.ptr<float>(i);
 
-		for(int j=result.cols*(border); j<result.cols*(1.0-border);j++){
+		for(int j=result.cols*(border*3); j<result.cols*(1.0-border*3);j++){
 				p_neg_res[j]=(255.0f-p_neg_res[j]);
 				p_erg[j]=(p_neg_res[j])*(p_res[j]);
 		}
@@ -316,63 +316,6 @@ static cv::RotatedRect blob_finder(cv::Mat *pic, float border){
 	}
 
 
-if(pos.y>0 && pos.y<pic->rows && pos.x>0 && pos.x<pic->cols){
-	
-	//calc th
-	int opti_x=0;
-	int opti_y=0;
-
-	float mm=0;
-	float cnt=0;
-	for(int i=-(2); i<(2);i++){
-		for(int j=-(2); j<(2);j++){
-			if( pos.y+i>0 && pos.y+i<pic->rows && pos.x+j>0 && pos.x+j<pic->cols){
-				mm+=pic->data[(pic->cols*(pos.y+i))+(pos.x+j)];
-				cnt++;
-			}
-
-		}
-	}
-
-	if(cnt>0)
-		mm=ceil(mm/cnt);
-
-
-	int th_bot=0;
-	if(pos.y>0 && pos.y<pic->rows && pos.x>0 && pos.x<pic->cols)
-		th_bot= pic->data[(pic->cols*(pos.y))+(pos.x)] + abs(mm-pic->data[(pic->cols*(pos.y))+(pos.x)]);
-	cnt=0;
-
-	for(int i=-(fak_mum*fak_mum); i<(fak_mum*fak_mum);i++){
-		for(int j=-(fak_mum*fak_mum); j<(fak_mum*fak_mum);j++){
-
-			if( pos.y+i>0 && pos.y+i<pic->rows && pos.x+j>0 && pos.x+j<pic->cols){
-
-				if(pic->data[(pic->cols*(pos.y+i))+(pos.x+j)]<=th_bot){
-					opti_x+=pos.x+j;
-					opti_y+=pos.y+i;
-					cnt++;
-				}
-			}
-
-		}
-	}
-
-
-	if(cnt>0){
-		opti_x=opti_x/cnt;
-		opti_y=opti_y/cnt;
-	}else{
-		opti_x=pos.x;
-		opti_y=pos.y;
-	}
-
-	pos.x=opti_x;
-	pos.y=opti_y;
-
-
-
-}
 
 
 	cv::RotatedRect ellipse;
@@ -381,8 +324,8 @@ if(pos.y>0 && pos.y<pic->rows && pos.x>0 && pos.x<pic->cols){
 		ellipse.center.x=pos.x;
 		ellipse.center.y=pos.y;
 		ellipse.angle=0.0;
-		ellipse.size.height=(fak_mum*fak_mum*2) +1;
-		ellipse.size.width=(fak_mum*fak_mum*2) +1;
+		ellipse.size.height=(fakk*fak_mum*2) +1;
+		ellipse.size.width=(fakk*fak_mum*2) +1;
 
 		if(!is_good_ellipse_evaluation(&ellipse, pic)){
 			ellipse.center.x=0;

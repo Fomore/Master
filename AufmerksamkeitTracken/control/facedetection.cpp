@@ -337,18 +337,15 @@ cv::Mat FaceDetection::print_Eye(const cv::Mat img, int model, int pos, int step
 
     getImageSize(X,Y,Width,Height,img.cols, img.rows,0.35,0.4,30,30);
 
-    if(Width > 16 && Height > 10){
-        cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
-        if(step == 6 && clacElse){
-            cv::Mat gray;
-            Image::convert_to_grayscale(img_Eye, gray);
+    cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
+    if(Width > 16 && Height > 10 && step == 6 && clacElse){
+        cv::Mat gray;
+        Image::convert_to_grayscale(img_Eye, gray);
 
-            cv::RotatedRect ellipse = ELSE::run(gray);
-            cv::ellipse(img_Eye, ellipse, cv::Scalar(0,255,0,255), 1,1 );
-        }
-        return img_Eye;
+        cv::RotatedRect ellipse = ELSE::run(gray);
+        cv::ellipse(img_Eye, ellipse, cv::Scalar(0,255,0,255), 1,1 );
     }
-    return cv::Mat();
+    return img_Eye;
 }
 
 void FaceDetection::print_FPS_Model(int fps, int model){
@@ -357,7 +354,6 @@ void FaceDetection::print_FPS_Model(int fps, int model){
 }
 
 void FaceDetection::LearnModel(){
-    std::cout<<"Lern"<<std::endl;
     cv::Mat frame;
     cv::Rect rec;
     std::string name = "";
@@ -375,7 +371,7 @@ void FaceDetection::LearnModel(){
 
         rec = mFrameEvents->getRect(mImage.getImageID()-1,0);
 //    while(mFrameEvents->getNextImageFrame(frm,rec,name, BoxID)){
-        name = "img/"+name;
+        name = "img/A_"+mFrameEvents->getTitel(mImage.getImageID()-1,0);
 //        name = "img/"+ std::to_string(mImage.getImageID());
 //        mKamera->getFrame(frame,frm);
 
@@ -384,6 +380,9 @@ void FaceDetection::LearnModel(){
 
         cv::Mat_<uchar> grayscale_image;
         Image::convert_to_grayscale(frame_col,grayscale_image);
+        if(mCLAHE){
+            Image::CLAHE(grayscale_image,grayscale_image,0.875);
+        }
 //        Image::convert_to_grayscale(frame,grayscale_image);
 
         bool success = false;
@@ -429,7 +428,7 @@ void FaceDetection::LearnModel(){
             vector<int> compression_params;
                 compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
                 compression_params.push_back(9);
-//            cv::imwrite(name+"_NF.png",disp_image(rec),compression_params);
+            cv::imwrite(name+"_NF.png",disp_image(rec),compression_params);
             std::cout<<"Kein Model: "<<imgCount<<" ["<<frame_col.cols<<", "<<frame_col.rows<<"]"<<std::endl;
         }
 
@@ -527,6 +526,11 @@ void FaceDetection::setUseBox(bool b)
 void FaceDetection::setLearn(bool l)
 {
     mLearn = l;
+}
+
+void FaceDetection::setCLAHE(bool c)
+{
+    mCLAHE = c;
 }
 
 void FaceDetection::shift_detected_landmarks_toWorld(int model, int worldX, int worldY, int worldW, int worldH, int imgW, int imgH){
@@ -757,13 +761,14 @@ void FaceDetection::printSmallImage(cv::Mat img, int model, QPainter &painterR, 
         vector<int> compression_params;
             compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
             compression_params.push_back(9);
-        cv::imwrite(titel+".png",print_Eye(img,model,0,27, false),compression_params);
+//            cv::imwrite(titel+".png",print_Eye(img,model,0,27, false),compression_params);
+            cv::imwrite(titel+"E.png",print_Eye(img,model,36,12, false),compression_params);
     }
 
-    cv::Mat R = print_Eye(img,model,36,6, false); //Left
-    cv::Mat L = print_Eye(img,model,42,6, false); //Right
-    if(!L.data || !R.data){
-        if(!R.data){
+    cv::Mat R = print_Eye(img,model,36,6, true); //Left
+    cv::Mat L = print_Eye(img,model,42,6, true); //Right
+    if((L.cols > 16 && L.rows > 10) || (R.cols > 16 && R.rows > 10)){
+        if((R.cols < 16 || R.rows < 10)){
             R = print_Eye(img,model,0,27, false);
         }else{
             L = print_Eye(img,model,0,27, false);
