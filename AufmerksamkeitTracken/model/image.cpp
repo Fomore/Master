@@ -206,3 +206,8 @@ void Image::CLAHE(cv::Mat in, cv::Mat &out, double clip)
     clahe->setClipLimit(clip);
     clahe->apply(in,out);
 }
+
+void Image::Histogram(cv::Mat in, cv::Mat &out)
+{
+    cv::equalizeHist(in,out);
+}

@@ -378,14 +378,17 @@ void FaceDetection::LearnModel(){
         cv::Mat frame_col = mImage.get_Face_Image(frame,rec,1);
         cv::Mat disp_image = frame.clone();
 
-        cv::Mat_<uchar> grayscale_image;
-        Image::convert_to_grayscale(frame_col,grayscale_image);
-        if(mCLAHE){
-            Image::CLAHE(grayscale_image,grayscale_image,0.875);
-        }
-//        Image::convert_to_grayscale(frame,grayscale_image);
-
         bool success = false;
+        cv::Mat_<uchar> grayscale_image,grayIMG;
+        Image::convert_to_grayscale(frame_col,grayIMG);
+        for(int clahe = 0; !success && clahe < 2 ; clahe++){
+        if(mCLAHE && clahe > 0){
+//            Image::CLAHE(grayIMG,grayscale_image,0.875);
+            Image::Histogram(grayIMG,grayscale_image);
+        }else{
+            grayscale_image = grayIMG;
+        }
+
         if(!mLearn || !active_models[Model_Init]){
             // Detect faces in an image
             vector<cv::Rect_<double> > face_detections;
@@ -404,6 +407,7 @@ void FaceDetection::LearnModel(){
             }
         }else{
             success = LandmarkDetector::DetectLandmarksInVideo(grayscale_image, clnf_models[Model_Init], det_parameters[Model_Init]);
+        }
         }
 
         // perform landmark detection for every face detected
