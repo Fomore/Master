@@ -241,6 +241,9 @@ void FaceDetection::initCLNF()
      // im build-Ordner muss das model von OpenFace sein
      LandmarkDetector::FaceModelParameters det_params(arguments); // Sollte Parameter beinhalten
 
+      // Always track gaze in feature extraction
+      det_params.track_gaze = true;
+
      det_params.use_face_template = true;
      // This is so that the model would not try re-initialising itself
      det_params.reinit_video_every = -1;
@@ -369,18 +372,19 @@ void FaceDetection::LearnModel(){
         mKamera->setImageSize(frame.cols,frame.rows);
         mKamera->get_camera_params(fx,fy,cx,cy,x,y);
 
-        rec = mFrameEvents->getRect(mImage.getImageID()-1,0);
+//        rec = mFrameEvents->getRect(mImage.getImageID()-1,0);
 //    while(mFrameEvents->getNextImageFrame(frm,rec,name, BoxID)){
-        name = "img/A_"+mFrameEvents->getTitel(mImage.getImageID()-1,0);
-//        name = "img/"+ std::to_string(mImage.getImageID());
+//        name = "img/A_"+mFrameEvents->getTitel(mImage.getImageID()-1,0);
+        name = "img/"+ std::to_string(mImage.getImageID());
 //        mKamera->getFrame(frame,frm);
 
-        cv::Mat frame_col = mImage.get_Face_Image(frame,rec,1);
+//        cv::Mat frame_col = mImage.get_Face_Image(frame,rec,1);
         cv::Mat disp_image = frame.clone();
 
         bool success = false;
         cv::Mat_<uchar> grayscale_image,grayIMG;
-        Image::convert_to_grayscale(frame_col,grayIMG);
+        Image::convert_to_grayscale(frame,grayIMG);
+//        Image::convert_to_grayscale(frame_col,grayIMG);
         for(int clahe = 0; !success && clahe < 2 ; clahe++){
         if(mCLAHE && clahe > 0){
 //            Image::CLAHE(grayIMG,grayscale_image,0.875);
@@ -420,20 +424,29 @@ void FaceDetection::LearnModel(){
         QPainter *painterR=new QPainter(pixmapR);
 
         if(success){
-            shift_detected_landmarks(Model_Init,rec.x,rec.y);
+//            shift_detected_landmarks(Model_Init,rec.x,rec.y);
 
-            printSmallImage(disp_image,Model_Init,*painterR,*painterL, !mLearn, name);
+            printSmallImage(disp_image,Model_Init,*painterR,*painterL, true, name);
 
             print_CLNF(disp_image,Model_Init,0.5,fx,fy,cx,cy);
+
+            vector<int> compression_params;
+                compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+                compression_params.push_back(9);
+    //            cv::imwrite(titel+".png",print_Eye(img,model,0,27, false),compression_params);
+                cv::imwrite(name+"E2.png",print_Eye(disp_image,Model_Init,36,12, false),compression_params);
+
             //std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
             active_models[Model_Init] = true;
 
         }else{
+            if(rec.width > 0 && rec.height > 0){
             vector<int> compression_params;
                 compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
                 compression_params.push_back(9);
             cv::imwrite(name+"_NF.png",disp_image(rec),compression_params);
-            std::cout<<"Kein Model: "<<imgCount<<" ["<<frame_col.cols<<", "<<frame_col.rows<<"]"<<std::endl;
+//            std::cout<<"Kein Model: "<<imgCount<<" ["<<frame_col.cols<<", "<<frame_col.rows<<"]"<<std::endl;
+            }
         }
 
         painterL->end();
@@ -761,14 +774,6 @@ void FaceDetection::printSmallImage(cv::Mat img, int model, QPainter &painterR, 
     int sImageW = mTheWindow->Right_Label->size().width();
     int sImageH = mTheWindow->Right_Label->size().height()/num_faces_max;
 
-    if(print){
-        vector<int> compression_params;
-            compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
-            compression_params.push_back(9);
-//            cv::imwrite(titel+".png",print_Eye(img,model,0,27, false),compression_params);
-            cv::imwrite(titel+"E.png",print_Eye(img,model,36,12, false),compression_params);
-    }
-
     cv::Mat R = print_Eye(img,model,36,6, true); //Left
     cv::Mat L = print_Eye(img,model,42,6, true); //Right
     if((L.cols > 16 && L.rows > 10) || (R.cols > 16 && R.rows > 10)){
@@ -777,6 +782,13 @@ void FaceDetection::printSmallImage(cv::Mat img, int model, QPainter &painterR, 
         }else{
             L = print_Eye(img,model,0,27, false);
         }
+    }
+    if(print){
+        vector<int> compression_params;
+            compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+            compression_params.push_back(9);
+//            cv::imwrite(titel+".png",print_Eye(img,model,0,27, false),compression_params);
+            cv::imwrite(titel+"E.png",print_Eye(img,model,36,12, false),compression_params);
     }
     if(L.data){
         QImage img = Image::MatToQImage(L);
