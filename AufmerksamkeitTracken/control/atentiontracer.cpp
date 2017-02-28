@@ -68,9 +68,11 @@ void AtentionTracer::printImageOrientation(){
         cv::arrowedLine(img, cv::Point(cvRound(pos[4]),cvRound(pos[5])), calcArrowEndImage(pos), color,thickness);
     }
 
+    if(!img.empty()){
     QImage img2 = Image::MatToQImage(img).scaled(mTheWindow->ImageBottomLeft_label->size(),Qt::KeepAspectRatio);
     QPixmap pix = QPixmap::fromImage(img2);
     mTheWindow->ImageBottomLeft_label->setPixmap(pix);
+    }
 }
 
 void AtentionTracer::printWorld(){
@@ -85,9 +87,11 @@ void AtentionTracer::printWorld(){
         cv::arrowedLine(img, p1,p2, color);
     }
 
+    if(!img.empty()){
     QImage img2 = Image::MatToQImage(img).scaled(mTheWindow->ImageBottomCenter_label->size(),Qt::KeepAspectRatio);
     QPixmap pix = QPixmap::fromImage(img2);
     mTheWindow->ImageBottomCenter_label->setPixmap(pix);
+    }
 }
 
 void AtentionTracer::printAttention(){
@@ -107,9 +111,11 @@ void AtentionTracer::printAttention(){
                           R*cv::Vec3d(0,0,-1));
     }
 
+    if(!img.empty()){
     QImage img2 = Image::MatToQImage(img).scaled(mTheWindow->ImageBottomRight_label->size(),Qt::KeepAspectRatio);
     QPixmap pix = QPixmap::fromImage(img2);
     mTheWindow->ImageBottomRight_label->setPixmap(pix);
+    }
 }
 
 void AtentionTracer::printCirclePoints(cv::Mat &img, cv::Vec3d center, cv::Vec3b color, cv::Vec3d position, cv::Vec3d orientation){

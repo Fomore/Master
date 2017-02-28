@@ -349,6 +349,28 @@ void FaceDetection::getImageSize(double &X, double &Y, double &Width, double &He
 
 }
 
+void FaceDetection::EyeCalculation(cv::Mat img, LandmarkDetector::CLNF clnf, size_t id)
+{
+    cv::Rect2d rec = clnf.GetBoundingBox();
+    cv::Mat src = img.clone();
+    cv::Mat result;
+
+    LandmarkDetector::Draw(src,clnf);
+    cv::vconcat(img(rec),src(rec),result);
+
+    cv::Mat gray;
+    src = img(rec).clone();
+    Image::convert_to_grayscale(src, gray);
+    float quality;
+    cv::RotatedRect ellipse = ELSE::run(gray, quality);
+    cv::ellipse(src, ellipse, cv::Scalar(0,255,0,255), 1,1 );
+    cv::vconcat(result,src,result);
+
+    double f = max(100/rec.width,100/rec.height);
+    cv::resize(result,result,cv::Size(f*rec.width,f*rec.height*3));
+    cv::imshow("Auge"+std::to_string(id),result);
+}
+
 cv::Mat FaceDetection::print_Eye(const cv::Mat img, int model, int pos, int step, bool clacElse, float &quality){
     double X,Y,Width,Height;
     getCLNFBox(model, pos, step, X,Y,Width,Height);
@@ -441,16 +463,16 @@ void FaceDetection::LearnModel(){
         if(success){
             shift_detected_landmarks(Model_Init,rec.x,rec.y);
 
-            prinEyeCLNFImage(disp_image,Model_Init,name, false);
-            printSmallImage(disp_image.clone(),Model_Init,*painterR,*painterL, false, name);
-
             for (size_t part = 0; part < clnf_models[Model_Init].hierarchical_models.size(); ++part)
             {
                 if(clnf_models[Model_Init].hierarchical_models[part].detected_landmarks.rows == 56){
 //                    output << " "<<clnf_models[Model_Init].hierarchical_models[part].model_likelihood;
+                    EyeCalculation(disp_image.clone(),clnf_models[Model_Init].hierarchical_models[part],part);
                 }
             }
 
+            prinEyeCLNFImage(disp_image,Model_Init,name, false);
+            printSmallImage(disp_image.clone(),Model_Init,*painterR,*painterL, false, name);
             print_CLNF(disp_image,Model_Init,0.5,fx,fy,cx,cy);
 
             mAtentionTracer->newPosition((double)Model_Init/num_faces_max,

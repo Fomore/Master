@@ -29,6 +29,8 @@ private:
 
     void getImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY, double sX, double sY, double sMaxX, double sMaxY);
 
+    void EyeCalculation(cv::Mat img, LandmarkDetector::CLNF clnf, size_t id);
+
     Image mImage;
     int Model_Init;
     int imgCount;
