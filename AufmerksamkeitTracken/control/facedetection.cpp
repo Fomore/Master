@@ -426,10 +426,22 @@ void FaceDetection::LearnModel(){
         if(success){
 //            shift_detected_landmarks(Model_Init,rec.x,rec.y);
 
-            printSmallImage(disp_image,Model_Init,*painterR,*painterL, false, name);
+            printSmallImage(disp_image.clone(),Model_Init,*painterR,*painterL, false, name);
             prinEyeCLNFImage(disp_image,Model_Init,name);
 
+            for (size_t part = 0; part < clnf_models[Model_Init].hierarchical_models.size(); ++part)
+            {
+                if(clnf_models[Model_Init].hierarchical_models[part].detected_landmarks.rows == 56){
+//                    output << " "<<clnf_models[Model_Init].hierarchical_models[part].model_likelihood;
+                }
+            }
+
             print_CLNF(disp_image,Model_Init,0.5,fx,fy,cx,cy);
+
+            mAtentionTracer->newPosition((double)Model_Init/num_faces_max,
+                                         LandmarkDetector::GetCorrectedPoseCamera(clnf_models[Model_Init], fx, fy, cx, cy),
+                                         clnf_models[Model_Init].params_global);
+            mAtentionTracer->print();
 
             //std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
             active_models[Model_Init] = true;
@@ -769,15 +781,10 @@ void FaceDetection::printSmallImage(cv::Mat img, int model, QPainter &painterR, 
     int sImageW = mTheWindow->Right_Label->size().width();
     int sImageH = mTheWindow->Right_Label->size().height()/num_faces_max;
 
-    float quR, quL;
+    float quR, quL; // Qualität des Berechnung
 
     cv::Mat R = print_Eye(img,model,36,6, true,quR); //Left
     cv::Mat L = print_Eye(img,model,42,6, true,quL); //Right
-
-    std::ofstream output;
-    output.open("ELSE.txt", ios::out | ios::app);
-    output << "Image "<<titel<<": "<<quR<<" "<<quL<<std::endl;
-    output.close();
 
     if((L.cols > 16 && L.rows > 10) || (R.cols > 16 && R.rows > 10)){
         if((R.cols < 8 || R.rows < 5)){
@@ -833,8 +840,10 @@ void FaceDetection::prinEyeCLNFImage(cv::Mat img, int model, string titel)
     for(size_t i = 0; i < clnf_models[model].hierarchical_models.size(); ++i)
     {
         if(clnf_models[model].hierarchical_models[i].pdm.NumberOfPoints() != clnf_models[model].hierarchical_mapping[i].size()
-                && clnf_models[model].hierarchical_models[i].detected_landmarks.rows/2 == 28){
-            LandmarkDetector::Draw(img_cp, clnf_models[model].hierarchical_models[i]);
+                && clnf_models[model].hierarchical_models[i].detected_landmarks.rows/2 == (size_t)28){
+            int idx = clnf_models[model].patch_experts.GetViewIdx(clnf_models[model].params_global, 0);
+            LandmarkDetector::Draw(img_cp, clnf_models[model].hierarchical_models[i].detected_landmarks, clnf_models[model].patch_experts.visibilities[0][idx]);
+
         }
     }
     float quality;

@@ -85,7 +85,7 @@ void AtentionTracer::printWorld(){
         cv::arrowedLine(img, p1,p2, color);
     }
 
-    QImage img2 = Image::MatToQImage(img);
+    QImage img2 = Image::MatToQImage(img).scaled(mTheWindow->ImageBottomCenter_label->size(),Qt::KeepAspectRatio);
     QPixmap pix = QPixmap::fromImage(img2);
     mTheWindow->ImageBottomCenter_label->setPixmap(pix);
 }
@@ -107,7 +107,7 @@ void AtentionTracer::printAttention(){
                           R*cv::Vec3d(0,0,-1));
     }
 
-    QImage img2 = Image::MatToQImage(img);
+    QImage img2 = Image::MatToQImage(img).scaled(mTheWindow->ImageBottomRight_label->size(),Qt::KeepAspectRatio);
     QPixmap pix = QPixmap::fromImage(img2);
     mTheWindow->ImageBottomRight_label->setPixmap(pix);
 }
