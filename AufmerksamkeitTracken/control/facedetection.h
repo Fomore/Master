@@ -25,7 +25,7 @@ private:
 
     void printSmallImage(cv::Mat img, int model, QPainter &painterR, QPainter &painterL, bool print, string titel);
     void printSmallImage(cv::Mat img, cv::Rect rec, int id, QPainter &paint, bool save, string titel);
-    void prinEyeCLNFImage(cv::Mat img, int model, string titel);
+    void prinEyeCLNFImage(cv::Mat img, int model, string titel, bool save);
 
     void getImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY, double sX, double sY, double sMaxX, double sMaxY);
 

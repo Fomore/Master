@@ -284,6 +284,21 @@ void FaceDetection::shift_detected_landmarks(int model, int X, int Y)
 
     clnf_models[model].params_global[4] += X;
     clnf_models[model].params_global[5] += Y;
+
+    for (size_t part = 0; part < clnf_models[model].hierarchical_models.size(); ++part)
+    {
+        cv::Mat_<double> shape2D = clnf_models[model].hierarchical_models[part].detected_landmarks;
+
+        int n = shape2D.rows/2;
+        for(int pos = 0; pos < n; pos++){
+            shape2D.at<double>(pos) += X;
+            shape2D.at<double>(pos + n) += Y;
+        }
+        clnf_models[model].hierarchical_models[part].detected_landmarks = shape2D.clone();
+
+        clnf_models[model].hierarchical_models[part].params_global[4] += X;
+        clnf_models[model].hierarchical_models[part].params_global[5] += Y;
+    }
 }
 
 void FaceDetection::showImage(const cv::Mat image){
@@ -372,19 +387,19 @@ void FaceDetection::LearnModel(){
         mKamera->setImageSize(frame.cols,frame.rows);
         mKamera->get_camera_params(fx,fy,cx,cy,x,y);
 
-//        rec = mFrameEvents->getRect(mImage.getImageID()-1,0);
+        rec = mFrameEvents->getRect(mImage.getImageID()-1,0);
 //    while(mFrameEvents->getNextImageFrame(frm,rec,name, BoxID)){
 //        name = "img/A_"+mFrameEvents->getTitel(mImage.getImageID()-1,0);
         name = "img/"+ std::to_string(mImage.getImageID());
 //        mKamera->getFrame(frame,frm);
 
-//        cv::Mat frame_col = mImage.get_Face_Image(frame,rec,1);
+        cv::Mat frame_col = mImage.get_Face_Image(frame,rec,1);
         cv::Mat disp_image = frame.clone();
 
         bool success = false;
         cv::Mat_<uchar> grayscale_image,grayIMG;
-        Image::convert_to_grayscale(frame,grayIMG);
-//        Image::convert_to_grayscale(frame_col,grayIMG);
+//        Image::convert_to_grayscale(frame,grayIMG);
+        Image::convert_to_grayscale(frame_col,grayIMG);
         for(int clahe = 0; !success && clahe < 2 ; clahe++){
         if(mCLAHE && clahe > 0){
 //            Image::CLAHE(grayIMG,grayscale_image,0.875);
@@ -424,10 +439,10 @@ void FaceDetection::LearnModel(){
         QPainter *painterR=new QPainter(pixmapR);
 
         if(success){
-//            shift_detected_landmarks(Model_Init,rec.x,rec.y);
+            shift_detected_landmarks(Model_Init,rec.x,rec.y);
 
+            prinEyeCLNFImage(disp_image,Model_Init,name, false);
             printSmallImage(disp_image.clone(),Model_Init,*painterR,*painterL, false, name);
-            prinEyeCLNFImage(disp_image,Model_Init,name);
 
             for (size_t part = 0; part < clnf_models[Model_Init].hierarchical_models.size(); ++part)
             {
@@ -832,23 +847,22 @@ void FaceDetection::printSmallImage(cv::Mat img, cv::Rect rec, int id, QPainter 
     paint.drawPixmap(0, sImageH*id, pix);
 }
 
-void FaceDetection::prinEyeCLNFImage(cv::Mat img, int model, string titel)
+void FaceDetection::prinEyeCLNFImage(cv::Mat img, int model, string titel, bool save)
 {
-    cv::Mat img_cp;
-    img.copyTo(img_cp);
-    // If the model has hierarchical updates draw those too
     for(size_t i = 0; i < clnf_models[model].hierarchical_models.size(); ++i)
     {
         if(clnf_models[model].hierarchical_models[i].pdm.NumberOfPoints() != clnf_models[model].hierarchical_mapping[i].size()
-                && clnf_models[model].hierarchical_models[i].detected_landmarks.rows/2 == (size_t)28){
+                && clnf_models[model].hierarchical_models[i].detected_landmarks.rows == 56){
             int idx = clnf_models[model].patch_experts.GetViewIdx(clnf_models[model].params_global, 0);
-            LandmarkDetector::Draw(img_cp, clnf_models[model].hierarchical_models[i].detected_landmarks, clnf_models[model].patch_experts.visibilities[0][idx]);
+            LandmarkDetector::Draw(img, clnf_models[model].hierarchical_models[i].detected_landmarks, clnf_models[model].patch_experts.visibilities[0][idx]);
 
         }
     }
+    if(save){
     float quality;
     vector<int> compression_params;
         compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
         compression_params.push_back(9);
-        cv::imwrite(titel+"E3.png",print_Eye(img_cp,model,36,12, false,quality),compression_params);
+        cv::imwrite(titel+"E3.png",print_Eye(img,model,36,12, false,quality),compression_params);
+    }
 }
