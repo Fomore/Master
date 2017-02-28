@@ -156,7 +156,7 @@ static void gen_blob_neu(int rad, cv::Mat *all_mat, cv::Mat *all_mat_neg){
 
 
 
-static bool is_good_ellipse_evaluation(cv::RotatedRect *ellipse, cv::Mat *pic){
+static bool is_good_ellipse_evaluation(cv::RotatedRect *ellipse, cv::Mat *pic, float &quality){
 
 
 
@@ -230,6 +230,7 @@ static bool is_good_ellipse_evaluation(cv::RotatedRect *ellipse, cv::Mat *pic){
 
 
 	val=ext_val-val;
+    quality = val;
 
 	if(val>-100) return true;
 	else return false;
@@ -238,7 +239,7 @@ static bool is_good_ellipse_evaluation(cv::RotatedRect *ellipse, cv::Mat *pic){
 
 
 
-static cv::RotatedRect blob_finder(cv::Mat *pic, float border){
+static cv::RotatedRect blob_finder(cv::Mat *pic, float border, float &quality){
 
 	cv::Point pos(0,0);
 	float abs_max=0;
@@ -319,6 +320,7 @@ static cv::RotatedRect blob_finder(cv::Mat *pic, float border){
 
 
 	cv::RotatedRect ellipse;
+    quality = -200;
 
 	if( pos.y>0 && pos.y<pic->rows && pos.x>0 && pos.x<pic->cols){
 		ellipse.center.x=pos.x;
@@ -327,12 +329,13 @@ static cv::RotatedRect blob_finder(cv::Mat *pic, float border){
 		ellipse.size.height=(fakk*fak_mum*2) +1;
 		ellipse.size.width=(fakk*fak_mum*2) +1;
 
-		if(!is_good_ellipse_evaluation(&ellipse, pic)){
+        if(!is_good_ellipse_evaluation(&ellipse, pic, quality)){
 			ellipse.center.x=0;
 			ellipse.center.y=0;
 			ellipse.angle=0;
 			ellipse.size.height=0;
 			ellipse.size.width=0;
+            quality = -200;
 		}
 
 	}else{

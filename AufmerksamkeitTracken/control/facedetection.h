@@ -17,7 +17,7 @@ private:
     Ui::MainWindow* mTheWindow;
     void showImage(const cv::Mat image);
 
-    cv::Mat print_Eye(const cv::Mat img, int model, int pos, int step, bool clacElse);
+    cv::Mat print_Eye(const cv::Mat img, int model, int pos, int step, bool clacElse, float &quality);
     void print_FPS_Model(int fps, int model);
     void print_CLNF(cv::Mat img, int model, double itens, double fx, double fy, double cx, double cy);
     void print_Orientation(cv::Mat img, int model);
@@ -25,6 +25,7 @@ private:
 
     void printSmallImage(cv::Mat img, int model, QPainter &painterR, QPainter &painterL, bool print, string titel);
     void printSmallImage(cv::Mat img, cv::Rect rec, int id, QPainter &paint, bool save, string titel);
+    void prinEyeCLNFImage(cv::Mat img, int model, string titel);
 
     void getImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY, double sX, double sY, double sMaxX, double sMaxY);
 

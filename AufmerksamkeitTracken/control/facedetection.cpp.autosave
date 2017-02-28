@@ -834,7 +834,9 @@ void FaceDetection::prinEyeCLNFImage(cv::Mat img, int model, string titel)
     {
         if(clnf_models[model].hierarchical_models[i].pdm.NumberOfPoints() != clnf_models[model].hierarchical_mapping[i].size()
                 && clnf_models[model].hierarchical_models[i].detected_landmarks.rows/2 == 28){
-            LandmarkDetector::Draw(img_cp, clnf_models[model].hierarchical_models[i]);
+            int idx = clnf_models[model].patch_experts.GetViewIdx(clnf_model.params_global, 0);
+            LandmarkDetector::Draw(img_cp, clnf_models[model].hierarchical_models[i].detected_landmarks, clnf_models[model].patch_experts.visibilities[0][idx]);
+            
         }
     }
     float quality;

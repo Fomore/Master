@@ -5,8 +5,8 @@ Image::Image()
     mImagePaths.clear();
 //    cv::glob("/home/falko/Uni/Master/Bilder/*g", mImagePaths, true);
 //    cv::glob("/home/falko/Uni/Master/Bilder/Learn/*.jpgg", mImagePaths, true);//erhalten durch cv::Mat img = get_Face_Image(read_image,155,280,36,42); auf Grau setzen
-    cv::glob("/home/falko/Uni/Master/Bilder/HeadPose/*.jpg", mImagePaths, true);
-//    cv::glob("/home/falko/Uni/Master/Bilder/Aufnahme2/*.JPG", mImagePaths, true);
+//    cv::glob("/home/falko/Uni/Master/Bilder/HeadPose/*.jpg", mImagePaths, true);
+    cv::glob("/home/falko/Uni/Master/Bilder/Aufnahme2/*.JPG", mImagePaths, true);
 
     Image_ID = 0;
 }
