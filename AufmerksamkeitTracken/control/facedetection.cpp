@@ -377,29 +377,47 @@ void FaceDetection::EyeCalculation(cv::Mat img, LandmarkDetector::CLNF clnf, siz
     src = img.clone();
     cv::Mat_<double> shape2D = clnf.detected_landmarks;
     int n = shape2D.rows/2;
+//    std::vector<cv::Point2f> pos, pos2;
     for( int i = 0; i < n; ++i){
         if( i < 8){
-            std::cout<<"Alt:"<<shape2D.at<double>(i)<<"/"<<shape2D.at<double>(i + n)
-                     <<" ["<<ellipse.center.x<<" "<<ellipse.center.y<<"] ["<<ellipse.size.width<<" "<<ellipse.size.height
-                     <<"] ["<<rec.x<<" "<<rec.y<<" - "<<rec.width<<" "<<rec.height<<"]"<<std::endl;
-            shape2D.at<double>(i)  = ellipse.center.x+rec.x + sin(i*M_PI/4)*ellipse.size.width/2;
-            shape2D.at<double>(i+n)= ellipse.center.y+rec.y + cos(i*M_PI/4)*ellipse.size.height/2;
+//            pos.push_back(cv::Point2d(shape2D.at<double>(i),shape2D.at<double>(i+n)));
+            shape2D.at<double>(i)  = ellipse.center.x+rec.x + cos((i-4)*M_PI/4.0)*ellipse.size.width/2*1.727;
+            shape2D.at<double>(i+n)= ellipse.center.y+rec.y + sin((i-4)*M_PI/4.0)*ellipse.size.height/2*1.727;
         }else if(i > 19){
-
+//            pos2.push_back(cv::Point2d(shape2D.at<double>(i),shape2D.at<double>(i+n)));
+/*            std::cout<<"Alt:"<<shape2D.at<double>(i)<<"/"<<shape2D.at<double>(i + n)
+                     <<" ["<<ellipse.center.x<<" "<<ellipse.center.y<<"] ["<<ellipse.size.width<<" "<<ellipse.size.height<<" "<<ellipse.angle
+                     <<"] ["<<rec.x<<" "<<rec.y<<" - "<<rec.width<<" "<<rec.height<<"]"<<std::endl;*/
+            shape2D.at<double>(i)  = ellipse.center.x+rec.x + cos((23-i)*M_PI/4.0)*ellipse.size.width/2*0.738;
+            shape2D.at<double>(i+n)= ellipse.center.y+rec.y + sin((23-i)*M_PI/4.0)*ellipse.size.height/2*0.738;
         }
     }
+/*
+    cv::RotatedRect ret_ellipse = cv::fitEllipse(pos);
+    cv::RotatedRect ret_ellipse2 = cv::fitEllipse(pos2);
+
+    std::ofstream output;
+    output.open("Auge.txt", ios::out | ios::app);
+    output << "[ "<<ret_ellipse.center.x<<" "<<ret_ellipse.center.y<<" "<<ret_ellipse.size.width<<" "<<ret_ellipse.size.height<<" ]"
+           << "[ "<<ret_ellipse2.center.x<<" "<<ret_ellipse2.center.y<<" "<<ret_ellipse2.size.width<<" "<<ret_ellipse2.size.height<<" ]"
+           << "[ "<<ellipse.center.x<<" "<<ellipse.center.y<<" "<<ellipse.size.width<<" "<<ellipse.size.height<<" ]"
+           <<std::endl;
+    output.close();
+*/
     clnf.detected_landmarks = shape2D.clone();
     LandmarkDetector::Draw(src,clnf);
+//    cv::ellipse(src, ret_ellipse, cv::Scalar(0,255,255,255), 1,1 );
+//    cv::ellipse(src, ret_ellipse2, cv::Scalar(0,255,0,255), 1,1 );
     cv::vconcat(result,src(rec),result);
 
     double f = max(100/rec.width,100/rec.height);
     cv::resize(result,result,cv::Size(f*rec.width,f*rec.height*4));
-    cv::imshow("Auge"+std::to_string(id),result);
+//    cv::imshow("Auge"+std::to_string(id),result);
 
     vector<int> compression_params;
     compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
     compression_params.push_back(9);
-    cv::imwrite("Test.png",result,compression_params);
+    cv::imwrite("img/Auge"+std::to_string(id)+".png",result,compression_params);
 }
 
 cv::Mat FaceDetection::print_Eye(const cv::Mat img, int model, int pos, int step, bool clacElse, float &quality){
@@ -498,7 +516,7 @@ void FaceDetection::LearnModel(){
             {
                 if(clnf_models[Model_Init].hierarchical_models[part].detected_landmarks.rows == 56){
 //                    output << " "<<clnf_models[Model_Init].hierarchical_models[part].model_likelihood;
-                    EyeCalculation(disp_image.clone(),clnf_models[Model_Init].hierarchical_models[part],part);
+                    EyeCalculation(disp_image.clone(),clnf_models[Model_Init].hierarchical_models[part],mImage.getImageID()*10+part);
                 }
             }
 
