@@ -74,7 +74,9 @@ LIBS += -llapack -lblas
 
 #openface
 INCLUDEPATH += /home/falko/OpenFace/lib/local/LandmarkDetector/include
+INCLUDEPATH += /home/falko/OpenFace/lib/local/FaceAnalyser/include
 LIBS += -L/home/falko/OpenFace/build/lib/local/LandmarkDetector -lLandmarkDetector
+LIBS += -L/home/falko/OpenFace/build/lib/local/FaceAnalyser -lFaceAnalyser
 #LIBS += -L/home/pp/Librerias/opencv-3.1.0/build/3rdparty/lib -llibwebp
 LIBS += -L/home/falko/OpenCV/3rdparty/ippicv/unpack/ippicv_lnx/lib/intel64 -lippicv
 

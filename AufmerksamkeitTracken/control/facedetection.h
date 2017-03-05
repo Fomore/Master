@@ -29,7 +29,8 @@ private:
 
     void getImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY, double sX, double sY, double sMaxX, double sMaxY);
 
-    void EyeCalculation(cv::Mat img, LandmarkDetector::CLNF clnf, size_t id);
+    void TestEyeCalculation(cv::Mat img, LandmarkDetector::CLNF &clnf, size_t id);
+    void CalcualteEye(cv::Mat img, size_t CLNF_ID);
 
     Image mImage;
     int Model_Init;
