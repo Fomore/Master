@@ -291,12 +291,20 @@ void FaceDetection::initCLNF()
 void FaceDetection::shift_detected_landmarks(int model, cv::Rect rec, double width)
 {
     int X = rec.x, Y = rec.y;
+    double fx = (double)width/rec.width;
     cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
 
     int n = shape2D.rows/2;
     for(int pos = 0; pos < n; pos++){
-        shape2D.at<double>(pos) += X;
-        shape2D.at<double>(pos + n) += Y;
+        if(width > rec.width && rec.width > 0){
+            double x = shape2D.at<double>(pos);
+            double y = shape2D.at<double>(pos + n);
+            shape2D.at<double>(pos) = X + x/fx;
+            shape2D.at<double>(pos + n) = Y + y/fx;
+        }else{
+            shape2D.at<double>(pos) += X;
+            shape2D.at<double>(pos + n) += Y;
+        }
     }
     clnf_models[model].detected_landmarks = shape2D.clone();
 
@@ -308,9 +316,17 @@ void FaceDetection::shift_detected_landmarks(int model, cv::Rect rec, double wid
 
         int n = shape2D.rows/2;
         for(int pos = 0; pos < n; pos++){
-            shape2D.at<double>(pos) += X;
-            shape2D.at<double>(pos + n) += Y;
+            if(width > rec.width && rec.width > 0){
+                double x = shape2D.at<double>(pos);
+                double y = shape2D.at<double>(pos + n);
+                shape2D.at<double>(pos) = X + x/fx;
+                shape2D.at<double>(pos + n) = Y + y/fx;
+            }else{
+                shape2D.at<double>(pos) += X;
+                shape2D.at<double>(pos + n) += Y;
+            }
         }
+
         clnf_models[model].hierarchical_models[part].detected_landmarks = shape2D.clone();
 
         clnf_models[model].hierarchical_models[part].params_global[4] += X;
@@ -578,7 +594,6 @@ void FaceDetection::LearnModel(){
 
     */
     while(mFrameEvents->getNextImageFrame(frm,rec,name, BoxID)){
-        std::cout<<name<<" : "<<frm<<" ["<<rec.x<<" "<<rec.y<<" "<<rec.width<<" "<<rec.height<<"]"<<std::endl;
         mKamera->getFrame(frame,frm);
         name = "img/F_"+name;
         mKamera->setImageSize(frame.cols,frame.rows);
@@ -586,6 +601,8 @@ void FaceDetection::LearnModel(){
 
         cv::Mat frame_col = mImage.get_Face_Image(frame,rec,50);
         cv::Mat disp_image = frame.clone();
+
+        std::cout<<name<<" : "<<frm<<" ["<<rec.x<<" "<<rec.y<<" "<<rec.width<<" "<<rec.height<<"] "<<frame_col.cols<<" "<<frame_col.rows<<std::endl;
 
         bool success = false;
         cv::Mat_<uchar> grayscale_image,grayIMG;
