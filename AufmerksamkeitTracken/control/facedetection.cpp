@@ -200,7 +200,7 @@ void FaceDetection::print_CLNF(cv::Mat img, int model, double itens, double fx, 
     cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy);
 
     // Draw it in reddish if uncertain, blueish if certain
-    LandmarkDetector::DrawBox(img, pose_estimate, cv::Scalar((1-itens)*255.0,0, itens*255), thickness, fx, fy, cx, cy);
+//    LandmarkDetector::DrawBox(img, pose_estimate, cv::Scalar((1-itens)*255.0,0, itens*255), thickness, fx, fy, cx, cy);
 
     // Stellt die Gesichtsorientierung dar
     print_Orientation(img,model);
@@ -288,8 +288,9 @@ void FaceDetection::initCLNF()
 
 }
 
-void FaceDetection::shift_detected_landmarks(int model, int X, int Y)
+void FaceDetection::shift_detected_landmarks(int model, cv::Rect rec, double width)
 {
+    int X = rec.x, Y = rec.y;
     cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
 
     int n = shape2D.rows/2;
@@ -389,6 +390,21 @@ void FaceDetection::TestEyeCalculation(cv::Mat img, LandmarkDetector::CLNF &clnf
     cv::ellipse(src, ellipse, cv::Scalar(0,255,0,255), 1,1 );
     cv::vconcat(result,src,result);
 
+    /* Landmarks der Augen
+     * Groß
+          2
+        1   3
+      0       4
+        7   5
+          6
+     * Klein
+         25
+       26  24
+     27      23
+       20  22
+         21
+     */
+
     src = img.clone();
     cv::Mat_<double> shape2D = clnf.detected_landmarks;
     int n = shape2D.rows/2;
@@ -436,8 +452,15 @@ void FaceDetection::TestEyeCalculation(cv::Mat img, LandmarkDetector::CLNF &clnf
     //    cv::imwrite("img/Auge"+std::to_string(id)+".png",result,compression_params);
 }
 
-void FaceDetection::CalcualteEye(cv::Mat img, size_t CLNF_ID)
+void FaceDetection::CalcualteEye(cv::Mat img, size_t CLNF_ID, int &used)
 {
+    /*
+     * used
+     * 0: OpenFace
+     * 1: ELSE
+     * 2: ELSE & OpenFace
+     */
+    used = 0;
     int hir_id[2] = {-1,-1};
 
     for (size_t part = 0; part < clnf_models[CLNF_ID].hierarchical_models.size(); ++part){
@@ -477,6 +500,10 @@ void FaceDetection::CalcualteEye(cv::Mat img, size_t CLNF_ID)
                 if(ellipse.size.width > 0 && ellipse.size.height >0
                         && sqrt(pow(max_eye.center.x - (rec.x + ellipse.center.x),2.0) + pow(max_eye.center.y - (rec.y + ellipse.center.y),2.0))
                         < (max_eye.size.width+max_eye.size.height)/5.0){
+                    used += (int)pow(10,hir);
+                    if((min_eye.size.width+min_eye.size.height)/2 < 6.0){
+                        used += (int)pow(10,hir);
+                    }
                     for( int i = 0; i < n; ++i){
                         if( i < 8){
                             if((min_eye.size.width+min_eye.size.height)/2 < 6.0){
@@ -539,19 +566,25 @@ void FaceDetection::LearnModel(){
     int x,y;
 //    mKamera->get_camera_params(fx,fy,cx,cy,x,y);
 
-    size_t frm;
+    size_t frm=0;
     int BoxID = -1;
+/*
     while(mImage.getNextImage(frame)){
         mKamera->setImageSize(frame.cols,frame.rows);
         mKamera->get_camera_params(fx,fy,cx,cy,x,y);
 
         rec = mFrameEvents->getRect(mImage.getImageID()-1,0);
-//    while(mFrameEvents->getNextImageFrame(frm,rec,name, BoxID)){
-//        name = "img/A_"+mFrameEvents->getTitel(mImage.getImageID()-1,0);
         name = "img/"+ std::to_string(mImage.getImageID());
-//        mKamera->getFrame(frame,frm);
 
-        cv::Mat frame_col = mImage.get_Face_Image(frame,rec,1);
+    */
+    while(mFrameEvents->getNextImageFrame(frm,rec,name, BoxID)){
+        std::cout<<name<<" : "<<frm<<" ["<<rec.x<<" "<<rec.y<<" "<<rec.width<<" "<<rec.height<<"]"<<std::endl;
+        mKamera->getFrame(frame,frm);
+        name = "img/F_"+name;
+        mKamera->setImageSize(frame.cols,frame.rows);
+        mKamera->get_camera_params(fx,fy,cx,cy,x,y);
+
+        cv::Mat frame_col = mImage.get_Face_Image(frame,rec,50);
         cv::Mat disp_image = frame.clone();
 
         bool success = false;
@@ -597,7 +630,7 @@ void FaceDetection::LearnModel(){
         QPainter *painterR=new QPainter(pixmapR);
 
         if(success){
-            shift_detected_landmarks(Model_Init,rec.x,rec.y);
+            shift_detected_landmarks(Model_Init,rec,50);
 
             /*
             for (size_t part = 0; part < clnf_models[Model_Init].hierarchical_models.size(); ++part)
@@ -607,8 +640,9 @@ void FaceDetection::LearnModel(){
                     TestEyeCalculation(disp_image.clone(),clnf_models[Model_Init].hierarchical_models[part],mImage.getImageID()*10+part);
                 }
             }*/
-
-            CalcualteEye(disp_image,Model_Init);
+            int used;
+            CalcualteEye(disp_image,Model_Init,used);
+            name += "_"+std::to_string(used);
 
             prinEyeCLNFImage(disp_image,Model_Init,name, false);
             printSmallImage(disp_image.clone(),Model_Init,*painterR,*painterL, false, name);
@@ -970,7 +1004,7 @@ void FaceDetection::printSmallImage(cv::Mat img, int model, QPainter &painterR, 
             compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
             compression_params.push_back(9);
 //            cv::imwrite(titel+".png",print_Eye(img,model,0,27, false),compression_params);
-            cv::imwrite(titel+"E.png",print_Eye(img,model,36,12, false,quL),compression_params);
+            cv::imwrite(titel+".png",print_Eye(img,model,36,12, false,quL),compression_params);
     }
     if(L.data){
         QImage img = Image::MatToQImage(L);

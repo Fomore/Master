@@ -30,7 +30,7 @@ private:
     void getImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY, double sX, double sY, double sMaxX, double sMaxY);
 
     void TestEyeCalculation(cv::Mat img, LandmarkDetector::CLNF &clnf, size_t id);
-    void CalcualteEye(cv::Mat img, size_t CLNF_ID);
+    void CalcualteEye(cv::Mat img, size_t CLNF_ID, int &used);
 
     Image mImage;
     int Model_Init;
@@ -52,7 +52,7 @@ private:
 
     int num_faces_max = 2;
 
-    void shift_detected_landmarks(int model, int X, int Y); //f skallierung img/world
+    void shift_detected_landmarks(int model, cv::Rect rec, double width); //f skallierung img/world
     void shift_detected_landmarks_toWorld(int model, int worldX, int worldY, int worldW, int worldH, int imgW, int imgH); //f skallierung img/world
     void shift_detected_landmarks_toImage(int model, int worldX, int worldY, int worldW, int worldH, int minSize); //f skallierung world/img
 
