@@ -2,10 +2,14 @@
 #include <opencv2/opencv.hpp>
 #include <algorithm>
 #include <tbb/parallel_for.h>
+#include <fstream>
+#include <string>
+#include <boost/algorithm/string.hpp>
 
 using namespace std;
 
 std::vector<std::vector<cv::Point2f> > get_perfect_Points(std::vector<std::vector<cv::Point2f> > points, const cv::Size dim, int maxImages){
+    std::cout<<"Perfect: "<<points.size()<<std::endl;
     std::vector<cv::Point3d> your_point;
     for(size_t i = 0; i < points.size(); i++){
         cv::Mat point = cv::Mat(points.at(i)).reshape(1).t();
@@ -95,7 +99,8 @@ void DisplayImage(string titel, cv::Mat &img){
 }
 
 void correct_Image(cv::Mat cameraMatrix, cv::Mat distCoeffs){
-    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_1.mp4");
+//    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_1.mp4");
+    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Webcam_640_0.mp4");
     if(video.isOpened()){
         cv::namedWindow("Image Raw",1);
         cv::namedWindow("Image Correct",1);
@@ -122,8 +127,80 @@ void correct_Image(cv::Mat cameraMatrix, cv::Mat distCoeffs){
     }
 }
 
+void loadFromFile(std::vector<cv::Point3f> &WorldPoints, std::vector<cv::Point2f> &ImagePoints, cv::Mat &img){
+    std::ifstream file("/home/falko/Uni/Master/Dateien/Positions_Data.txt");
+    std::string str;
+    size_t count = 0;
+    while (std::getline(file, str)){
+        std::vector<std::string> v;
+        boost::split(v, str, boost::is_any_of(" ") );
+        WorldPoints.push_back(cv::Point3f((atoi(v[1].c_str())-4)*100,atoi(v[0].c_str())*100,0));
+        ImagePoints.push_back(cv::Point2f(atoi(v[2].c_str()),atoi(v[3].c_str())));
+        cv::circle(img,cv::Point2i(atoi(v[2].c_str()),atoi(v[3].c_str())),4,
+                cv::Scalar(count%124*2,100,255-count%124*2,255));
+        count++;
+        if(count >= 124)
+            break;
+    }
+    file.close();
+    for(size_t i = 0; i < WorldPoints.size(); i++){
+        std::cout<<WorldPoints[i]<<ImagePoints[i]<<std::endl;
+    }
+}
+
 int main()
 {
+    cv::Mat Testbild = cv::imread("/home/falko/Bilder/Bildschirmfoto von Test_Positionen_1.mp4.png", -1);
+
+    std::vector<cv::Point3f> WorldPoints;
+    std::vector<cv::Point2f> ImagePoints;
+    loadFromFile(WorldPoints, ImagePoints,Testbild);
+    std::vector<std::vector<cv::Point3f>> World;
+    World.push_back(WorldPoints);
+    std::vector<std::vector<cv::Point2f>> Image;
+    Image.push_back(ImagePoints);
+
+    cv::Mat cameraMatrix ;
+    cv::Mat distCoeffs;
+    std::vector<cv::Mat> rvecs,tvecs;
+    cv::Size imageSize(2688,1520);
+    cv::calibrateCamera(World, Image, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs);
+    std::cout<<"cameraMatrix: "<<cameraMatrix<<std::endl<<"distCoeffs "<<distCoeffs<<std::endl;
+    for(size_t i = 0; i < rvecs.size(); i++){
+        std::cout<<rvecs[i]<<std::endl;
+    }
+    for(size_t i = 0; i < tvecs.size(); i++){
+        std::cout<<tvecs[i]<<std::endl;
+    }
+    cv::Mat R;
+    cv::Mat_<double> T(3,1);
+    T.at<double>(0,0) = tvecs[0].at<double>(0,0);
+    T.at<double>(1,0) = tvecs[0].at<double>(1,0);
+    T.at<double>(2,0) = tvecs[0].at<double>(2,0);
+    cv::Rodrigues(rvecs[0],R);
+    std::cout<<R<<std::endl;
+    std::vector<cv::Point3f> PointTestIn;
+    std::vector<cv::Point2f> PointTestOut;
+    for(int i = -3; i <= 3; i++){
+        for(int j = 0; j < 11; j++){
+            PointTestIn.push_back(cv::Point3f(i*100.0, j*100.0, 0.0));
+        }
+    }
+    cv::projectPoints(PointTestIn,rvecs[0],tvecs[0],cameraMatrix,distCoeffs,PointTestOut);
+
+    for(size_t i = 0; i < PointTestOut.size(); i++){
+        cv::circle(Testbild,PointTestOut[i],4,cv::Scalar(0,4*i,255-(4*i),255));
+    }
+
+    vector<int> compression_params;
+    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(9);
+    cv::imwrite("Position.png",Testbild,compression_params);
+
+    std::cout<<"Ende: "<<Testbild.cols<<" "<<Testbild.rows<<std::endl;
+
+    /*
+
     int h = 5;
     int w = 5;
     cv::Size patternsize(h,w);
@@ -131,7 +208,7 @@ int main()
     for(int i = 0; i < h*w; i++){
         realPoints.push_back(cv::Point3f((i/h)*0.031,(i%h)*0.031,0));
     }
-    std::vector<std::vector<cv::Point3f> > p;
+
     std::vector<std::vector<cv::Point2f> > m;
 
     bool set = true;
@@ -142,18 +219,26 @@ int main()
     double Quali_max = 0;
     int del=0;
 
-    std::vector<cv::VideoCapture> videos;
+//    std::vector<cv::VideoCapture> videos;
+    std::vector<std::string> videos;
 
+//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Webcam_640_0.mp4"));
+    videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Webcam_640_0.mp4");
+//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Webcam_640_1.mp4"));
+//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Webcam_640_2.mp4"));
+    /*
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_4.mp4"));
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_1.mp4"));
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_2.mp4"));
     videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_3.mp4"));
-
+*/
+    /*
     for(size_t i = 0; i < videos.size(); i++){ // Könnte parallel werden
         std::cout<<"Lade Video "<<i<<std::endl;
-        cv::VideoCapture video = videos.at(i);
+        cv::VideoCapture video(videos[i]);
         if(video.isOpened()){
             std::vector<cv::Mat> img;
+            img.clear();
             cv::Mat frame_col;
             while (video.read(frame_col)) {
                 img.push_back(cv::Mat(frame_col));
@@ -194,7 +279,7 @@ int main()
                         avg_Count++;
                         Quali_max = std::max(Quali_max,maxVal);
 
-                        if(maxVal < 0.01){// Schwellenwert wie unscharf eine Ecke sein darf, bei 1280-> 0.0006, Webcam: 0.00004
+                        if(maxVal < 0.00002){// Schwellenwert wie unscharf eine Ecke sein darf, bei 1280-> 0.0006, Webcam: 0.00004
                             run = false;
                         }
                     }
@@ -212,18 +297,21 @@ int main()
         }
     }
 
-    std::cout << "Berechnung hat "<< m.size()<< " Bilder ergeben Qualität "<<avg_Quality/avg_Count<<" max "<<Quali_max<<" entfernt:"<<del<< std::endl;
+    std::cout << "Berechnung hat "<< m.size()<<"/"<<avg_Count<< " Bilder ergeben Qualität "<<avg_Quality/avg_Count<<" max "<<Quali_max<<" entfernt:"<<del<< std::endl;
     std::vector<std::vector<cv::Point2f> > m2;
     if(m.size() > 100){
-        m2 = get_perfect_Points(m,s,120);
+        std::cout<<"If"<<std::endl;
+        m2 = get_perfect_Points(m,s,300);
     }else{
         m2 = m;
     }
+    std::cout<<"Nach perfect"<<std::endl;
+    std::vector<std::vector<cv::Point3f> > p;
     for(size_t i = 0; i < m2.size(); i++){
         p.push_back(realPoints);
     }
 
-    std::vector<cv::Mat> rvecs,tvecs;
+//    std::vector<cv::Mat> rvecs,tvecs;
     std::cout << "Berechnung läuft auf "<< m2.size()<< " Bildern" << std::endl;
     if(m2.size() > 1){
         cv::Mat imgCal = cv::Mat::zeros(s.height,s.width, CV_8UC3 );
@@ -245,15 +333,18 @@ int main()
         cv::namedWindow("Kalibrierung",1);
         DisplayImage("Kalibrierung",imgCal);
 
-        cv::Mat cameraMatrix ;
-        cv::Mat distCoeffs;
+//        cv::Mat cameraMatrix ;
+//        cv::Mat distCoeffs;
 
         cv::calibrateCamera(p, m2, s, cameraMatrix, distCoeffs, rvecs, tvecs);
         std::cout <<"Neue Kalibrierung:" << std::endl << cameraMatrix << std::endl << distCoeffs << std::endl;
 
+        correct_Image(cameraMatrix,distCoeffs);
+
     }else{
         std::cout<<"Keine Kalibrierungsbilder gefunden"<<std::endl;
     }
+    */
     return 0;
 }
 
