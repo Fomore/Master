@@ -190,8 +190,13 @@ void FaceDetection::print_CLNF(cv::Mat img, int model, double itens, double fx, 
         cv::Point3f gazeDirection0(0, 0, -1);
         cv::Point3f gazeDirection1(0, 0, -1);
 
+//        cv::Mat(gazeDirection0)
+        std::cout<<gazeDirection0<<" -> ";
+
         FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection0, fx, fy, cx, cy, true);
         FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection1, fx, fy, cx, cy, false);
+
+        std::cout<<gazeDirection0<<gazeDirection1;
 
         FaceAnalysis::DrawGaze(img, clnf_models[model], gazeDirection0, gazeDirection1, fx, fy, cx, cy);
     }
@@ -202,9 +207,13 @@ void FaceDetection::print_CLNF(cv::Mat img, int model, double itens, double fx, 
     // Draw it in reddish if uncertain, blueish if certain
 //    LandmarkDetector::DrawBox(img, pose_estimate, cv::Scalar((1-itens)*255.0,0, itens*255), thickness, fx, fy, cx, cy);
 
+    cv::Matx33d rot = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5]));
+    std::cout<<"Ausrichtung: "<<rot<<std::endl;
+
     // Stellt die Gesichtsorientierung dar
     print_Orientation(img,model);
 }
+//Hier wird die Kopforientierung dargestellt
 void FaceDetection::print_Orientation(cv::Mat img, int model){
     // A rough heuristic for box around the face width
     int thickness = (int)std::ceil(1.2* ((double)img.cols) / 640.0);
