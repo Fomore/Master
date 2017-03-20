@@ -4,6 +4,8 @@
 #include "model/camera.h"
 #include "model/image.h"
 #include "model/imagesection.h"
+#include "model/target.h"
+
 #include "LandmarkCoreIncludes.h"
 #include "src/algo.h"
 #include "control/atentiontracer.h"
@@ -35,6 +37,8 @@ private:
     Image mImage;
     int Model_Init;
     int imgCount;
+
+    Target mTarget;
 
     AtentionTracer *mAtentionTracer;
     FrameEvents *mFrameEvents;

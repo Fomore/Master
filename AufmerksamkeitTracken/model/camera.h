@@ -9,7 +9,7 @@ class Camera
 private:
     cv::Mat cameraMatrix, distCoeffs;
     cv::Mat map1, map2;
-    cv::Mat mRotation;
+    cv::Matx33d mRotation;
     int ImageWight, ImageHeight;
     int ID;
     bool mUseCorrection = true;
@@ -36,8 +36,8 @@ public:
     void setFrame(size_t frame);
     void setImageSize(int Wight, int Height);
 
-    cv::Mat rotateWorldToCamera(cv::Mat in);
-    cv::Mat rotateCameraToWorld(cv::Mat in);
+    cv::Matx33d rotateWorldToCamera(cv::Matx33d in);
+    cv::Matx33d rotateCameraToWorld(cv::Matx33d in);
 
     size_t getFrameNr();
 };

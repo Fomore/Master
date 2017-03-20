@@ -9,9 +9,9 @@ Camera::Camera(int id)
 {
     setCameraParameter(id);
     setPath("/home/falko/Uni/Master/Film/Test_Positionen_1.mp4");
-    mRotation = (cv::Mat_<double>(3,3) << 0.992766452308293, 0.06368711653559152, -0.1017778087727747,
-                 -0.08705908421335735, -0.2018935270331317, -0.9755304811219656,
-                 -0.08267700422207537, 0.9773346176870561, -0.1948885785349126);
+    mRotation = cv::Matx33d(0.994502496350403, 0.03084993904995423, -0.1000653087409978,
+                 -0.08740706975903308, -0.2816457732931845, -0.9555289961807667,
+                 -0.0576609825528202, 0.9590223874585506, -0.2774009218520103);
 }
 
 Camera::~Camera()
@@ -135,14 +135,14 @@ void Camera::setImageSize(int Wight, int Height)
     }
 }
 
-cv::Mat Camera::rotateWorldToCamera(cv::Mat in)
+cv::Matx33d Camera::rotateWorldToCamera(cv::Matx33d in)
 {
-    return mRotation.mul(in);
+    return mRotation * in;
 }
 
-cv::Mat Camera::rotateCameraToWorld(cv::Mat in)
+cv::Matx33d Camera::rotateCameraToWorld(cv::Matx33d in)
 {
-    return mRotation.t().mul(in);
+    return mRotation.t() * in;
 }
 
 size_t Camera::getFrameNr()

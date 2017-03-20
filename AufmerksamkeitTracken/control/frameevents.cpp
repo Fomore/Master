@@ -95,7 +95,6 @@ bool FrameEvents::getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &n
             rec.height = r.height;
             frame = mFrames[i].getFrame();
             name = mFrames[i].getEvent(pos)+"_"+mFrames[i].getName(pos);
-            name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
             id = pos;
             return true;
         }
