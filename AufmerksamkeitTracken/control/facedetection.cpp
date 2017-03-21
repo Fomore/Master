@@ -184,19 +184,16 @@ void FaceDetection::print_CLNF(cv::Mat img, int model, double itens, double fx, 
     // A rough heuristic for box around the face width
     int thickness = (int)std::ceil(2.0* ((double)img.cols) / 640.0);
 
+    cv::Vec3d correction(1.852973068655717-M_PI/2, -0.04104046258180141, -0.1144534716463462);
+
+    // Gaze tracking, absolute gaze direction
+    cv::Point3f gazeDirection0(0, 0, -1);
+    cv::Point3f gazeDirection1(0, 0, -1);
+
     if (clnf_models[model].detection_success && clnf_models[model].eye_model)
     {
-        // Gaze tracking, absolute gaze direction
-        cv::Point3f gazeDirection0(0, 0, -1);
-        cv::Point3f gazeDirection1(0, 0, -1);
-
-//        cv::Mat(gazeDirection0)
-        std::cout<<"Auge: "<<gazeDirection0<<" -> ";
-
         FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection0, fx, fy, cx, cy, true);
         FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection1, fx, fy, cx, cy, false);
-
-        std::cout<<gazeDirection0<<gazeDirection1<<std::endl;
 
         FaceAnalysis::DrawGaze(img, clnf_models[model], gazeDirection0, gazeDirection1, fx, fy, cx, cy);
     }
@@ -207,23 +204,17 @@ void FaceDetection::print_CLNF(cv::Mat img, int model, double itens, double fx, 
     // Draw it in reddish if uncertain, blueish if certain
     LandmarkDetector::DrawBox(img, pose_estimate, cv::Scalar((1-itens)*255.0,0, itens*255), thickness, fx, fy, cx, cy);
 
-    cv::Matx33d rot_C = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5]));
-    cv::Matx33d rot_W = mKamera->rotateCameraToWorld(rot_C);
-    cv::Vec3d reg(atan(rot_W(0,1)/rot_W(0,0)),
-                  asin(-rot_W(0,2)),
-                  atan(rot_W(1,2)/rot_W(2,2)));
+    std::cout<<cv::Vec2d(atan(gazeDirection0.x/gazeDirection0.z),atan(gazeDirection0.y/gazeDirection0.z))*180/M_PI
+             <<cv::Vec2d(atan(gazeDirection1.x/gazeDirection1.z),atan(gazeDirection1.y/gazeDirection1.z))*180/M_PI<<std::endl
+             <<correction*180/M_PI<<std::endl
+             <<gazeDirection0<<gazeDirection1<<std::endl<<std::endl;
 
-    cv::Mat A,B,C;
-    cv::Rodrigues(cv::Vec3d(1,0,0),A);
-    cv::Rodrigues(cv::Vec3d(0,1,0),B);
-    cv::Rodrigues(cv::Vec3d(0,0,1),C);
-    std::cout<<"Test: "<<std::endl<<LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(1, 0, 0))
-             <<std::endl<<LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(0,1,0))
-             <<std::endl<<LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(0,0,1))<<std::endl;
-    std::cout<<"Test: "<<std::endl<<A<<std::endl<<B<<std::endl<<C<<std::endl;
-
-    std::cout<<"Rotation: "<<cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5])
-            <<std::endl<<rot_C<<std::endl<<rot_W<<std::endl<<reg<<std::endl;
+    std::ofstream myfile;
+    myfile.open ("./data/BerechnungWinkel.txt", std::ios::in | std::ios::app);
+    myfile <<cv::Vec3d(acos(gazeDirection0.x),acos(gazeDirection0.y),acos(gazeDirection0.z))-correction
+           <<cv::Vec3d(acos(gazeDirection1.x),acos(gazeDirection1.y),acos(gazeDirection1.z))-correction
+           <<cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5])-correction<<std::endl;
+    myfile.close();
 
     // Stellt die Gesichtsorientierung dar
     print_Orientation(img,model);

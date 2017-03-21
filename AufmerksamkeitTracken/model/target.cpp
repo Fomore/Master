@@ -118,8 +118,7 @@ void Target::getOrienation(QString name, cv::Point3d &point)
     point.z = 0.0;
 
     std::ofstream myfile;
-    myfile.open ("./data/Messpunkte.txt", std::ios::in | std::ios::app);
+    myfile.open ("./data/MesspunkteWinkel.txt", std::ios::in | std::ios::app);
     myfile <<"["<<worldX<<", "<<worldZ<<"] -> "<<point<<std::endl;
     myfile.close();
-    std::cout<<"Orginal: ["<<worldX<<", "<<worldZ<<"] "<<point<<std::endl;
 }
