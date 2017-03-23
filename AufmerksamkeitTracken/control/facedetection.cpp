@@ -223,23 +223,28 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
     FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection0, fx, fy, cx, cy, true);
     FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection1, fx, fy, cx, cy, false);
 
-    cv::Vec3d eyeOriWorld_R = mKamera->rotateToWorld(gazeDirection0);
-    cv::Vec3d eyeOriWorld_L = mKamera->rotateToWorld(gazeDirection1);
+    gazeDirection0 = cv::Point3f(0,0.5,0.5);
+    gazeDirection1 = cv::Point3f(-0.5,0,0.5);
 
-    cv::Vec2d eyeOri_R(atan(eyeOriWorld_R[0]/eyeOriWorld_R[2]),atan(eyeOriWorld_R[1]/eyeOriWorld_R[2]));
-    cv::Vec2d eyeOri_L(atan(eyeOriWorld_L[0]/eyeOriWorld_L[2]),atan(eyeOriWorld_L[1]/eyeOriWorld_L[2]));
+    cv::Vec3d eyeR = mKamera->rotateToWorld(gazeDirection0);
+    cv::Vec3d eyeL = mKamera->rotateToWorld(gazeDirection1);
+
+    cv::Vec3d eyeOri_R(asin(eyeR[0]),asin(eyeR[1]),asin(eyeR[2]));
+    cv::Vec3d eyeOri_L(asin(eyeL[0]),asin(eyeL[1]),asin(eyeL[2]));
 
     // Work out the pose of the head from the tracked model
     cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy);
-    cv::Vec3d headOri = cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5])-mKamera->getRotation();
+    cv::Vec3d headOri = mKamera->rotateToWorld(LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5])) * cv::Vec3d(0,0,-1));
+
+    std::cout<<LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5])) * cv::Vec3d(0,0,-1)
+            <<headOri<<std::endl
+            <<LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5])) * cv::Vec3d(0,0,-1)*180/M_PI
+            <<headOri*180/M_PI<<std::endl<<std::endl;
+
 
     cv::Point3d worldpoint;
     double worldX, worldZ;
     mTarget.getOrienation(name,worldpoint,worldX,worldZ);
-
-    std::cout <<"["<<worldX<<", "<<worldZ<<"]"<<worldpoint*180/M_PI
-              << eyeOri_R*180/M_PI << eyeOri_L*180/M_PI << headOri*180/M_PI
-              << cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5])*180/M_PI <<std::endl<<std::endl;
 
     std::ofstream myfile;
     myfile.open ("./data/BerechnungWinkel.txt", std::ios::in | std::ios::app);
@@ -249,9 +254,7 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
     std::ofstream myfile2;
     myfile2.open ("./data/Messwerte.txt", std::ios::in | std::ios::app);
     myfile2 <<"["<<worldX<<", "<<worldZ<<"]"<<worldpoint
-            << gazeDirection0 << gazeDirection1 << cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5])
-            << cv::Vec3d(acos(gazeDirection0.x),acos(gazeDirection0.y),acos(gazeDirection0.z))
-            << cv::Vec3d(acos(gazeDirection1.x),acos(gazeDirection1.y),acos(gazeDirection1.z))<<std::endl;
+            << gazeDirection0 << gazeDirection1 << cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5]) <<std::endl;
     myfile2.close();
 }
 
