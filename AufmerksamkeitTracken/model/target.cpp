@@ -99,26 +99,19 @@ void Target::getPoint(size_t id, double &x, double &y)
     }
 }
 
-void Target::getOrienation(QString name, cv::Point3d &point)
+void Target::getOrienation(QString name, cv::Point3d &point, double &WorldX, double &WorldZ)
 {
     QStringList list = name.split("_");
 
-    double worldX,worldY,worldZ;
-    worldY = mFHeight;
-    getWorldPosition(list[list.size()-2].split(" "),worldX,worldZ);
+    getWorldPosition(list[list.size()-2].split(" "),WorldX,WorldZ);
 
     double pointX, pointY;
     getPoint(list[list.size()-2],pointX,pointY);
-    pointY -= worldY;
-    pointX -= worldX;
+    pointY -= mFHeight;
+    pointX -= WorldX;
 
-    point.x = calcAngle(pointX,worldZ);
-    point.y = calcAngle(pointY,worldZ);
+    point.x = calcAngle(pointX,WorldZ);
+    point.y = calcAngle(pointY,WorldZ);
 
     point.z = 0.0;
-
-    std::ofstream myfile;
-    myfile.open ("./data/MesspunkteWinkel.txt", std::ios::in | std::ios::app);
-    myfile <<"["<<worldX<<", "<<worldZ<<"] -> "<<point<<std::endl;
-    myfile.close();
 }

@@ -23,6 +23,7 @@ private:
     void print_FPS_Model(int fps, int model);
     void print_CLNF(cv::Mat img, int model, double itens, double fx, double fy, double cx, double cy);
     void print_Orientation(cv::Mat img, int model);
+    void print_SolutionToFile(QString name, int model, double fx, double fy, double cx, double cy);
     void getCLNFBox(int model, int pos, int step, double &X, double &Y, double &W, double &H);
 
     void printSmallImage(cv::Mat img, int model, QPainter &painterR, QPainter &painterL, bool print, string titel);

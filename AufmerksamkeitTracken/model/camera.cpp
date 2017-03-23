@@ -9,9 +9,9 @@ Camera::Camera(int id)
 {
     setCameraParameter(id);
     setPath("/home/falko/Uni/Master/Film/Test_Positionen_1.mp4");
-    mRotation = cv::Matx33d(0.994502496350403, 0.03084993904995423, -0.1000653087409978,
-                 -0.08740706975903308, -0.2816457732931845, -0.9555289961807667,
-                 -0.0576609825528202, 0.9590223874585506, -0.2774009218520103);
+    mRotation = cv::Vec3d(1.852973068655717-M_PI/2, -0.04104046258180141, -0.1144534716463462);
+    cv::Rodrigues(mRotation,mRotMatrix);
+//    cv::Rodrigues(cv::Vec3d(1.852973068655717, -0.04104046258180141, -0.1144534716463462),mRotation);
 }
 
 Camera::~Camera()
@@ -137,12 +137,27 @@ void Camera::setImageSize(int Wight, int Height)
 
 cv::Matx33d Camera::rotateWorldToCamera(cv::Matx33d in)
 {
-    return mRotation * in;
+    return mRotMatrix * in;
 }
 
 cv::Matx33d Camera::rotateCameraToWorld(cv::Matx33d in)
 {
-    return mRotation.t() * in;
+    return mRotMatrix.t() * in;
+}
+
+cv::Vec3d Camera::rotateToWorld(cv::Point3f in)
+{
+    return rotateToWorld(cv::Vec3d(in.x, in.y, in.z));
+}
+
+cv::Vec3d Camera::rotateToWorld(cv::Vec3d in)
+{
+    return mRotMatrix.t() * in;
+}
+
+cv::Vec3d Camera::getRotation()
+{
+    return mRotation;
 }
 
 size_t Camera::getFrameNr()

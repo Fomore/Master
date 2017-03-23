@@ -19,7 +19,7 @@ public:
     Target();
     void getPoint(QString name, double &x, double &y);
     void getPoint(size_t id, double &x, double &y);
-    void getOrienation(QString name, cv::Point3d& point);
+    void getOrienation(QString name, cv::Point3d& point, double &WorldX, double &WorldZ);
 };
 
 #endif // TARGET_H
