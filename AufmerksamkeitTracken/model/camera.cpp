@@ -160,6 +160,11 @@ cv::Vec3d Camera::getRotation()
     return mRotation;
 }
 
+cv::Matx33d Camera::getRotationMatrix()
+{
+    return mRotMatrix;
+}
+
 size_t Camera::getFrameNr()
 {
     return (size_t)video.get(CV_CAP_PROP_POS_FRAMES);

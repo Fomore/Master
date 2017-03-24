@@ -43,6 +43,7 @@ public:
     cv::Vec3d rotateToWorld(cv::Vec3d in);
 
     cv::Vec3d getRotation();
+    cv::Matx33d getRotationMatrix();
 
     size_t getFrameNr();
 };

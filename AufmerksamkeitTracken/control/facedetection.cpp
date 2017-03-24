@@ -234,13 +234,9 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
 
     // Work out the pose of the head from the tracked model
     cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy);
-    cv::Vec3d headOri = mKamera->rotateToWorld(LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5])) * cv::Vec3d(0,0,-1));
-
-    std::cout<<LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5])) * cv::Vec3d(0,0,-1)
-            <<headOri<<std::endl
-            <<LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5])) * cv::Vec3d(0,0,-1)*180/M_PI
-            <<headOri*180/M_PI<<std::endl<<std::endl;
-
+    cv::Vec3d head = mKamera->rotateToWorld(LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5]))
+            * cv::Vec3d(0,0,-1));
+    cv::Vec3d headOri(asin(head[0]),asin(head[1]),asin(head[2]));
 
     cv::Point3d worldpoint;
     double worldX, worldZ;
