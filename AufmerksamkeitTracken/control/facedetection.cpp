@@ -421,31 +421,15 @@ void FaceDetection::getImageSize(double &X, double &Y, double &Width, double &He
 
 }
 
-void FaceDetection::TestEyeCalculation(cv::Mat img, LandmarkDetector::CLNF &clnf, size_t id)
+void FaceDetection::CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used)
 {
-    cv::Rect2d rec = clnf.GetBoundingBox();
-    double sx = rec.width*0.3;
-    double sy = rec.height*0.4;
-    rec.x -= sx/2;
-    rec.y -= sy/2;
-    rec.width += sx;
-    rec.height += sy;
+    /*
+     * used
+     * 0: OpenFace
+     * 1: ELSE
+     * 2: ELSE & OpenFace
 
-    cv::Mat src = img.clone();
-    cv::Mat result;
-
-    LandmarkDetector::Draw(src,clnf);
-    cv::vconcat(img(rec),src(rec),result);
-
-    cv::Mat gray;
-    src = img(rec).clone();
-    Image::convert_to_grayscale(src, gray);
-    float quality;
-    cv::RotatedRect ellipse = ELSE::run(gray, quality);
-    cv::ellipse(src, ellipse, cv::Scalar(0,255,0,255), 1,1 );
-    cv::vconcat(result,src,result);
-
-    /* Landmarks der Augen
+     * Landmarks der Augen
      * Groß
           2
         1   3
@@ -458,62 +442,6 @@ void FaceDetection::TestEyeCalculation(cv::Mat img, LandmarkDetector::CLNF &clnf
      27      23
        20  22
          21
-     */
-
-    src = img.clone();
-    cv::Mat_<double> shape2D = clnf.detected_landmarks;
-    int n = shape2D.rows/2;
-    std::vector<cv::Point2f> pos, pos2;
-    for( int i = 0; i < n; ++i){
-        if( i < 8){
-            pos.push_back(cv::Point2d(shape2D.at<double>(i),shape2D.at<double>(i+n)));
-            shape2D.at<double>(i)  = ellipse.center.x+rec.x + cos((i-4)*M_PI/4.0)*ellipse.size.width/2*1.727;
-            shape2D.at<double>(i+n)= ellipse.center.y+rec.y + sin((i-4)*M_PI/4.0)*ellipse.size.height/2*1.727;
-        }else if(i > 19){
-            pos2.push_back(cv::Point2d(shape2D.at<double>(i),shape2D.at<double>(i+n)));
-            /*            std::cout<<"Alt:"<<shape2D.at<double>(i)<<"/"<<shape2D.at<double>(i + n)
-                     <<" ["<<ellipse.center.x<<" "<<ellipse.center.y<<"] ["<<ellipse.size.width<<" "<<ellipse.size.height<<" "<<ellipse.angle
-                     <<"] ["<<rec.x<<" "<<rec.y<<" - "<<rec.width<<" "<<rec.height<<"]"<<std::endl;*/
-            shape2D.at<double>(i)  = ellipse.center.x+rec.x + cos((23-i)*M_PI/4.0)*ellipse.size.width/2*0.738;
-            shape2D.at<double>(i+n)= ellipse.center.y+rec.y + sin((23-i)*M_PI/4.0)*ellipse.size.height/2*0.738;
-        }
-    }
-
-    cv::RotatedRect ret_ellipse = cv::fitEllipse(pos);
-    cv::RotatedRect ret_ellipse2 = cv::fitEllipse(pos2);
-
-    std::ofstream output;
-    output.open("Auge.txt", ios::out | ios::app);
-    output << "[ "<<ret_ellipse.center.x<<" "<<ret_ellipse.center.y<<" "<<ret_ellipse.size.width<<" "<<ret_ellipse.size.height<<" ]"
-           << "[ "<<ret_ellipse2.center.x<<" "<<ret_ellipse2.center.y<<" "<<ret_ellipse2.size.width<<" "<<ret_ellipse2.size.height<<" ]"
-           << " "<<clnf.model_likelihood
-           << " [ "<<ellipse.center.x<<" "<<ellipse.center.y<<" "<<ellipse.size.width<<" "<<ellipse.size.height<<" ] "<<quality
-           <<std::endl;
-    output.close();
-
-    clnf.detected_landmarks = shape2D.clone();
-    LandmarkDetector::Draw(src,clnf);
-    //    cv::ellipse(src, ret_ellipse, cv::Scalar(0,255,255,255), 1,1 );
-    //    cv::ellipse(src, ret_ellipse2, cv::Scalar(0,255,0,255), 1,1 );
-    cv::vconcat(result,src(rec),result);
-
-    double f = max(100/rec.width,100/rec.height);
-    cv::resize(result,result,cv::Size(f*rec.width,f*rec.height*4));
-    //    cv::imshow("Auge"+std::to_string(id),result);
-
-    vector<int> compression_params;
-    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
-    compression_params.push_back(9);
-    //    cv::imwrite("img/Auge"+std::to_string(id)+".png",result,compression_params);
-}
-
-void FaceDetection::CalcualteEye(cv::Mat img, size_t CLNF_ID, int &used)
-{
-    /*
-     * used
-     * 0: OpenFace
-     * 1: ELSE
-     * 2: ELSE & OpenFace
      */
     used = 0;
     int hir_id[2] = {-1,-1};
@@ -586,6 +514,44 @@ void FaceDetection::CalcualteEye(cv::Mat img, size_t CLNF_ID, int &used)
                 clnf_models[CLNF_ID].hierarchical_models[hir_id[hir]].detected_landmarks = shape2D.clone();
             }
         }
+    }
+
+    if(hir_id[0] >= 0 && hir_id[1] >= 0){
+        cv::Rect2d rec_0 = clnf_models[CLNF_ID].hierarchical_models[hir_id[0]].GetBoundingBox();
+        cv::Rect2d rec_1 = clnf_models[CLNF_ID].hierarchical_models[hir_id[1]].GetBoundingBox();
+        cv::Mat_<double> shape2D_0 = clnf_models[CLNF_ID].hierarchical_models[hir_id[0]].detected_landmarks;
+        cv::Mat_<double> shape2D_1 = clnf_models[CLNF_ID].hierarchical_models[hir_id[1]].detected_landmarks;
+        int n = shape2D_0.rows/2;
+        for(size_t i = 20; i < 28; i++){
+            cv::Point2d pos0G(shape2D_0.at<double>(i),shape2D_0.at<double>(i+n));
+            cv::Point2d pos0S(shape2D_0.at<double>(i-20),shape2D_0.at<double>(i-20+n));
+            cv::Point2d pos1G(shape2D_1.at<double>(i),shape2D_1.at<double>(i+n));
+            cv::Point2d pos1S(shape2D_1.at<double>(i-20),shape2D_1.at<double>(i-20+n));
+            pos0S.x -= rec_0.x; pos0S.y -= rec_0.y;
+            pos0G.x -= rec_0.x; pos0G.y -= rec_0.y;
+            pos1S.x -= rec_1.x; pos1S.y -= rec_1.y;
+            pos1G.x -= rec_1.x; pos1G.y -= rec_1.y;
+
+            double sxS = (pos0S.x/rec_0.width + pos1S.x/rec_1.width)/2.0;
+            double syS = (pos0S.y/rec_0.height+ pos1S.y/rec_1.height)/2.0;
+            double sxG = (pos0G.x/rec_0.width + pos1G.x/rec_1.width)/2.0;
+            double syG = (pos0G.y/rec_0.height+ pos1G.y/rec_1.height)/2.0;
+
+            std::cout<<pos0S<<pos0G<<pos1S<<pos1G<<cv::Vec4d(sxS,syS,sxG,syG)<<std::endl;
+
+            shape2D_0.at<double>(i) = rec_0.x + rec_0.width * sxG;
+            shape2D_0.at<double>(i+n) = rec_0.y + rec_0.height * syG;
+            shape2D_0.at<double>(i-20) = rec_0.x + rec_0.width * sxS;
+            shape2D_0.at<double>(i-20+n) = rec_0.y + rec_0.height * syS;
+
+            shape2D_1.at<double>(i) = rec_1.x + rec_1.width * sxG;
+            shape2D_1.at<double>(i+n) = rec_1.y + rec_1.height * syG;
+            shape2D_1.at<double>(i-20) = rec_1.x + rec_1.width * sxS;
+            shape2D_1.at<double>(i-20+n) = rec_1.y + rec_1.height * syS;
+        }
+        std::cout<<std::endl;
+        clnf_models[CLNF_ID].hierarchical_models[hir_id[0]].detected_landmarks = shape2D_0.clone();
+        clnf_models[CLNF_ID].hierarchical_models[hir_id[1]].detected_landmarks = shape2D_1.clone();
     }
 }
 
@@ -688,16 +654,8 @@ void FaceDetection::LearnModel(){
         if(success){
             shift_detected_landmarks(Model_Init,rec,50);
 
-            /*
-            for (size_t part = 0; part < clnf_models[Model_Init].hierarchical_models.size(); ++part)
-            {
-                if(clnf_models[Model_Init].hierarchical_models[part].detected_landmarks.rows == 56){
-//                    output << " "<<clnf_models[Model_Init].hierarchical_models[part].model_likelihood;
-                    TestEyeCalculation(disp_image.clone(),clnf_models[Model_Init].hierarchical_models[part],mImage.getImageID()*10+part);
-                }
-            }*/
             int used;
-            CalcualteEye(disp_image,Model_Init,used);
+            CalcualteEyes(disp_image,Model_Init,used);
 
             print_SolutionToFile(QString::fromStdString(name),Model_Init,fx,fy,cx,cy);
 
