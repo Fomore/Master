@@ -45,6 +45,8 @@ private slots:
 
     void on_actionUse_CLAHE_triggered(bool checked);
 
+    void on_actionAugen_Mitteln_triggered(bool checked);
+
 private:
     Ui::MainWindow *ui;
 //    Image mImage;

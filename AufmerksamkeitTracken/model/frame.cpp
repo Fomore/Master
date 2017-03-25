@@ -48,10 +48,20 @@ size_t Frame::getFrame()
     return mFrame;
 }
 
-cv::Rect Frame::getBox(int i)
+cv::Rect Frame::getBox(size_t i)
 {
-    if(i >= 0 && i < (int)mBoxes.size())
+    if(i < mBoxes.size())
         return mBoxes[i].getRect();
+}
+
+cv::Rect Frame::getBox(std::string name)
+{
+    for(size_t i = 0; i < mBoxes.size(); i++){
+        if(mBoxes[i].getName() == name){
+            return mBoxes[i].getRect();
+        }
+    }
+    return cv::Rect(0,0,0,0);
 }
 
 void Frame::getLandmarks(size_t id, double land[5][2])

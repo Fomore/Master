@@ -1,26 +1,25 @@
 #ifndef IMAGESECTION_H
 #define IMAGESECTION_H
 
+#include <opencv2/opencv.hpp>
+#include "LandmarkCoreIncludes.h"
 
 class ImageSection
 {
-    int X,Y,H,W;
-    bool parameterSet;
-    int minX, minY, maxX, maxY, minH, maxH, minW, maxW;
-    double avgW, avgH;
-    void calcAvg(double W, double H);
+    cv::Rect Rec_old;
+    cv::Rect Rec_new;
+    cv::Size mImageSize;
+    cv::Size2d mMinSize;
+    double mScall = 1.3;
+    double fx = 1.0;
 public:
-    ImageSection();
-    ImageSection(int x, int y, int w, int h);
+    ImageSection(int width, int height);
     ~ImageSection();
     bool getSection(int &x, int &y, int &w, int &h);
-    bool setSection(int x, int y, int w, int h);
-    bool setSection(int x, int y, int w, int h, bool set);
-    void setSizeMinMax(int miH, int mxH, int miW, int mxW);
-    void getSizeMinMax(int &miH, int &mxH, int &miW, int &mxW);
-    void setParameterSet(bool set);
-    void reset();
-    void getAvgSection(double &x, double &y, double &w, double &h);
+    void newRect(cv::Rect rec);
+    void setScall(double s);
+    void toSection(LandmarkDetector::CLNF &clnf);
+    void toImage(LandmarkDetector::CLNF &clnf);
 };
 
 #endif // IMAGESECTION_H

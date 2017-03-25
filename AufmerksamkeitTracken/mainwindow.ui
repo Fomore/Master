@@ -188,6 +188,7 @@
     <addaction name="actionFrom_XML_File"/>
     <addaction name="actionUse_Boxes"/>
     <addaction name="actionUse_CLAHE"/>
+    <addaction name="actionAugen_Mitteln"/>
     <addaction name="actionCorrect_Image"/>
     <addaction name="actionLearn_Model"/>
     <addaction name="actionAuto_Size"/>
@@ -279,6 +280,17 @@
    </property>
    <property name="text">
     <string>Use CLAHE</string>
+   </property>
+  </action>
+  <action name="actionAugen_Mitteln">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Augen-Mitteln</string>
    </property>
   </action>
  </widget>

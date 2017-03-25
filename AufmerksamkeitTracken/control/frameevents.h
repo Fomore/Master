@@ -12,6 +12,7 @@ class FrameEvents
 {
 private:
     std::vector<Frame> mFrames;
+    std::vector<QString> mNames;
 
     int filnameToFrame(QString file);
     void boxAttributToValue(QXmlStreamAttributes att, int &height, int &left, int &top, int &width);
@@ -22,17 +23,20 @@ private:
 
     void printAll();
 
+    bool existName(QString name);
 public:
     FrameEvents();
     void loadXML(QString path);
 
     int getFramePos(size_t frame);
     bool getNextFrame(size_t &frame);
-    bool getNextFrame(size_t &frame, size_t &frameID);
+    bool getFrame(size_t &frame, size_t frameID);
 
     size_t getBoxSizeInFrame(size_t frameID);
+    size_t getNameSize();
 
     cv::Rect getRect(size_t frameID,size_t boxID);
+    cv::Rect getRectWithName(size_t frameID,size_t nameID);
     void getLandmarks(size_t frameID, size_t boxID, double land[5][2]);
     bool isLandmark(size_t frameID, size_t boxID);
 

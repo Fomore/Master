@@ -694,6 +694,129 @@ void FaceDetection::LearnModel(){
     Model_Init= Model_Init%num_faces_max;
 }
 
+void FaceDetection::FaceTrackingAutoSize(){
+    // Initialisiierung
+    double fx,fy,cx,cy;
+    int x,y;
+    mKamera->get_camera_params(fx,fy,cx,cy,x,y);
+
+    mImageSections.clear();
+    for (int i = 0; i < num_faces_max; ++i){
+        mImageSections.push_back(ImageSection(x,y));
+        active_models[i] = false;
+    }
+
+    // For measuring the timings
+    int64 t1,t0 = cv::getTickCount();
+    double fps = 10;
+
+    cv::Mat frame_colore;
+
+    size_t FrameID;
+    for(int frame_count = 0;getFrame(frame_colore, FrameID);frame_count++){
+        QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
+        pixmapL->fill(Qt::transparent);
+        QPainter *painterL=new QPainter(pixmapL);
+
+        QPixmap *pixmapR=new QPixmap(mTheWindow->Right_Label->size());
+        pixmapR->fill(Qt::transparent);
+        QPainter *painterR=new QPainter(pixmapR);
+
+        cv::Mat disp_image = frame_colore.clone();
+
+        int num_active_models = 0;
+
+        for(int model = 0; model < num_faces_max; model++){
+            mImageSections[model].newRect(mFrameEvents->getRectWithName(FrameID,model));
+            int x,y,w,h;
+            mImageSections[model].getSection(x,y,w,h);
+            mImageSections[model].toSection(clnf_models[model]);
+            // If the current model has failed more than 4 times in a row, remove it
+            if(clnf_models[model].failures_in_a_row > 4)
+            {
+                active_models[model] = false;
+                clnf_models[model].Reset();
+            }
+
+            cv::Mat faceImageColore = disp_image(cv::Rect(x,y,w,h));
+            cv::Mat_<uchar> faceImage;
+            Image::convert_to_grayscale(faceImageColore,faceImage);
+
+            bool detection_success;
+
+            if(!active_models[model]){
+                vector<cv::Rect_<double> > face_detections;
+                if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
+                    vector<double> confidences;
+                    LandmarkDetector::DetectFacesHOG(face_detections, faceImage, clnf_models[0].face_detector_HOG, confidences);
+                }else{
+                    LandmarkDetector::DetectFaces(face_detections, faceImage, clnf_models[0].face_detector_HAAR);
+                }
+                if(face_detections.size() == 1){
+                    // Reinitialise the model
+                    clnf_models[model].Reset();
+
+                    // This ensures that a wider window is used for the initial landmark localisation
+                    clnf_models[model].detection_success = false;
+
+                    detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, face_detections[0], clnf_models[model], det_parameters[model]);
+
+                    // This activates the model
+                    active_models[model] = true;
+                }
+            }else{
+                detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, clnf_models[model], det_parameters[model]);
+            }
+            double detection_certainty = clnf_models[model].detection_certainty; // Qualität der detection: -1 perfekt und 1 falsch
+            double visualisation_boundary = -0.1;
+
+            // Only draw if the reliability is reasonable, the value is slightly ad-hoc
+            double itens = 0;
+            if(detection_certainty < visualisation_boundary){
+                if(detection_certainty > 1)
+                    detection_certainty = 1;
+                if(detection_certainty < -1)
+                    detection_certainty = -1;
+                itens = (detection_certainty + 1)/(visualisation_boundary +1);
+
+                shift_detected_landmarks_toWorld(model,x,y,w,h,faceImage.cols, faceImage.rows);
+
+                printSmallImage(frame_colore,model,*painterR,*painterL, false,"");
+                //                print_CLNF(disp_image,model,itens,fx,fy,cx,cy);
+                // Estimate head pose and eye gaze
+
+                mAtentionTracer->newPosition((double)model/num_faces_max,
+                                             LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy),
+                                             clnf_models[model].params_global);
+
+                mImageSections[model].toImage(clnf_models[model]);
+                print_Orientation(disp_image,model);
+
+                num_active_models++;
+            }
+            cv::rectangle(disp_image,cv::Rect(x,y,w,h),cv::Scalar((1-itens)*255.0,0,itens*255));
+        }
+        if(frame_count % 10 == 0)
+        {
+            t1 = cv::getTickCount();
+            fps = 10.0 / (double(t1-t0)/cv::getTickFrequency());
+            t0 = t1;
+        }
+        painterL->end();
+        painterR->end();
+
+        showImage(disp_image);
+        mTheWindow->Right_Label->setPixmap(*pixmapL);
+        mTheWindow->Left_Label->setPixmap(*pixmapR);
+
+        print_FPS_Model(cvRound(fps),num_active_models);
+
+        mAtentionTracer->print();
+
+        if(cv::waitKey(30) >= 0) break;
+    }
+}
+
 void FaceDetection::ShowFromeFile()
 {
     cv::Mat frame;
@@ -781,6 +904,11 @@ void FaceDetection::setCLAHE(bool c)
     mCLAHE = c;
 }
 
+void FaceDetection::setUseEye(bool e)
+{
+    mUseEye = e;
+}
+
 void FaceDetection::shift_detected_landmarks_toWorld(int model, int worldX, int worldY, int worldW, int worldH, int imgW, int imgH){
     cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
 
@@ -858,146 +986,18 @@ bool FaceDetection::getFrame(cv::Mat &img)
     return ret;
 }
 
-void FaceDetection::FaceTrackingAutoSize(){
-    // Initialisiierung
-    double fx,fy,cx,cy;
-    int x,y;
-
-    mImageSections.clear();
-    for (int i = 0; i < num_faces_max; ++i){
-        int x,y,w,h;
-        mImage.getFaceParameter(i,x,y,w,h);
-        mImageSections.push_back(ImageSection(x,y,w,h));
-        active_models[i] = false;
-    }
-
-    // For measuring the timings
-    int64 t1,t0 = cv::getTickCount();
-    double fps = 10;
-
-    cv::Mat frame_colore;
-    mKamera->get_camera_params(fx,fy,cx,cy,x,y);
-    mAtentionTracer->setImageSize(x,y);
-
-    double minSize = 200;
-
-    for(int frame_count = 0;getFrame(frame_colore);frame_count++){
-        QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
-        pixmapL->fill(Qt::transparent);
-        QPainter *painterL=new QPainter(pixmapL);
-
-        QPixmap *pixmapR=new QPixmap(mTheWindow->Right_Label->size());
-        pixmapR->fill(Qt::transparent);
-        QPainter *painterR=new QPainter(pixmapR);
-
-        cv::Mat disp_image = frame_colore.clone();
-
-        int num_active_models = 0;
-
-        for(int model = 0; model < num_faces_max; model++){
-            int x,y,w,h;
-            mImageSections[model].getSection(x,y,w,h);
-            // If the current model has failed more than 4 times in a row, remove it
-            if(clnf_models[model].failures_in_a_row > 4)
-            {
-                active_models[model] = false;
-                clnf_models[model].Reset();
-                double nX = x;
-                double nY = y;
-                double nW = w;
-                double nH = h;
-                mImageSections[model].getAvgSection(nX,nY,nW,nH);
-                x = cvRound(nX); y = cvRound(nY);
-                w = cvRound(nW); h = cvRound(nH);
-                //                std::cout<<"Korrektur Lost "<<frame_count<<": "<<model<<std::endl;
-            }
-
-            cv::Mat faceImageColore = mImage.get_Face_Image(frame_colore,x,y,w,h,minSize);
-            cv::Mat_<uchar> faceImage;
-            Image::convert_to_grayscale(faceImageColore,faceImage);
-
-            bool detection_success;
-
-            if(!active_models[model]){
-                vector<cv::Rect_<double> > face_detections;
-                if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
-                    vector<double> confidences;
-                    LandmarkDetector::DetectFacesHOG(face_detections, faceImage, clnf_models[0].face_detector_HOG, confidences);
-                }else{
-                    LandmarkDetector::DetectFaces(face_detections, faceImage, clnf_models[0].face_detector_HAAR);
-                }
-                if(face_detections.size() == 1){
-                    // Reinitialise the model
-                    clnf_models[model].Reset();
-
-                    // This ensures that a wider window is used for the initial landmark localisation
-                    clnf_models[model].detection_success = false;
-
-                    detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, face_detections[0], clnf_models[model], det_parameters[model]);
-
-                    // This activates the model
-                    active_models[model] = true;
-                }
-            }else{
-                detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, clnf_models[model], det_parameters[model]);
-            }
-            double detection_certainty = clnf_models[model].detection_certainty; // Qualität der detection: -1 perfekt und 1 falsch
-            double visualisation_boundary = -0.1;
-
-            // Only draw if the reliability is reasonable, the value is slightly ad-hoc
-            double itens = 0;
-            if(detection_certainty < visualisation_boundary){
-                if(detection_certainty > 1)
-                    detection_certainty = 1;
-                if(detection_certainty < -1)
-                    detection_certainty = -1;
-                itens = (detection_certainty + 1)/(visualisation_boundary +1);
-
-                shift_detected_landmarks_toWorld(model,x,y,w,h,faceImage.cols, faceImage.rows);
-
-                printSmallImage(frame_colore,model,*painterR,*painterL, false,"");
-                //                print_CLNF(disp_image,model,itens,fx,fy,cx,cy);
-                // Estimate head pose and eye gaze
-
-                mAtentionTracer->newPosition((double)model/num_faces_max,
-                                             LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy),
-                                             clnf_models[model].params_global);
-
-                print_Orientation(disp_image,model);
-
-                cv::Rect_<double> box = clnf_models[model].GetBoundingBox();
-
-                getImageSize(box.x,box.y,box.width,box.height,frame_colore.cols, frame_colore.rows,0.3,0.4,40,60);
-
-                if(!mImageSections[model].setSection(box.x,box.y,box.width,box.height)){//Wenn die Grenzen überschritten werden
-                    active_models[model] = false; //Soll sichergestellt werden, dass nächstesmal ein Gesicht erkannt wird
-                    mImageSections[model].getAvgSection(box.x,box.y,box.width,box.height);
-                    //                    std::cout<<"Autoreset "<<frame_count<<std::endl;
-                }
-                shift_detected_landmarks_toImage(model,box.x,box.y,box.width,box.height,minSize);
-
-                num_active_models++;
-            }
-            cv::rectangle(disp_image,cv::Rect(x,y,w,h),cv::Scalar((1-itens)*255.0,0,itens*255));
+bool FaceDetection::getFrame(cv::Mat &img, size_t FrameID)
+{
+    size_t frameNr;
+    if(mFrameEvents->getFrame(frameNr,FrameID)){
+        if(mKamera->getFrameNr() +1 == frameNr){
+            return mKamera->getFrame(img);
+        }else{
+            mKamera->setFrame(frameNr-1);
+            return mKamera->getFrame(img);
         }
-        if(frame_count % 10 == 0)
-        {
-            t1 = cv::getTickCount();
-            fps = 10.0 / (double(t1-t0)/cv::getTickFrequency());
-            t0 = t1;
-        }
-        painterL->end();
-        painterR->end();
-
-        showImage(disp_image);
-        mTheWindow->Right_Label->setPixmap(*pixmapL);
-        mTheWindow->Left_Label->setPixmap(*pixmapR);
-
-        print_FPS_Model(cvRound(fps),num_active_models);
-
-        mAtentionTracer->print();
-
-        if(cv::waitKey(30) >= 0) break;
+    }else{
+        return false;
     }
 }
 

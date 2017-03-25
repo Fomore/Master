@@ -39,9 +39,8 @@ bool FrameEvents::getNextFrame(size_t &frame)
     }
 }
 
-bool FrameEvents::getNextFrame(size_t &frame, size_t &frameID)
+bool FrameEvents::getFrame(size_t &frame, size_t frameID)
 {
-    frameID++;
     if(frameID < mFrames.size()){
         frame = mFrames[frameID].getFrame();
         return true;
@@ -55,9 +54,19 @@ size_t FrameEvents::getBoxSizeInFrame(size_t frameID)
     return mFrames[frameID].getSize();
 }
 
+size_t FrameEvents::getNameSize()
+{
+    return mNames.size();
+}
+
 cv::Rect FrameEvents::getRect(size_t frameID, size_t boxID)
 {
     return mFrames[frameID].getBox(boxID);
+}
+
+cv::Rect FrameEvents::getRectWithName(size_t frameID, size_t nameID)
+{
+    return mFrames[frameID].getBox(mNames[nameID].toStdString());
 }
 
 void FrameEvents::getLandmarks(size_t frameID, size_t boxID, double land[5][2])
@@ -147,11 +156,17 @@ int FrameEvents::addFrame(size_t frame)
 void FrameEvents::addBox(int id, int x, int y, int w, int h, QString name, QString event)
 {
     mFrames[id].addBox(x,y,w,h,name.toStdString(),event.toStdString());
+    if(!existName(name)){
+        mNames.push_back(QString(name));
+    }
 }
 
 void FrameEvents::addBox(int id, int x, int y, int w, int h, QString name, QString event, double land[5][2])
 {
     mFrames[id].addBox(x,y,w,h,name.toStdString(),event.toStdString(), land);
+    if(!existName(name)){
+        mNames.push_back(QString(name));
+    }
 }
 
 void FrameEvents::printAll()
@@ -160,6 +175,16 @@ void FrameEvents::printAll()
         std::cout<<"["<<i<<"] "<<mFrames[i].getFrame()<<std::endl;
         mFrames[i].printAll();
     }
+}
+
+bool FrameEvents::existName(QString name)
+{
+    for(size_t i = 0; i < mNames.size(); i++){
+        if(name == mNames[i]){
+            return true;
+        }
+    }
+    return false;
 }
 
 int FrameEvents::filnameToFrame(QString file)

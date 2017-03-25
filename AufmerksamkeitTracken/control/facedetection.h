@@ -64,8 +64,10 @@ private:
     bool mUseBox = false;
     bool mLearn = false;
     bool mCLAHE = true;
+    bool mUseEye = true;
 
     bool getFrame(cv::Mat &img);
+    bool getFrame(cv::Mat &img, size_t FrameID);
 
 public:
     FaceDetection(Ui::MainWindow *parent = 0, FrameEvents *frameEV = 0, Camera* cam = 0);
@@ -83,6 +85,7 @@ public:
     void setUseBox(bool b);
     void setLearn(bool l);
     void setCLAHE(bool c);
+    void setUseEye(bool e);
 
 };
 

@@ -99,3 +99,8 @@ void MainWindow::on_actionUse_CLAHE_triggered(bool checked)
 {
     mFaceDetection->setCLAHE(checked);
 }
+
+void MainWindow::on_actionAugen_Mitteln_triggered(bool checked)
+{
+    mFaceDetection->setUseEye(checked);
+}
