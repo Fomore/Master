@@ -6,8 +6,8 @@ ImageSection::ImageSection(int width, int height)
     mImageSize.height = height;
     Rec_new.x = Rec_new.y = Rec_new.width = Rec_new.height = 0;
     Rec_old.x = Rec_old.y = Rec_old.width = Rec_old.height = 0;
-    mMinSize.width = 100;
-    mMinSize.height = 140;
+    mMinSize.width = 80;
+    mMinSize.height = 110;
 }
 
 
@@ -34,19 +34,22 @@ void ImageSection::newRect(cv::Rect rec)
     double w = rec.width * mScall;
     double h = rec.height * mScall;
 
-    if(w < mMinSize.width || h < mMinSize.height){
-        fx = min(mMinSize.width/w, mMinSize.height/h);
-        w *= fx;
-        h *= fx;
+    if(w > 0.0 && h > 0.0){
+        if(w < mMinSize.width || h < mMinSize.height){
+            fx = min(mMinSize.width/w, mMinSize.height/h);
+            w *= fx;
+            h *= fx;
+        }else{
+            fx = 1.0;
+        }
+        Rec_new.x = max((int)(rec.x-(w-rec.width)/2.0),0);
+        Rec_new.y = max((int)(rec.y-(h-rec.height)/2.0),0);
+
+        Rec_new.width = min((int)w,mImageSize.width-Rec_new.x);
+        Rec_new.height = min((int)h,mImageSize.height-Rec_new.y);
     }else{
-        fx = 1.0;
+        Rec_new.x = Rec_new.y = Rec_new.width = Rec_new.height = 0;
     }
-
-    Rec_new.x = max((int)(rec.x-(w-rec.width)/2.0),0);
-    Rec_new.y = max((int)(rec.y-(h-rec.height)/2.0),0);
-
-    Rec_new.width = min((int)w,mImageSize.width-Rec_new.x);
-    Rec_new.height = min((int)h,mImageSize.height-Rec_new.y);
 }
 
 void ImageSection::setScall(double s)
@@ -60,7 +63,7 @@ void ImageSection::toImage(LandmarkDetector::CLNF &clnf)
 
     int n = shape2D.rows/2;
     for(int pos = 0; pos < n; pos++){
-        if(fx != 1){
+        if(fx != 1.0){
             double x = shape2D.at<double>(pos);
             double y = shape2D.at<double>(pos + n);
             shape2D.at<double>(pos) = Rec_new.x + x/fx;
@@ -80,11 +83,11 @@ void ImageSection::toImage(LandmarkDetector::CLNF &clnf)
 
         int n = shape2D.rows/2;
         for(int pos = 0; pos < n; pos++){
-            if(fx != 1){
+            if(fx != 1.0){
                 double x = shape2D.at<double>(pos);
                 double y = shape2D.at<double>(pos + n);
                 shape2D.at<double>(pos) = Rec_new.x + x/fx;
-                shape2D.at<double>(pos + n) = Rec_new.y + Rec_new.y/fx;
+                shape2D.at<double>(pos + n) = Rec_new.y + y/fx;
             }else{
                 shape2D.at<double>(pos) += Rec_new.x;
                 shape2D.at<double>(pos + n) += Rec_new.y;

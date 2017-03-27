@@ -43,7 +43,7 @@ void FaceDetection::FaceTracking(){
     mKamera->get_camera_params(fx,fy,cx,cy,x,y);
     mAtentionTracer->setImageSize(x,y);
 
-    for(int frame_count = 0;getFrame(frame_col);frame_count++){
+    for(int FrameID = 0;getFrame(frame_col);FrameID++){
         // Reading the images
 
         cv::Mat_<uchar> grayscale_image;
@@ -62,7 +62,7 @@ void FaceDetection::FaceTracking(){
         }
 
         // Get the detections (every 8th frame and when there are free models available for tracking) //Nun wird jedes Frame (%1) Berechent
-        if(frame_count % 3 == 0 && !all_models_active){
+        if(FrameID % 3 == 0 && !all_models_active){
             if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
                 vector<double> confidences;
                 LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_models[0].face_detector_HOG, confidences);
@@ -152,7 +152,7 @@ void FaceDetection::FaceTracking(){
         painterR->end();
 
         // Work out the framerate
-        if(frame_count % 10 == 0){
+        if(FrameID % 10 == 0){
             t1 = cv::getTickCount();
             fps = 10.0 / (double(t1-t0)/cv::getTickFrequency());
             t0 = t1;
@@ -250,7 +250,7 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
     std::ofstream myfile2;
     myfile2.open ("./data/Messwerte.txt", std::ios::in | std::ios::app);
     myfile2 <<"["<<worldX<<", "<<worldZ<<"]"<<worldpoint
-            << gazeDirection0 << gazeDirection1 << cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5]) <<std::endl;
+           << gazeDirection0 << gazeDirection1 << cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5]) <<std::endl;
     myfile2.close();
 }
 
@@ -283,17 +283,17 @@ void FaceDetection::initCLNF()
      arguments.push_back(""); // Hat arguments keine Werte kann wes wegoptimiert werden und dadurch wirft die Initilaisierung unten Fehler
 
       /*
-        -mloc - the location of landmark detection models
-        -sigma -UpdateModelParameters
-        -w_reg -
-        -reg -
-        -multi_view -
-        -validate_detections -
-        -n_iter -
-        -gaze - indicate that gaze estimation should be performed
-        -q - specifying to use quiet mode not visualizing output
-        -wild - flag specifies when the images are more difficult, model considers extended search regions
-        */
+          -mloc - the location of landmark detection models
+          -sigma -UpdateModelParameters
+          -w_reg -
+          -reg -
+          -multi_view -
+          -validate_detections -
+          -n_iter -
+          -gaze - indicate that gaze estimation should be performed
+          -q - specifying to use quiet mode not visualizing output
+          -wild - flag specifies when the images are more difficult, model considers extended search regions
+          */
       // im build-Ordner muss das model von OpenFace sein
       LandmarkDetector::FaceModelParameters det_params(arguments); // Sollte Parameter beinhalten
 
@@ -695,6 +695,7 @@ void FaceDetection::LearnModel(){
 }
 
 void FaceDetection::FaceTrackingAutoSize(){
+    std::cout<<"AutoSize Tracking"<<std::endl;
     // Initialisiierung
     double fx,fy,cx,cy;
     int x,y;
@@ -704,6 +705,7 @@ void FaceDetection::FaceTrackingAutoSize(){
     for (int i = 0; i < num_faces_max; ++i){
         mImageSections.push_back(ImageSection(x,y));
         active_models[i] = false;
+        clnf_models[i].Reset();
     }
 
     // For measuring the timings
@@ -712,8 +714,7 @@ void FaceDetection::FaceTrackingAutoSize(){
 
     cv::Mat frame_colore;
 
-    size_t FrameID;
-    for(int frame_count = 0;getFrame(frame_colore, FrameID);frame_count++){
+    for(size_t FrameID = 824;getFrame(frame_colore, FrameID);FrameID++){
         QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
         pixmapL->fill(Qt::transparent);
         QPainter *painterL=new QPainter(pixmapL);
@@ -730,73 +731,74 @@ void FaceDetection::FaceTrackingAutoSize(){
             mImageSections[model].newRect(mFrameEvents->getRectWithName(FrameID,model));
             int x,y,w,h;
             mImageSections[model].getSection(x,y,w,h);
-            mImageSections[model].toSection(clnf_models[model]);
             // If the current model has failed more than 4 times in a row, remove it
             if(clnf_models[model].failures_in_a_row > 4)
             {
                 active_models[model] = false;
                 clnf_models[model].Reset();
             }
+            if( w > 0 && h > 0){
+                cv::Mat faceImageColore = disp_image(cv::Rect(x,y,w,h));
+                cv::Mat_<uchar> faceImage;
+                Image::convert_to_grayscale(faceImageColore,faceImage);
+                mImageSections[model].toSection(clnf_models[model]);
 
-            cv::Mat faceImageColore = disp_image(cv::Rect(x,y,w,h));
-            cv::Mat_<uchar> faceImage;
-            Image::convert_to_grayscale(faceImageColore,faceImage);
+                bool detection_success;
+                if(!active_models[model]){
+                    vector<cv::Rect_<double> > face_detections;
+                    if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
+                        vector<double> confidences;
+                        LandmarkDetector::DetectFacesHOG(face_detections, faceImage, clnf_models[0].face_detector_HOG, confidences);
+                    }else{
+                        LandmarkDetector::DetectFaces(face_detections, faceImage, clnf_models[0].face_detector_HAAR);
+                    }
+                    if(face_detections.size() == 1){
+                        // Reinitialise the model
+                        clnf_models[model].Reset();
 
-            bool detection_success;
+                        // This ensures that a wider window is used for the initial landmark localisation
+                        clnf_models[model].detection_success = false;
 
-            if(!active_models[model]){
-                vector<cv::Rect_<double> > face_detections;
-                if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
-                    vector<double> confidences;
-                    LandmarkDetector::DetectFacesHOG(face_detections, faceImage, clnf_models[0].face_detector_HOG, confidences);
+                        detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, face_detections[0], clnf_models[model], det_parameters[model]);
+
+                        // This activates the model
+                        active_models[model] = true;
+                    }
                 }else{
-                    LandmarkDetector::DetectFaces(face_detections, faceImage, clnf_models[0].face_detector_HAAR);
+                    detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, clnf_models[model], det_parameters[model]);
                 }
-                if(face_detections.size() == 1){
-                    // Reinitialise the model
-                    clnf_models[model].Reset();
 
-                    // This ensures that a wider window is used for the initial landmark localisation
-                    clnf_models[model].detection_success = false;
+                double detection_certainty = clnf_models[model].detection_certainty; // Qualität der detection: -1 perfekt und 1 falsch
+                double visualisation_boundary = -0.1;
 
-                    detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, face_detections[0], clnf_models[model], det_parameters[model]);
-
-                    // This activates the model
-                    active_models[model] = true;
-                }
-            }else{
-                detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, clnf_models[model], det_parameters[model]);
-            }
-            double detection_certainty = clnf_models[model].detection_certainty; // Qualität der detection: -1 perfekt und 1 falsch
-            double visualisation_boundary = -0.1;
-
-            // Only draw if the reliability is reasonable, the value is slightly ad-hoc
-            double itens = 0;
-            if(detection_certainty < visualisation_boundary){
-                if(detection_certainty > 1)
-                    detection_certainty = 1;
-                if(detection_certainty < -1)
-                    detection_certainty = -1;
-                itens = (detection_certainty + 1)/(visualisation_boundary +1);
-
-                shift_detected_landmarks_toWorld(model,x,y,w,h,faceImage.cols, faceImage.rows);
-
-                printSmallImage(frame_colore,model,*painterR,*painterL, false,"");
-                //                print_CLNF(disp_image,model,itens,fx,fy,cx,cy);
-                // Estimate head pose and eye gaze
-
-                mAtentionTracer->newPosition((double)model/num_faces_max,
-                                             LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy),
-                                             clnf_models[model].params_global);
-
+                // Only draw if the reliability is reasonable, the value is slightly ad-hoc
+                double itens = 0;
                 mImageSections[model].toImage(clnf_models[model]);
-                print_Orientation(disp_image,model);
+                if(detection_certainty < visualisation_boundary){
+                    if(detection_certainty > 1)
+                        detection_certainty = 1;
+                    if(detection_certainty < -1)
+                        detection_certainty = -1;
+                    itens = (detection_certainty + 1)/(visualisation_boundary +1);
 
-                num_active_models++;
+                    printSmallImage(frame_colore,model,*painterR,*painterL, false,"");
+
+                    // Estimate head pose and eye gaze
+                    mAtentionTracer->newPosition((double)model/num_faces_max,
+                                                 LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy),
+                                                 clnf_models[model].params_global);
+
+                    print_Orientation(disp_image,model);
+                    print_CLNF(disp_image,model,0.5,fx,fy,cx,cy);
+
+                    num_active_models++;
+                }
+                cv::rectangle(disp_image,cv::Rect(x,y,w,h),cv::Scalar((1-itens)*255.0,itens*255,itens*255),2);
+            }else{
+                clnf_models[model].failures_in_a_row++;
             }
-            cv::rectangle(disp_image,cv::Rect(x,y,w,h),cv::Scalar((1-itens)*255.0,0,itens*255));
         }
-        if(frame_count % 10 == 0)
+        if(FrameID % 10 == 0)
         {
             t1 = cv::getTickCount();
             fps = 10.0 / (double(t1-t0)/cv::getTickFrequency());
@@ -993,7 +995,7 @@ bool FaceDetection::getFrame(cv::Mat &img, size_t FrameID)
         if(mKamera->getFrameNr() +1 == frameNr){
             return mKamera->getFrame(img);
         }else{
-            mKamera->setFrame(frameNr-1);
+            mKamera->setFrame(frameNr);
             return mKamera->getFrame(img);
         }
     }else{
