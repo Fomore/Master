@@ -243,12 +243,12 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
     mTarget.getOrienation(name,worldpoint,worldX,worldZ);
 
     std::ofstream myfile;
-    myfile.open ("./data/BerechnungWinkel.txt", std::ios::in | std::ios::app);
+    myfile.open ("./data/BerechnungWinkel_Image.txt", std::ios::in | std::ios::app);
     myfile <<"["<<worldX<<", "<<worldZ<<"]"<<worldpoint<< eyeOri_R << eyeOri_L << headOri <<std::endl;
     myfile.close();
 
     std::ofstream myfile2;
-    myfile2.open ("./data/Messwerte.txt", std::ios::in | std::ios::app);
+    myfile2.open ("./data/Messwerte.txt_Image", std::ios::in | std::ios::app);
     myfile2 <<"["<<worldX<<", "<<worldZ<<"]"<<worldpoint
            << gazeDirection0 << gazeDirection1 << cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5]) <<std::endl;
     myfile2.close();
@@ -714,7 +714,7 @@ void FaceDetection::FaceTrackingAutoSize(){
 
     cv::Mat frame_colore;
 
-    for(size_t FrameID = 824;getFrame(frame_colore, FrameID);FrameID++){
+    for(size_t FrameID = mFrameEvents->getFramePos(13736);getFrame(frame_colore, FrameID);FrameID++){
         QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
         pixmapL->fill(Qt::transparent);
         QPainter *painterL=new QPainter(pixmapL);
@@ -731,8 +731,12 @@ void FaceDetection::FaceTrackingAutoSize(){
             mImageSections[model].newRect(mFrameEvents->getRectWithName(FrameID,model));
             int x,y,w,h;
             mImageSections[model].getSection(x,y,w,h);
+
+            std::cout<<"Frame: "<<mKamera->getFrameNr()<<x<<" "<<y<<" "<<w<<" "<<h<<clnf_models[model].GetBoundingBox()<<std::endl;
+            cv::Rect rec = clnf_models[model].GetBoundingBox(); //Unschöhn!
             // If the current model has failed more than 4 times in a row, remove it
-            if(clnf_models[model].failures_in_a_row > 4)
+            if(clnf_models[model].failures_in_a_row > 4
+                    || !(rec.x > x && rec.y > y && x+w > rec.x+rec.width && y+h >rec.y+rec.height))
             {
                 active_models[model] = false;
                 clnf_models[model].Reset();
@@ -770,16 +774,24 @@ void FaceDetection::FaceTrackingAutoSize(){
 
                 double detection_certainty = clnf_models[model].detection_certainty; // Qualität der detection: -1 perfekt und 1 falsch
                 double visualisation_boundary = -0.1;
+                mImageSections[model].toImage(clnf_models[model]);
 
                 // Only draw if the reliability is reasonable, the value is slightly ad-hoc
                 double itens = 0;
-                mImageSections[model].toImage(clnf_models[model]);
                 if(detection_certainty < visualisation_boundary){
                     if(detection_certainty > 1)
                         detection_certainty = 1;
                     if(detection_certainty < -1)
                         detection_certainty = -1;
                     itens = (detection_certainty + 1)/(visualisation_boundary +1);
+
+                    std::string name;
+                    if(mFrameEvents->isImageFrame(FrameID,name,mFrameEvents->getName(model))){
+                        std::cout<<mKamera->getFrameNr()<<": "<<model<<" "<<name<<std::endl;
+                        int used;
+                        CalcualteEyes(disp_image,model,used);
+                        print_SolutionToFile(QString::fromStdString(name),model,fx,fy,cx,cy);
+                    }
 
                     printSmallImage(frame_colore,model,*painterR,*painterL, false,"");
 
@@ -995,8 +1007,7 @@ bool FaceDetection::getFrame(cv::Mat &img, size_t FrameID)
         if(mKamera->getFrameNr() +1 == frameNr){
             return mKamera->getFrame(img);
         }else{
-            mKamera->setFrame(frameNr);
-            return mKamera->getFrame(img);
+            return mKamera->getFrame(img,frameNr);
         }
     }else{
         return false;

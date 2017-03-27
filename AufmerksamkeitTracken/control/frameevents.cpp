@@ -96,19 +96,38 @@ bool FrameEvents::getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &n
     for(int i = getFramePos(frame)+1;
         i <= (int)mFrames.size(); i++){
         size_t pos;
-        if(mFrames[i].hasEventPart("Img",0,3,pos)){
+        if(isImageFrame(i,name,pos)){
             cv::Rect r = mFrames[i].getBox(pos);
             rec.x = r.x;
             rec.y = r.y;
             rec.width = r.width;
             rec.height = r.height;
             frame = mFrames[i].getFrame();
-            name = mFrames[i].getEvent(pos)+"_"+mFrames[i].getName(pos);
             id = pos;
             return true;
         }
     }
     return false;
+}
+
+bool FrameEvents::isImageFrame(size_t frameID, std::string &ImageName, std::string ObjName)
+{
+    size_t pos;
+    if(isImageFrame(frameID,ImageName,pos)){
+        return ObjName == mFrames[frameID].getName(pos);
+    }else {
+        return false;
+    }
+}
+
+bool FrameEvents::isImageFrame(size_t frameID, std::string &name, size_t &pos)
+{
+    if(frameID < mFrames.size() && mFrames[frameID].hasEventPart("Img",0,3,pos)){
+        name = mFrames[frameID].getEvent(pos)+"_"+mFrames[frameID].getName(pos);
+        return true;
+    }else{
+    return false;
+    }
 }
 
 std::string FrameEvents::getTitel(size_t frame)
@@ -131,6 +150,14 @@ std::string FrameEvents::getTitel(size_t frameID, size_t boxID)
         return name;
     }
     return "NotFound"+std::to_string(frameID)+"_"+std::to_string(boxID);
+}
+
+std::string FrameEvents::getName(size_t NameID)
+{
+    if(NameID < mNames.size()){
+        return mNames[NameID].toStdString();
+    }
+    return "";
 }
 
 void FrameEvents::clearAll()
