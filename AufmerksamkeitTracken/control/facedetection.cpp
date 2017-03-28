@@ -223,9 +223,6 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
     FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection0, fx, fy, cx, cy, true);
     FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection1, fx, fy, cx, cy, false);
 
-    gazeDirection0 = cv::Point3f(0,0.5,0.5);
-    gazeDirection1 = cv::Point3f(-0.5,0,0.5);
-
     cv::Vec3d eyeR = mKamera->rotateToWorld(gazeDirection0);
     cv::Vec3d eyeL = mKamera->rotateToWorld(gazeDirection1);
 
@@ -248,7 +245,7 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
     myfile.close();
 
     std::ofstream myfile2;
-    myfile2.open ("./data/Messwerte.txt_Image", std::ios::in | std::ios::app);
+    myfile2.open ("./data/Messwerte_Image.txt", std::ios::in | std::ios::app);
     myfile2 <<"["<<worldX<<", "<<worldZ<<"]"<<worldpoint
            << gazeDirection0 << gazeDirection1 << cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5]) <<std::endl;
     myfile2.close();
@@ -714,7 +711,7 @@ void FaceDetection::FaceTrackingAutoSize(){
 
     cv::Mat frame_colore;
 
-    for(size_t FrameID = mFrameEvents->getFramePos(13736);getFrame(frame_colore, FrameID);FrameID++){
+    for(size_t FrameID = 0;getFrame(frame_colore, FrameID);FrameID++){
         QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
         pixmapL->fill(Qt::transparent);
         QPainter *painterL=new QPainter(pixmapL);
@@ -732,7 +729,6 @@ void FaceDetection::FaceTrackingAutoSize(){
             int x,y,w,h;
             mImageSections[model].getSection(x,y,w,h);
 
-            std::cout<<"Frame: "<<mKamera->getFrameNr()<<x<<" "<<y<<" "<<w<<" "<<h<<clnf_models[model].GetBoundingBox()<<std::endl;
             cv::Rect rec = clnf_models[model].GetBoundingBox(); //Unschöhn!
             // If the current model has failed more than 4 times in a row, remove it
             if(clnf_models[model].failures_in_a_row > 4

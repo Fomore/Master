@@ -11,29 +11,29 @@ Target::Target()
     mPoint[0][1] = 176;
 
     //Links
-    mPoint[1][0] = 128.5; //1
+    mPoint[1][0] = -128.5; //1
     mPoint[1][1] = 194;
 
-    mPoint[2][0] = 308.5; //2
+    mPoint[2][0] = -308.5; //2
     mPoint[2][1] = 194;
 
-    mPoint[3][0] = 308.5; //3
+    mPoint[3][0] = -308.5; //3
     mPoint[3][1] = 113.5;
 
-    mPoint[4][0] = 128.5; //4
+    mPoint[4][0] = -128.5; //4
     mPoint[4][1] = 113.5;
 
     //Rechts
-    mPoint[5][0] = -128.5; //1
+    mPoint[5][0] = 128.5; //1
     mPoint[5][1] = 194;
 
-    mPoint[6][0] = -308.5; //2
+    mPoint[6][0] = 308.5; //2
     mPoint[6][1] = 194;
 
-    mPoint[7][0] = -308.5; //3
+    mPoint[7][0] = 308.5; //3
     mPoint[7][1] = 113.5;
 
-    mPoint[8][0] = -128.5; //4
+    mPoint[8][0] = 128.5; //4
     mPoint[8][1] = 113.5;
 
     mFHeight = 170;
