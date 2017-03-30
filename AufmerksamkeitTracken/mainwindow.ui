@@ -121,7 +121,7 @@
       <item>
        <widget class="QPushButton" name="Learn_Button">
         <property name="text">
-         <string>Lernen</string>
+         <string>Image</string>
         </property>
        </widget>
       </item>

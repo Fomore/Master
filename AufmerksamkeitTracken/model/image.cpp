@@ -6,7 +6,8 @@ Image::Image()
 //    cv::glob("/home/falko/Uni/Master/Bilder/*g", mImagePaths, true);
 //    cv::glob("/home/falko/Uni/Master/Bilder/Learn/*.jpgg", mImagePaths, true);//erhalten durch cv::Mat img = get_Face_Image(read_image,155,280,36,42); auf Grau setzen
 //    cv::glob("/home/falko/Uni/Master/Bilder/HeadPose/*.jpg", mImagePaths, true);
-    cv::glob("/home/falko/Uni/Master/Bilder/Aufnahme2/*.JPG", mImagePaths, true);
+//    cv::glob("/home/falko/Uni/Master/Bilder/Aufnahme2/*.JPG", mImagePaths, true);
+    cv::glob("/home/falko/Uni/Master/Bilder/HeadPose/*.jpg", mImagePaths, true);
 
     Image_ID = 0;
 }
@@ -40,6 +41,16 @@ bool Image::getImage(cv::Mat &out){
         return true;
     }else{
         std::cout<<"Fehler in Der ImageList"<<std::endl;
+        return false;
+    }
+}
+
+bool Image::getImage(cv::Mat &Img, size_t &ImageID)
+{
+    if(ImageID < mImagePaths.size()){
+        Img =  cv::imread(mImagePaths.at(ImageID), -1);
+        return (Img.data);
+    }else{
         return false;
     }
 }

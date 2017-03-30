@@ -582,60 +582,41 @@ void FaceDetection::LearnModel(){
     // Initialisiierung
     double fx,fy,cx,cy;
     int x,y;
-    //    mKamera->get_camera_params(fx,fy,cx,cy,x,y);
 
     size_t frm=0;
-    int BoxID = -1;
-    /*
-    while(mImage.getNextImage(frame)){
-        mKamera->setImageSize(frame.cols,frame.rows);
-        mKamera->get_camera_params(fx,fy,cx,cy,x,y);
-
-        rec = mFrameEvents->getRect(mImage.getImageID()-1,0);
-        name = "img/"+ std::to_string(mImage.getImageID());
-
-    */
-    while(mFrameEvents->getNextImageFrame(frm,rec,name, BoxID)){
-        mKamera->getFrame(frame,frm);
+    while(getFrame(frame,frm,rec,name,fx,fy,cx,cy,x,y)){
         name = "img/F_"+name;
-        mKamera->setImageSize(frame.cols,frame.rows);
-        mKamera->get_camera_params(fx,fy,cx,cy,x,y);
 
-        cv::Mat frame_col = mImage.get_Face_Image(frame,rec,50);
+//        cv::Mat frame_col = mImage.get_Face_Image(frame,rec,50);
         cv::Mat disp_image = frame.clone();
 
         //std::cout<<name<<" : "<<frm<<" ["<<rec.x<<" "<<rec.y<<" "<<rec.width<<" "<<rec.height<<"] "<<frame_col.cols<<" "<<frame_col.rows<<std::endl;
 
         bool success = false;
         cv::Mat_<uchar> grayscale_image,grayIMG;
-        //        Image::convert_to_grayscale(frame,grayIMG);
-        Image::convert_to_grayscale(frame_col,grayIMG);
+        //Image::convert_to_grayscale(frame_col,grayIMG);
+        Image::convert_to_grayscale(frame,grayIMG);
         for(int clahe = 0; !success && clahe < 2 ; clahe++){
             if(mCLAHE && clahe > 0){
-                //            Image::CLAHE(grayIMG,grayscale_image,0.875);
+                // Image::CLAHE(grayIMG,grayscale_image,0.875);
                 Image::Histogram(grayIMG,grayscale_image);
             }else{
                 grayscale_image = grayIMG;
             }
 
-            if(!mLearn || !active_models[Model_Init]){
-                // Detect faces in an image
-                vector<cv::Rect_<double> > face_detections;
+            // Detect faces in an image
+            vector<cv::Rect_<double> > face_detections;
 
-                if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
-                    vector<double> confidences;
-                    LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_models[0].face_detector_HOG, confidences);
-                }else{
-                    LandmarkDetector::DetectFaces(face_detections, grayscale_image, clnf_models[0].face_detector_HAAR);
-                }
-
-                for(size_t face=0; face < face_detections.size(); ++face){
-                    // if there are multiple detections go through them
-                    success = LandmarkDetector::DetectLandmarksInImage(grayscale_image, face_detections[face], clnf_models[Model_Init], det_parameters[Model_Init]);
-                    //success = LandmarkDetector::DetectLandmarksInVideo(grayscale_image, face_detections[face], clnf_models[Model_Init], det_parameters[Model_Init]);
-                }
+            if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
+                vector<double> confidences;
+                LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_models[0].face_detector_HOG, confidences);
             }else{
-                success = LandmarkDetector::DetectLandmarksInVideo(grayscale_image, clnf_models[Model_Init], det_parameters[Model_Init]);
+                LandmarkDetector::DetectFaces(face_detections, grayscale_image, clnf_models[0].face_detector_HAAR);
+            }
+
+            for(size_t face=0; face < face_detections.size(); ++face){
+                // if there are multiple detections go through them
+                success = LandmarkDetector::DetectLandmarksInImage(grayscale_image, face_detections[face], clnf_models[Model_Init], det_parameters[Model_Init]);
             }
         }
 
@@ -649,7 +630,7 @@ void FaceDetection::LearnModel(){
         QPainter *painterR=new QPainter(pixmapR);
 
         if(success){
-            shift_detected_landmarks(Model_Init,rec,50);
+//            shift_detected_landmarks(Model_Init,rec,50);
 
             int used;
             CalcualteEyes(disp_image,Model_Init,used);
@@ -781,11 +762,11 @@ void FaceDetection::FaceTrackingAutoSize(){
                         detection_certainty = -1;
                     itens = (detection_certainty + 1)/(visualisation_boundary +1);
 
+                    int used;
+                    CalcualteEyes(disp_image,model,used);
                     std::string name;
                     if(mFrameEvents->isImageFrame(FrameID,name,mFrameEvents->getName(model))){
                         std::cout<<mKamera->getFrameNr()<<": "<<model<<" "<<name<<std::endl;
-                        int used;
-                        CalcualteEyes(disp_image,model,used);
                         print_SolutionToFile(QString::fromStdString(name),model,fx,fy,cx,cy);
                     }
 
@@ -1007,6 +988,36 @@ bool FaceDetection::getFrame(cv::Mat &img, size_t FrameID)
         }
     }else{
         return false;
+    }
+}
+
+bool FaceDetection::getFrame(cv::Mat &Img, size_t &Frame, cv::Rect &Rec, string &Name,
+                             double fx, double fy, double cx, double cy, int x, int y)
+{
+    if(!mLearn){
+        int BoxID = -1;
+        if(mFrameEvents->getNextImageFrame(Frame,Rec,Name, BoxID)){
+            mKamera->getFrame(Img,Frame);
+
+            mKamera->setImageSize(Img.cols,Img.rows);
+            mKamera->get_camera_params(fx,fy,cx,cy,x,y);
+            return true;
+        }else{
+            return false;
+        }
+    }else{
+        if(mImage.getImage(Img,Frame)){
+            mKamera->setImageSize(Img.cols,Img.rows);
+            mKamera->get_camera_params(fx,fy,cx,cy,x,y);
+            Rec.x = Rec.y = 0;
+            Rec.width = Img.cols;
+            Rec.height = Img.rows;
+            Frame++;
+            return true;
+        }else{
+            Frame++;
+            return false;
+        }
     }
 }
 

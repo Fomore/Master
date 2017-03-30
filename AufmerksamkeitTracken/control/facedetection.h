@@ -68,6 +68,7 @@ private:
 
     bool getFrame(cv::Mat &img);
     bool getFrame(cv::Mat &img, size_t FrameID);
+    bool getFrame(cv::Mat &Img, size_t &Frame, cv::Rect &Rec, std::string &Name, double fx, double fy, double cx, double cy, int x, int y);
 
 public:
     FaceDetection(Ui::MainWindow *parent = 0, FrameEvents *frameEV = 0, Camera* cam = 0);
