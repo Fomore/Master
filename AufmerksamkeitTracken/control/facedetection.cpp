@@ -179,7 +179,7 @@ void FaceDetection::FaceTracking(){
 }
 
 void FaceDetection::print_CLNF(cv::Mat img, int model, double itens, double fx, double fy, double cx, double cy){
-    //    LandmarkDetector::Draw(img, clnf_models[model]);
+    LandmarkDetector::Draw(img, clnf_models[model]);
 
     // A rough heuristic for box around the face width
     int thickness = (int)std::ceil(2.0* ((double)img.cols) / 640.0);
@@ -240,12 +240,12 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
     mTarget.getOrienation(name,worldpoint,worldX,worldZ);
 
     std::ofstream myfile;
-    myfile.open ("./data/BerechnungWinkel_Image.txt", std::ios::in | std::ios::app);
+    myfile.open ("./data/BerechnungWinkel_Video.txt", std::ios::in | std::ios::app);
     myfile <<"["<<worldX<<", "<<worldZ<<"]"<<worldpoint<< eyeOri_R << eyeOri_L << headOri <<std::endl;
     myfile.close();
 
     std::ofstream myfile2;
-    myfile2.open ("./data/Messwerte_Image.txt", std::ios::in | std::ios::app);
+    myfile2.open ("./data/Messwerte_Video.txt", std::ios::in | std::ios::app);
     myfile2 <<"["<<worldX<<", "<<worldZ<<"]"<<worldpoint
            << gazeDirection0 << gazeDirection1 << cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5]) <<std::endl;
     myfile2.close();
@@ -280,17 +280,17 @@ void FaceDetection::initCLNF()
      arguments.push_back(""); // Hat arguments keine Werte kann wes wegoptimiert werden und dadurch wirft die Initilaisierung unten Fehler
 
       /*
-          -mloc - the location of landmark detection models
-          -sigma -UpdateModelParameters
-          -w_reg -
-          -reg -
-          -multi_view -
-          -validate_detections -
-          -n_iter -
-          -gaze - indicate that gaze estimation should be performed
-          -q - specifying to use quiet mode not visualizing output
-          -wild - flag specifies when the images are more difficult, model considers extended search regions
-          */
+           -mloc - the location of landmark detection models
+           -sigma -UpdateModelParameters
+           -w_reg -
+           -reg -
+           -multi_view -
+           -validate_detections -
+           -n_iter -
+           -gaze - indicate that gaze estimation should be performed
+           -q - specifying to use quiet mode not visualizing output
+           -wild - flag specifies when the images are more difficult, model considers extended search regions
+           */
       // im build-Ordner muss das model von OpenFace sein
       LandmarkDetector::FaceModelParameters det_params(arguments); // Sollte Parameter beinhalten
 
@@ -460,10 +460,10 @@ void FaceDetection::CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used)
             cv::Rect2d rec = clnf_models[CLNF_ID].hierarchical_models[hir_id[hir]].GetBoundingBox();
             double sx = rec.width*0.3;
             double sy = rec.height*0.4;
-            rec.x -= sx/2;
-            rec.y -= sy/2;
-            rec.width += sx;
-            rec.height += sy;
+            rec.x = max(0.0,rec.x - sx/2.0);
+            rec.y = max(0.0,rec.y - sy/2.0);
+            rec.width = min(rec.width + sx, img.cols-rec.x);
+            rec.height = min(rec.height + sy, img.rows-rec.y);
 
             std::vector<cv::Point2f> pos, pos2;
             for(size_t i = 20; i < 28; i++){
@@ -534,7 +534,7 @@ void FaceDetection::CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used)
             double sxG = (pos0G.x/rec_0.width + pos1G.x/rec_1.width)/2.0;
             double syG = (pos0G.y/rec_0.height+ pos1G.y/rec_1.height)/2.0;
 
-            std::cout<<pos0S<<pos0G<<pos1S<<pos1G<<cv::Vec4d(sxS,syS,sxG,syG)<<std::endl;
+            //std::cout<<pos0S<<pos0G<<pos1S<<pos1G<<cv::Vec4d(sxS,syS,sxG,syG)<<std::endl;
 
             shape2D_0.at<double>(i) = rec_0.x + rec_0.width * sxG;
             shape2D_0.at<double>(i+n) = rec_0.y + rec_0.height * syG;
@@ -546,7 +546,7 @@ void FaceDetection::CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used)
             shape2D_1.at<double>(i-20) = rec_1.x + rec_1.width * sxS;
             shape2D_1.at<double>(i-20+n) = rec_1.y + rec_1.height * syS;
         }
-        std::cout<<std::endl;
+        //std::cout<<std::endl;
         clnf_models[CLNF_ID].hierarchical_models[hir_id[0]].detected_landmarks = shape2D_0.clone();
         clnf_models[CLNF_ID].hierarchical_models[hir_id[1]].detected_landmarks = shape2D_1.clone();
     }
@@ -585,24 +585,23 @@ void FaceDetection::LearnModel(){
 
     size_t frm=0;
     while(getFrame(frame,frm,rec,name,fx,fy,cx,cy,x,y)){
-        name = "img/F_"+name;
+        name = "img/Head_"+name;
 
-//        cv::Mat frame_col = mImage.get_Face_Image(frame,rec,50);
+        //        cv::Mat frame_col = mImage.get_Face_Image(frame,rec,50);
         cv::Mat disp_image = frame.clone();
 
-        //std::cout<<name<<" : "<<frm<<" ["<<rec.x<<" "<<rec.y<<" "<<rec.width<<" "<<rec.height<<"] "<<frame_col.cols<<" "<<frame_col.rows<<std::endl;
+        //std::cout<<name<<" : "<<frm<<" ["<<rec.x<<" "<<rec.y<<" "<<rec.width<<" "<<rec.height<<"] "<<frame.cols<<" "<<frame.rows<<std::endl;
 
         bool success = false;
-        cv::Mat_<uchar> grayscale_image,grayIMG;
+        cv::Mat_<uchar> grayscale_image;
         //Image::convert_to_grayscale(frame_col,grayIMG);
-        Image::convert_to_grayscale(frame,grayIMG);
+        Image::convert_to_grayscale(frame,grayscale_image);
         for(int clahe = 0; !success && clahe < 2 ; clahe++){
             if(mCLAHE && clahe > 0){
                 // Image::CLAHE(grayIMG,grayscale_image,0.875);
-                Image::Histogram(grayIMG,grayscale_image);
-            }else{
-                grayscale_image = grayIMG;
+                Image::Histogram(grayscale_image,grayscale_image);
             }
+            clnf_models[Model_Init].Reset();
 
             // Detect faces in an image
             vector<cv::Rect_<double> > face_detections;
@@ -630,8 +629,7 @@ void FaceDetection::LearnModel(){
         QPainter *painterR=new QPainter(pixmapR);
 
         if(success){
-//            shift_detected_landmarks(Model_Init,rec,50);
-
+            shift_detected_landmarks(Model_Init,rec,50);
             int used;
             CalcualteEyes(disp_image,Model_Init,used);
 
@@ -650,12 +648,18 @@ void FaceDetection::LearnModel(){
             mAtentionTracer->print();
 
             //std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
-            active_models[Model_Init] = true;
+            active_models[Model_Init] = false;
 
+            std::ofstream myfile;
+            myfile.open ("./data/HeadPosition_Image.txt", std::ios::in | std::ios::app);
+            myfile <<name<<std::endl;
+            myfile.close();
+            /*
             vector<int> compression_params;
             compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
             compression_params.push_back(9);
             cv::imwrite(name+"_Calc.png",disp_image(rec),compression_params);
+            */
         }
 
         painterL->end();
@@ -711,6 +715,9 @@ void FaceDetection::FaceTrackingAutoSize(){
             mImageSections[model].getSection(x,y,w,h);
 
             cv::Rect rec = clnf_models[model].GetBoundingBox(); //Unschöhn!
+            if(w > 0 && h > 0 && rec.width > 0 && rec.height > 0 && !(rec.x > x && rec.y > y && x+w > rec.x+rec.width && y+h >rec.y+rec.height)){
+                std::cout<<"Boxfehler: "<<mKamera->getFrameNr()<<" - "<<model<<rec<<std::endl;
+            }
             // If the current model has failed more than 4 times in a row, remove it
             if(clnf_models[model].failures_in_a_row > 4
                     || !(rec.x > x && rec.y > y && x+w > rec.x+rec.width && y+h >rec.y+rec.height))
@@ -719,7 +726,11 @@ void FaceDetection::FaceTrackingAutoSize(){
                 clnf_models[model].Reset();
             }
             if( w > 0 && h > 0){
-                cv::Mat faceImageColore = disp_image(cv::Rect(x,y,w,h));
+                cv::Mat faceImageColore;
+                mImageSections[model].getImage(frame_colore,faceImageColore);
+                //cv::imshow("Gesicht "+std::to_string(model),faceImageColore);
+
+                //cv::Mat faceImageColore = disp_image(cv::Rect(x,y,w,h));
                 cv::Mat_<uchar> faceImage;
                 Image::convert_to_grayscale(faceImageColore,faceImage);
                 mImageSections[model].toSection(clnf_models[model]);
@@ -751,6 +762,7 @@ void FaceDetection::FaceTrackingAutoSize(){
 
                 double detection_certainty = clnf_models[model].detection_certainty; // Qualität der detection: -1 perfekt und 1 falsch
                 double visualisation_boundary = -0.1;
+
                 mImageSections[model].toImage(clnf_models[model]);
 
                 // Only draw if the reliability is reasonable, the value is slightly ad-hoc
@@ -765,6 +777,7 @@ void FaceDetection::FaceTrackingAutoSize(){
                     int used;
                     CalcualteEyes(disp_image,model,used);
                     std::string name;
+
                     if(mFrameEvents->isImageFrame(FrameID,name,mFrameEvents->getName(model))){
                         std::cout<<mKamera->getFrameNr()<<": "<<model<<" "<<name<<std::endl;
                         print_SolutionToFile(QString::fromStdString(name),model,fx,fy,cx,cy);
@@ -1006,9 +1019,11 @@ bool FaceDetection::getFrame(cv::Mat &Img, size_t &Frame, cv::Rect &Rec, string 
             return false;
         }
     }else{
-        if(mImage.getImage(Img,Frame)){
-            mKamera->setImageSize(Img.cols,Img.rows);
-            mKamera->get_camera_params(fx,fy,cx,cy,x,y);
+        if(mImage.getImage(Img,Frame, Name)){
+            fx = fy = ((500 * (Img.cols / 640.0)) + (500 * (Img.rows / 480.0)))/2.0;
+            cx = Img.cols/2.0;
+            cy = Img.rows/2.0;
+
             Rec.x = Rec.y = 0;
             Rec.width = Img.cols;
             Rec.height = Img.rows;
@@ -1016,6 +1031,10 @@ bool FaceDetection::getFrame(cv::Mat &Img, size_t &Frame, cv::Rect &Rec, string 
             return true;
         }else{
             Frame++;
+            fx = fy = cx = cy = 0.0;
+            x=y=0;
+            Rec.x = Rec.y = Rec.width = Rec.height = 0;
+            Name = "";
             return false;
         }
     }

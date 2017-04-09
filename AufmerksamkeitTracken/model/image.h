@@ -18,7 +18,7 @@ public:
     static void convert_to_grayscale(const cv::Mat& in, cv::Mat& out);
     bool getNextImage(cv::Mat& out);
     bool getImage(cv::Mat& out);
-    bool getImage(cv::Mat& Img, size_t &ImageID);
+    bool getImage(cv::Mat& Img, size_t &ImageID, std::string &name);
     bool getScallImage(cv::Mat& out);
     static QImage MatToQImage(const cv::Mat& mat);
     static void saveImage(cv::Mat img, std::string name);

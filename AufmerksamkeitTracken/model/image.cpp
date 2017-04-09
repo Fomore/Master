@@ -45,10 +45,12 @@ bool Image::getImage(cv::Mat &out){
     }
 }
 
-bool Image::getImage(cv::Mat &Img, size_t &ImageID)
+bool Image::getImage(cv::Mat &Img, size_t &ImageID, std::string &name)
 {
+    Img.release();
     if(ImageID < mImagePaths.size()){
         Img =  cv::imread(mImagePaths.at(ImageID), -1);
+        name = QString::fromStdString(mImagePaths.at(ImageID)).split("/").last().toStdString();
         return (Img.data);
     }else{
         return false;

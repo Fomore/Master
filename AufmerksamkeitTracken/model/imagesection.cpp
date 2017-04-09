@@ -6,8 +6,8 @@ ImageSection::ImageSection(int width, int height)
     mImageSize.height = height;
     Rec_new.x = Rec_new.y = Rec_new.width = Rec_new.height = 0;
     Rec_old.x = Rec_old.y = Rec_old.width = Rec_old.height = 0;
-    mMinSize.width = 100;
-    mMinSize.height = 130;
+    mMinSize.width = 120;
+    mMinSize.height = 160;
 }
 
 
@@ -24,6 +24,15 @@ bool ImageSection::getSection(int &x, int &y, int &w, int &h){
     return true;
 }
 
+void ImageSection::getImage(cv::Mat Image,cv::Mat &Part)
+{
+    if(fx > 1.0){
+        cv::resize(Image(Rec_new),Part,cv::Size(0,0),fx,fx);
+    }else{
+        Part = Image(Rec_new);
+    }
+}
+
 void ImageSection::newRect(cv::Rect rec)
 {
     Rec_old.x = Rec_new.x;
@@ -36,9 +45,7 @@ void ImageSection::newRect(cv::Rect rec)
 
     if(w > 0.0 && h > 0.0){
         if(w < mMinSize.width || h < mMinSize.height){
-            fx = min(mMinSize.width/w, mMinSize.height/h);
-            w *= fx;
-            h *= fx;
+            fx = max(mMinSize.width/w, mMinSize.height/h);
         }else{
             fx = 1.0;
         }
@@ -75,8 +82,8 @@ void ImageSection::toImage(LandmarkDetector::CLNF &clnf)
     }
     clnf.detected_landmarks = shape2D.clone();
 
-    clnf.params_global[4] += Rec_new.x;
-    clnf.params_global[5] += Rec_new.y;
+    clnf.params_global[4] = clnf.params_global[4]/fx + Rec_new.x;
+    clnf.params_global[5] = clnf.params_global[5]/fx + Rec_new.y;
 
     for (size_t part = 0; part < clnf.hierarchical_models.size(); ++part){
         cv::Mat_<double> shape2D = clnf.hierarchical_models[part].detected_landmarks;
@@ -96,8 +103,8 @@ void ImageSection::toImage(LandmarkDetector::CLNF &clnf)
 
         clnf.hierarchical_models[part].detected_landmarks = shape2D.clone();
 
-        clnf.hierarchical_models[part].params_global[4] += Rec_new.x;
-        clnf.hierarchical_models[part].params_global[5] += Rec_new.y;
+        clnf.hierarchical_models[part].params_global[4] = clnf.hierarchical_models[part].params_global[4]/fx + Rec_new.x;
+        clnf.hierarchical_models[part].params_global[5] = clnf.hierarchical_models[part].params_global[5]/fx + Rec_new.y;
     }
 }
 
@@ -119,8 +126,8 @@ void ImageSection::toSection(LandmarkDetector::CLNF &clnf)
     }
     clnf.detected_landmarks = shape2D.clone();
 
-    clnf.params_global[4] -= Rec_new.x;
-    clnf.params_global[5] -= Rec_new.y;
+    clnf.params_global[4] = (clnf.params_global[4]- Rec_new.x)*fx;
+    clnf.params_global[5] = (clnf.params_global[5]- Rec_new.y)*fx;
 
     for (size_t part = 0; part < clnf.hierarchical_models.size(); ++part){
         cv::Mat_<double> shape2D = clnf.hierarchical_models[part].detected_landmarks;
@@ -140,7 +147,7 @@ void ImageSection::toSection(LandmarkDetector::CLNF &clnf)
 
         clnf.hierarchical_models[part].detected_landmarks = shape2D.clone();
 
-        clnf.hierarchical_models[part].params_global[4] -= Rec_new.x;
-        clnf.hierarchical_models[part].params_global[5] -= Rec_new.y;
+        clnf.hierarchical_models[part].params_global[4] = (clnf.hierarchical_models[part].params_global[4]- Rec_new.x)*fx;
+        clnf.hierarchical_models[part].params_global[5] = (clnf.hierarchical_models[part].params_global[5]- Rec_new.y)*fx;
     }
 }
