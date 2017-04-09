@@ -15,7 +15,7 @@ private:
     double mCameraHeight;
     double mCameraHeight2;
 
-    void getWorldPosition(QStringList list, double &x, double &y);
+    void getWorldPosition(QStringList list, double &x, double &y, double &z);
     double calcAngle(double ge, double an);
 public:
     Target();

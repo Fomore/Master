@@ -65,24 +65,33 @@ Target::Target()
     mPoint2[2][2] = 50;
 }
 
-void Target::getWorldPosition(QStringList list, double &x, double &y)
+void Target::getWorldPosition(QStringList list, double &x, double &y, double &z)
 {
-    if(list.size() >= 3){
-        int a = list[3].toInt();
-        int b = list[1].toInt();
-        if(a >= 1 && a <= 11){
-            x = (a-4)*100.0;
+    if(list.size() >= 6){
+        int a = list[2].toInt();
+        int b = list[4].toInt();
+        if(a >= 1 && a <= 12){
+            z = a*100.0;
+        }else{
+            z = 0.0;
+        }
+
+        if(b >= 0 && b <= 7){
+            x = (b-4)*100.0;
         }else{
             x = 0.0;
         }
 
-        if(b >= 1 && b <= 7){
-            y = b*100.0;
+        if(list[5] == "Thomas"){
+            y = mTHeight;
+        }else if(list[5] == "Falko"){
+            y = mFHeight;
         }else{
-            y = 0.0;
+            y = 0;
         }
+
     }else{
-        x = y = 0.0;
+        x = y = z = 0.0;
     }
 }
 
@@ -146,12 +155,14 @@ void Target::getPoint(size_t id, double &x, double &y, double &z)
 
 void Target::getOrienation(QString name, cv::Point3d &point, double &WorldX, double &WorldZ)
 {
-    QStringList list = name.split("_");
+    QRegExp rx("(\\ |\\_)");
+    QStringList list = name.split(rx);
 
-    getWorldPosition(list[list.size()-2].split(" "),WorldX,WorldZ);
+    double WorldY;
+    getWorldPosition(list,WorldX, WorldY,WorldZ);
 
     double pointX, pointY;
-    getPoint(list[list.size()-2],pointX,pointY);
+    getPoint(list[1],pointX,pointY);
     pointY = mFHeight - pointY;
     pointX -= WorldX;
 
