@@ -20,7 +20,7 @@ private:
 public:
     Target();
     void getPoint(QString name, double &x, double &y);
-    void getPoint(size_t id, double &x, double &y);
+    void getPoint(size_t id, double &x, double &y, double &z);
     void getOrienation(QString name, cv::Point3d& point, double &WorldX, double &WorldZ);
 };
 

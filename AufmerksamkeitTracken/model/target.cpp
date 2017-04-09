@@ -105,21 +105,42 @@ void Target::getPoint(QString name, double &x, double &y)
     if(name.size() >= 2){
         QChar O = name.at(0);
         int p = (int)name.at(1).toLatin1()-48;
-        if((O == 'R' || O == 'L') && p >= 1 && p <= 4){
+        if((O == 'R' || O == 'L') && p >= 1 && p <= 4){ //
             id += p;
             if(O == 'R'){
                 id += 4;
             }
+        }else{
+            int a = (int)name.at(0).toLatin1()-48;
+            int b = (int)name.at(1).toLatin1()-48;
+            if(a == b ){
+                if(a == 0){
+                    id = 10;
+                }else if(a == 1){
+                    id = 11;
+                }else if(a == 2){
+                    id = 12;
+                }
+            }else if(b >= 0 && b <= 7){
+                x = b-4;
+                y = a-1;
+            }
         }
     }
-    getPoint(id,x,y);
+    double z;
+    getPoint(id,x,y,z);
 }
 
-void Target::getPoint(size_t id, double &x, double &y)
+void Target::getPoint(size_t id, double &x, double &y, double &z)
 {
     if(id < 9){
         x = mPoint[id][0];
         y = mPoint[id][1];
+        z = mPoint[id][2];
+    }else if(id >= 10 && id <13){
+        x = mPoint2[id-10][0];
+        y = mPoint2[id-10][1];
+        z = mPoint2[id-10][2];
     }
 }
 
