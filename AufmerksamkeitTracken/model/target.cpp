@@ -163,7 +163,7 @@ void Target::getOrienation(QString name, cv::Point3d &Angle, double &WorldX, dou
     cv::Point3d point;
     getPoint(list[1],point);
     point.x -= WorldX;
-    point.y -= WorldY;
+    point.y = WorldY-point.y;
 
     Angle.x = calcAngle(point.x,WorldZ-point.z);
     Angle.y = calcAngle(point.y,WorldZ-point.z);
