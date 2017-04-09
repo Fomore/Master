@@ -9,32 +9,41 @@ Target::Target()
     // Punkt Zentrum 0
     mPoint[0][0] = 0.0;
     mPoint[0][1] = 176;
+    mPoint[0][2] = -41;
 
     //Links
     mPoint[1][0] = -128.5; //1
     mPoint[1][1] = 194;
+    mPoint[1][2] = 0;
 
     mPoint[2][0] = -308.5; //2
     mPoint[2][1] = 194;
+    mPoint[2][2] = 0;
 
     mPoint[3][0] = -308.5; //3
     mPoint[3][1] = 113.5;
+    mPoint[3][2] = 0;
 
     mPoint[4][0] = -128.5; //4
     mPoint[4][1] = 113.5;
+    mPoint[4][2] = 0;
 
     //Rechts
     mPoint[5][0] = 128.5; //1
     mPoint[5][1] = 194;
+    mPoint[5][2] = 0;
 
     mPoint[6][0] = 308.5; //2
     mPoint[6][1] = 194;
+    mPoint[6][2] = 0;
 
     mPoint[7][0] = 308.5; //3
     mPoint[7][1] = 113.5;
+    mPoint[7][2] = 0;
 
     mPoint[8][0] = 128.5; //4
     mPoint[8][1] = 113.5;
+    mPoint[8][2] = 0;
 
     mFHeight = 170;
     mTHeight = 166;
@@ -42,11 +51,18 @@ Target::Target()
     mCameraHeight = 206;
     mCameraHeight2 = 148+40;
 
-    mPoint2[0][1] = 0;
+    mPoint2[0][0] = 0;
+    mPoint2[0][1] = 148+40;
     mPoint2[0][2] = 0;
-    mPoint2[0][3] = 148+40;
+
 
     mPoint2[1][0] = 0;
+    mPoint2[1][1] = 70;
+    mPoint2[1][2] = 0;
+
+    mPoint2[2][0] = 0;
+    mPoint2[2][1] = 40;
+    mPoint2[2][2] = 50;
 }
 
 void Target::getWorldPosition(QStringList list, double &x, double &y)

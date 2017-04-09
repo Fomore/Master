@@ -9,7 +9,7 @@ class Target
 {
 private:
     //Koordinaten im Weltkoordinatensystem
-    double mPoint[9][2];
+    double mPoint[9][3];
     double mPoint2[3][3];
     double mFHeight, mTHeight;
     double mCameraHeight;
