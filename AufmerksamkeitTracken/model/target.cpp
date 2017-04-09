@@ -108,20 +108,20 @@ double Target::calcAngle(double ge, double an)
     }
 }
 
-void Target::getPoint(QString name, double &x, double &y)
+void Target::getPoint(QString Name, cv::Point3d &Point)
 {
     size_t id = 0;
-    if(name.size() >= 2){
-        QChar O = name.at(0);
-        int p = (int)name.at(1).toLatin1()-48;
+    if(Name.size() >= 2){
+        QChar O = Name.at(0);
+        int p = (int)Name.at(1).toLatin1()-48;
         if((O == 'R' || O == 'L') && p >= 1 && p <= 4){ //
             id += p;
             if(O == 'R'){
                 id += 4;
             }
         }else{
-            int a = (int)name.at(0).toLatin1()-48;
-            int b = (int)name.at(1).toLatin1()-48;
+            int a = (int)Name.at(0).toLatin1()-48;
+            int b = (int)Name.at(1).toLatin1()-48;
             if(a == b ){
                 if(a == 0){
                     id = 10;
@@ -131,13 +131,12 @@ void Target::getPoint(QString name, double &x, double &y)
                     id = 12;
                 }
             }else if(b >= 0 && b <= 7){
-                x = b-4;
-                y = a-1;
+                Point.x = b-4;
+                Point.y = a-1;
             }
         }
     }
-    double z;
-    getPoint(id,x,y,z);
+    getPoint(id,Point.x,Point.y,Point.z);
 }
 
 void Target::getPoint(size_t id, double &x, double &y, double &z)
@@ -153,7 +152,7 @@ void Target::getPoint(size_t id, double &x, double &y, double &z)
     }
 }
 
-void Target::getOrienation(QString name, cv::Point3d &point, double &WorldX, double &WorldZ)
+void Target::getOrienation(QString name, cv::Point3d &Angle, double &WorldX, double &WorldZ)
 {
     QRegExp rx("(\\ |\\_)");
     QStringList list = name.split(rx);
@@ -161,13 +160,13 @@ void Target::getOrienation(QString name, cv::Point3d &point, double &WorldX, dou
     double WorldY;
     getWorldPosition(list,WorldX, WorldY,WorldZ);
 
-    double pointX, pointY;
-    getPoint(list[1],pointX,pointY);
-    pointY = mFHeight - pointY;
-    pointX -= WorldX;
+    cv::Point3d point;
+    getPoint(list[1],point);
+    point.x -= WorldX;
+    point.y -= WorldY;
 
-    point.x = calcAngle(pointX,WorldZ);
-    point.y = calcAngle(pointY,WorldZ);
+    Angle.x = calcAngle(point.x,WorldZ-point.z);
+    Angle.y = calcAngle(point.y,WorldZ-point.z);
 
-    point.z = 0.0;
+    Angle.z = 0.0;
 }

@@ -19,9 +19,9 @@ private:
     double calcAngle(double ge, double an);
 public:
     Target();
-    void getPoint(QString name, double &x, double &y);
+    void getPoint(QString Name, cv::Point3d &Point);
     void getPoint(size_t id, double &x, double &y, double &z);
-    void getOrienation(QString name, cv::Point3d& point, double &WorldX, double &WorldZ);
+    void getOrienation(QString name, cv::Point3d& Angle, double &WorldX, double &WorldZ);
 };
 
 #endif // TARGET_H
