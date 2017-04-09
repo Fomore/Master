@@ -231,7 +231,7 @@ void FrameEvents::boxAttributToValue(QXmlStreamAttributes att, int &height, int 
     width = att.value("width").toInt();
 }
 
-void FrameEvents::loadXML(QString path)
+size_t FrameEvents::loadXML(QString path)
 {
     clearAll();
     std::cout<<"Load XML: "<<path.toStdString()<<std::endl;
@@ -306,4 +306,5 @@ void FrameEvents::loadXML(QString path)
     }else{
         qDebug()<< "Fehler in XML beim öffen von XML: "<<path;
     }
+    return mNames.size();
 }

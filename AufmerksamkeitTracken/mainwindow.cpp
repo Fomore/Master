@@ -58,7 +58,8 @@ void MainWindow::on_actionOpen_XML_triggered()
 {
     QString filename = QFileDialog::getOpenFileName(this,tr("Open XML-Datei"), "~", tr("XML (*.xml);; All (*.*)"));
     if(!filename.isEmpty() && filename.size() > 0){
-        mFrameEvents->loadXML(filename);
+        size_t anzFace = mFrameEvents->loadXML(filename);
+        mFaceDetection->setMaxFaces(anzFace);
     }
 }
 

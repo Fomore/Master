@@ -27,7 +27,7 @@ private:
     bool isImageFrame(size_t frameID, std::string &name, size_t &pos);
 public:
     FrameEvents();
-    void loadXML(QString path);
+    size_t loadXML(QString path);
 
     int getFramePos(size_t frame);
     bool getNextFrame(size_t &frame);
