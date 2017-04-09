@@ -43,10 +43,10 @@ Target::Target()
     mCameraHeight2 = 148+40;
 
     mPoint2[0][1] = 0;
-    mPoint2[0][1] = 0;
-    mPoint2[0][2] = 148+40;
+    mPoint2[0][2] = 0;
+    mPoint2[0][3] = 148+40;
 
-    mPoint2[1]
+    mPoint2[1][0] = 0;
 }
 
 void Target::getWorldPosition(QStringList list, double &x, double &y)

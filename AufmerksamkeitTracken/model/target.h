@@ -10,8 +10,10 @@ class Target
 private:
     //Koordinaten im Weltkoordinatensystem
     double mPoint[9][2];
+    double mPoint2[3][3];
     double mFHeight, mTHeight;
     double mCameraHeight;
+    double mCameraHeight2;
 
     void getWorldPosition(QStringList list, double &x, double &y);
     double calcAngle(double ge, double an);
