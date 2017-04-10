@@ -21,7 +21,7 @@ public:
     Target();
     void getPoint(QString Name, cv::Point3d &Point);
     void getPoint(size_t id, double &x, double &y, double &z);
-    void getOrienation(QString name, cv::Point3d& Angle, double &WorldX, double &WorldZ);
+    void getOrienation(QString name, cv::Point3d& WAngle, cv::Point3d& WPosition);
 };
 
 #endif // TARGET_H

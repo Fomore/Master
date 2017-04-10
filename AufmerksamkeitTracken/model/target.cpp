@@ -67,9 +67,9 @@ Target::Target()
 
 void Target::getWorldPosition(QStringList list, double &x, double &y, double &z)
 {
-    if(list.size() >= 6){
-        int a = list[2].toInt();
-        int b = list[4].toInt();
+    if(list.size() >= 4){
+        int a = list[list.size()-4].toInt();
+        int b = list[list.size()-2].toInt();
         if(a >= 1 && a <= 12){
             z = a*100.0;
         }else{
@@ -82,9 +82,9 @@ void Target::getWorldPosition(QStringList list, double &x, double &y, double &z)
             x = 0.0;
         }
 
-        if(list[5] == "Thomas"){
+        if(list[list.size()-1] == "Thomas"){
             y = mTHeight;
-        }else if(list[5] == "Falko"){
+        }else if(list[list.size()-1] == "Falko"){
             y = mFHeight;
         }else{
             y = 0;
@@ -131,8 +131,8 @@ void Target::getPoint(QString Name, cv::Point3d &Point)
                     id = 12;
                 }
             }else if(b >= 0 && b <= 7){
-                Point.x = b-4;
-                Point.y = a-1;
+                Point.x = (b-4)*100;
+                Point.y = (a-1)*100;
             }
         }
     }
@@ -152,21 +152,20 @@ void Target::getPoint(size_t id, double &x, double &y, double &z)
     }
 }
 
-void Target::getOrienation(QString name, cv::Point3d &Angle, double &WorldX, double &WorldZ)
+void Target::getOrienation(QString name, cv::Point3d &WAngle, cv::Point3d &WPosition)
 {
     QRegExp rx("(\\ |\\_)");
     QStringList list = name.split(rx);
 
-    double WorldY;
-    getWorldPosition(list,WorldX, WorldY,WorldZ);
+    getWorldPosition(list,WPosition.x, WPosition.y, WPosition.z);
 
     cv::Point3d point;
     getPoint(list[1],point);
-    point.x -= WorldX;
-    point.y = WorldY-point.y;
+    point.x -= WPosition.x;
+    point.y = WPosition.y-point.y;
 
-    Angle.x = calcAngle(point.x,WorldZ-point.z);
-    Angle.y = calcAngle(point.y,WorldZ-point.z);
+    WAngle.x = calcAngle(point.x,WPosition.z-point.z);
+    WAngle.y = calcAngle(point.y,WPosition.z-point.z);
 
-    Angle.z = 0.0;
+    WAngle.z = 0.0;
 }

@@ -235,18 +235,18 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
             * cv::Vec3d(0,0,-1));
     cv::Vec3d headOri(asin(head[0]),asin(head[1]),asin(head[2]));
 
-    cv::Point3d worldpoint;
-    double worldX, worldZ;
-    mTarget.getOrienation(name,worldpoint,worldX,worldZ);
+    cv::Point3d worldAngle;
+    cv::Point3d worlPoint;
+    mTarget.getOrienation(name,worldAngle,worlPoint);
 
     std::ofstream myfile;
     myfile.open ("./data/BerechnungWinkel_Video.txt", std::ios::in | std::ios::app);
-    myfile <<"["<<worldX<<", "<<worldZ<<"]"<<worldpoint<< eyeOri_R << eyeOri_L << headOri <<std::endl;
+    myfile <<worlPoint<<worldAngle<< eyeOri_R << eyeOri_L << headOri <<std::endl;
     myfile.close();
 
     std::ofstream myfile2;
     myfile2.open ("./data/Messwerte_Video.txt", std::ios::in | std::ios::app);
-    myfile2 <<"["<<worldX<<", "<<worldZ<<"]"<<worldpoint
+    myfile2 <<worlPoint<<worldAngle
            << gazeDirection0 << gazeDirection1 << cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5]) <<std::endl;
     myfile2.close();
 }
