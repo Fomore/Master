@@ -110,7 +110,8 @@ double Target::calcAngle(double ge, double an)
 cv::Point3d Target::calcAngle(double x, double y, double z)
 {
     double bet = sqrt(x*x+y*y+z*z);
-    return cv::Point3d(cos(x/bet),cos(y/bet),cos(z/bet));
+    std::cout<<x<<" "<<y<<" "<<z<<": "<<bet<<std::endl;
+    return cv::Point3d(acos(x/bet),acos(y/bet),acos(z/bet));
 }
 
 void Target::getPoint(QString Name, cv::Point3d &Point)
@@ -171,7 +172,8 @@ void Target::getOrienation(QString name, cv::Point3d &WAngle, cv::Point3d &WPosi
     WAngle.y = calcAngle(WPosition.y-point.y,WPosition.z-point.z);
     WAngle.z = 0.0;
 
-    std::cout<<name.toStdString()<<": "<<WPosition<<point<<WAngle<<std::endl;
+    std::cout<<name.toStdString()<<": "<<WPosition<<point<<WAngle
+             <<calcAngle(WPosition.x-point.x, WPosition.y-point.y, WPosition.z-point.z)<<std::endl;
     cv::Vec3d pos = mKamera->rotateToCamera(point);
     cv::Vec3d pnt = mKamera->rotateToCamera(WPosition);
     std::cout<<pnt<<pos<<calcAngle(pos[0]-pnt[0],pnt[1]-pos[1],pnt[2]-pos[2])<<std::endl;
