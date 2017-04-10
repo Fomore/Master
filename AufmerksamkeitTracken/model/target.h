@@ -4,6 +4,7 @@
 #include <QString>
 #include <QStringList>
 #include <opencv2/opencv.hpp>
+#include "model/camera.h"
 
 class Target
 {
@@ -17,8 +18,10 @@ private:
 
     void getWorldPosition(QStringList list, double &x, double &y, double &z);
     double calcAngle(double ge, double an);
+    cv::Point3d calcAngle(double x, double y, double z);
+    Camera* mKamera;
 public:
-    Target();
+    Target(Camera *cam);
     void getPoint(QString Name, cv::Point3d &Point);
     void getPoint(size_t id, double &x, double &y, double &z);
     void getOrienation(QString name, cv::Point3d& WAngle, cv::Point3d& WPosition);

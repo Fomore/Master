@@ -18,6 +18,7 @@ FaceDetection::FaceDetection(Ui::MainWindow *mWindow, FrameEvents *frameEV, Came
     mAtentionTracer = new AtentionTracer(mWindow);
     mFrameEvents = frameEV;
     mKamera = cam;
+    mTarget = new Target(cam);
 
     Model_Init = 0;
     imgCount = 0;
@@ -237,7 +238,7 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
 
     cv::Point3d worldAngle;
     cv::Point3d worlPoint;
-    mTarget.getOrienation(name,worldAngle,worlPoint);
+    mTarget->getOrienation(name,worldAngle,worlPoint);
 
     std::ofstream myfile;
     myfile.open ("./data/BerechnungWinkel_Video.txt", std::ios::in | std::ios::app);

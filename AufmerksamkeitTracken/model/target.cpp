@@ -4,8 +4,10 @@
 #include <math.h>
 #include <fstream>
 
-Target::Target()
+Target::Target(Camera *cam)
 {
+    mKamera = cam;
+
     // Punkt Zentrum 0
     mPoint[0][0] = 0.0;
     mPoint[0][1] = 176;
@@ -47,9 +49,6 @@ Target::Target()
 
     mFHeight = 170;
     mTHeight = 166;
-
-    mCameraHeight = 206;
-    mCameraHeight2 = 148+40;
 
     mPoint2[0][0] = 0;
     mPoint2[0][1] = 148+40;
@@ -108,6 +107,12 @@ double Target::calcAngle(double ge, double an)
     }
 }
 
+cv::Point3d Target::calcAngle(double x, double y, double z)
+{
+    double bet = sqrt(x*x+y*y+z*z);
+    return cv::Point3d(cos(x/bet),cos(y/bet),cos(z/bet));
+}
+
 void Target::getPoint(QString Name, cv::Point3d &Point)
 {
     size_t id = 0;
@@ -161,11 +166,13 @@ void Target::getOrienation(QString name, cv::Point3d &WAngle, cv::Point3d &WPosi
 
     cv::Point3d point;
     getPoint(list[1],point);
-    point.x -= WPosition.x;
-    point.y = WPosition.y-point.y;
 
-    WAngle.x = calcAngle(point.x,WPosition.z-point.z);
-    WAngle.y = calcAngle(point.y,WPosition.z-point.z);
-
+    WAngle.x = calcAngle(point.x-WPosition.x,WPosition.z-point.z);
+    WAngle.y = calcAngle(WPosition.y-point.y,WPosition.z-point.z);
     WAngle.z = 0.0;
+
+    std::cout<<name.toStdString()<<": "<<WPosition<<point<<WAngle<<std::endl;
+    cv::Vec3d pos = mKamera->rotateToCamera(point);
+    cv::Vec3d pnt = mKamera->rotateToCamera(WPosition);
+    std::cout<<pnt<<pos<<calcAngle(pos[0]-pnt[0],pnt[1]-pos[1],pnt[2]-pos[2])<<std::endl;
 }

@@ -10,8 +10,12 @@ Camera::Camera(int id)
     setCameraParameter(id);
     setPath("/home/falko/Uni/Master/Film/Test_Positionen_1.mp4");
     mRotation = cv::Vec3d(1.852973068655717-M_PI/2, -0.04104046258180141, -0.1144534716463462);
+
+    mTranslation = cv::Vec3d(0, -206, 31);
+    //mTranslation = cv::Vec3d(0, 148+40, 0);
+    //mTranslation = cv::Vec3d(23.41559466243473, 239.1545806718657, 69.81405332352804);
     cv::Rodrigues(mRotation,mRotMatrix);
-//    cv::Rodrigues(cv::Vec3d(1.852973068655717, -0.04104046258180141, -0.1144534716463462),mRotation);
+//cv::Rodrigues(cv::Vec3d(1.852973068655717, -0.04104046258180141, -0.1144534716463462),mRotation);
 }
 
 Camera::~Camera()
@@ -153,6 +157,11 @@ cv::Vec3d Camera::rotateToWorld(cv::Point3f in)
 cv::Vec3d Camera::rotateToWorld(cv::Vec3d in)
 {
     return mRotMatrix.t() * in;
+}
+
+cv::Vec3d Camera::rotateToCamera(cv::Vec3d in)
+{
+    return mRotMatrix * in + mTranslation;
 }
 
 cv::Vec3d Camera::getRotation()

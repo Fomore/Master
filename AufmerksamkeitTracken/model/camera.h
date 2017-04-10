@@ -11,6 +11,7 @@ private:
     cv::Mat map1, map2;
     cv::Matx33d mRotMatrix;
     cv::Vec3d mRotation;
+    cv::Vec3d mTranslation;
     int ImageWight, ImageHeight;
     int ID;
     bool mUseCorrection = true;
@@ -41,6 +42,7 @@ public:
     cv::Matx33d rotateCameraToWorld(cv::Matx33d in);
     cv::Vec3d rotateToWorld(cv::Point3f in);
     cv::Vec3d rotateToWorld(cv::Vec3d in);
+    cv::Vec3d rotateToCamera(cv::Vec3d in);
 
     cv::Vec3d getRotation();
     cv::Matx33d getRotationMatrix();

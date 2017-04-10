@@ -38,7 +38,7 @@ private:
     int Model_Init;
     int imgCount;
 
-    Target mTarget;
+    Target* mTarget;
 
     AtentionTracer *mAtentionTracer;
     FrameEvents *mFrameEvents;
