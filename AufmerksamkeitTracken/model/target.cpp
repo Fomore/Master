@@ -173,7 +173,7 @@ void Target::getOrienation(QString name, cv::Point3d &WAngle, cv::Point3d &WPosi
     WAngle.z = 0.0;
 
     std::cout<<name.toStdString()<<": "<<WPosition<<point<<WAngle
-             <<calcAngle(WPosition.x-point.x, WPosition.y-point.y, WPosition.z-point.z)<<std::endl;
+             <<calcAngle(point.x-WPosition.x, WPosition.y-point.y, WPosition.z-point.z)<<std::endl;
     cv::Vec3d pos = mKamera->rotateToCamera(point);
     cv::Vec3d pnt = mKamera->rotateToCamera(WPosition);
     std::cout<<pnt<<pos<<calcAngle(pos[0]-pnt[0],pnt[1]-pos[1],pnt[2]-pos[2])<<std::endl;

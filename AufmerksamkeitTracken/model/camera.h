@@ -32,6 +32,7 @@ public:
     void setCameraParameter(int id);
 
     void correct_Image(cv::Mat img);
+    cv::Rect correct_Rect(cv::Rect rec);
 
     void setUseCorrection(bool c);
 

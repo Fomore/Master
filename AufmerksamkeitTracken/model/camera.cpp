@@ -9,13 +9,13 @@ Camera::Camera(int id)
 {
     setCameraParameter(id);
     setPath("/home/falko/Uni/Master/Film/Test_Positionen_1.mp4");
-    mRotation = cv::Vec3d(1.852973068655717-M_PI/2, -0.04104046258180141, -0.1144534716463462);
+    //mRotation = cv::Vec3d(1.852973068655717-M_PI/2, -0.04104046258180141, -0.1144534716463462);
+    mRotation = cv::Vec3d(1.852973068655717, -0.04104046258180141, -0.1144534716463462);
 
     mTranslation = cv::Vec3d(0, -206, 31);
     //mTranslation = cv::Vec3d(0, 148+40, 0);
     //mTranslation = cv::Vec3d(23.41559466243473, 239.1545806718657, 69.81405332352804);
     cv::Rodrigues(mRotation,mRotMatrix);
-//cv::Rodrigues(cv::Vec3d(1.852973068655717, -0.04104046258180141, -0.1144534716463462),mRotation);
 }
 
 Camera::~Camera()
@@ -104,6 +104,29 @@ void Camera::setCameraParameter(int id){
 void Camera::correct_Image(cv::Mat img){
         cv::undistort(img.clone(),img, cameraMatrix, distCoeffs);//Korrektur mit beschneiden
         //cv::remap(frame, frame, map1, map2, cv::INTER_LINEAR);//Korrektur mit skallierung
+}
+
+cv::Rect Camera::correct_Rect(cv::Rect rec)
+{
+    if(rec.width > 0 && rec.height >= 0){
+        std::vector<cv::Point2d> PointTestIn;
+        PointTestIn.push_back(cv::Point2d(rec.x,rec.y));
+        PointTestIn.push_back(cv::Point2d(rec.x+rec.width,rec.y+rec.height));
+        std::vector<cv::Point2d> PointTestOut;
+
+        cv::undistortPoints(PointTestIn,PointTestOut,cameraMatrix,distCoeffs);
+
+        cv::Rect ret;
+        ret.x = PointTestOut[0].x+0.5;
+        ret.y = PointTestOut[0].y+0.5;
+        ret.width = PointTestOut[1].x-PointTestOut[0].x+0.5;
+        ret.height= PointTestOut[1].y-PointTestOut[0].y+0.5;
+        std::cout<<rec<<ret<<"|"<<PointTestIn[0]<<PointTestIn[1]<<"|"<<PointTestOut[0]<<PointTestOut[1]<<std::endl;
+        return ret;
+    }else{
+        std::cout<<rec<<std::endl;
+        return rec;
+    }
 }
 
 void Camera::setUseCorrection(bool c)

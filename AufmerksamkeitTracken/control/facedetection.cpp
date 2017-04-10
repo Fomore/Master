@@ -711,7 +711,7 @@ void FaceDetection::FaceTrackingAutoSize(){
         int num_active_models = 0;
 
         for(int model = 0; model < num_faces_max; model++){
-            mImageSections[model].newRect(mFrameEvents->getRectWithName(FrameID,model));
+            mImageSections[model].newRect(mKamera->correct_Rect(mFrameEvents->getRectWithName(FrameID,model)));
             int x,y,w,h;
             mImageSections[model].getSection(x,y,w,h);
 
