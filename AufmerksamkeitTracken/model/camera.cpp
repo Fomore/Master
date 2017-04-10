@@ -117,10 +117,10 @@ cv::Rect Camera::correct_Rect(cv::Rect rec)
         cv::undistortPoints(PointTestIn,PointTestOut,cameraMatrix,distCoeffs);
 
         cv::Rect ret;
-        ret.x = PointTestOut[0].x+0.5;
-        ret.y = PointTestOut[0].y+0.5;
-        ret.width = PointTestOut[1].x-PointTestOut[0].x+0.5;
-        ret.height= PointTestOut[1].y-PointTestOut[0].y+0.5;
+        ret.x = (PointTestOut[0].x*ImageWight)+0.5+ImageWight;
+        ret.y = (PointTestOut[0].y*ImageHeight)+0.5+ImageWight;
+        ret.width = (PointTestOut[0].x-PointTestOut[1].x)*ImageWight+0.5+ImageWight;
+        ret.height= (PointTestOut[0].y-PointTestOut[1].y)*ImageHeight+0.5;
         std::cout<<rec<<ret<<"|"<<PointTestIn[0]<<PointTestIn[1]<<"|"<<PointTestOut[0]<<PointTestOut[1]<<std::endl;
         return ret;
     }else{
