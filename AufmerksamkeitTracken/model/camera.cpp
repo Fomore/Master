@@ -11,11 +11,17 @@ Camera::Camera(int id)
     setPath("/home/falko/Uni/Master/Film/Test_Positionen_1.mp4");
     //mRotation = cv::Vec3d(1.852973068655717-M_PI/2, -0.04104046258180141, -0.1144534716463462);
     mRotation = cv::Vec3d(1.852973068655717, -0.04104046258180141, -0.1144534716463462);
+    //cv::Rodrigues(mRotation,mRotMatrix);
 
     mTranslation = cv::Vec3d(0, -206, 31);
     //mTranslation = cv::Vec3d(0, 148+40, 0);
     //mTranslation = cv::Vec3d(23.41559466243473, 239.1545806718657, 69.81405332352804);
-    cv::Rodrigues(mRotation,mRotMatrix);
+
+    mRotMatrix = cv::Matx33d(0.994502496350403, -0.1000653087409978, 0.03084993904995423,
+                  -0.08740706975903308, -0.9555289961807667, -0.2816457732931845,
+                  -0.0576609825528202, -0.2774009218520103, 0.9590223874585506);
+
+    correctTest();
 }
 
 Camera::~Camera()
@@ -122,6 +128,48 @@ cv::Rect Camera::correct_Rect(cv::Rect rec)
     ret.height= PointTestOut[1].y-PointTestOut[0].y+0.5;
 
     return ret;
+}
+
+void Camera::correctTest()
+{
+    std::vector<cv::Point3d> PointTestIn;
+    PointTestIn.push_back(cv::Point3d(-300,0,100));
+    PointTestIn.push_back(cv::Point3d(-200,0,100));
+    PointTestIn.push_back(cv::Point3d(-100,0,100));
+    PointTestIn.push_back(cv::Point3d(   0,0,100));
+    PointTestIn.push_back(cv::Point3d( 100,0,100));
+    PointTestIn.push_back(cv::Point3d( 200,0,100));
+    PointTestIn.push_back(cv::Point3d( 300,0,100));
+
+    PointTestIn.push_back(cv::Point3d(-300,0,400));
+    PointTestIn.push_back(cv::Point3d(-200,0,400));
+    PointTestIn.push_back(cv::Point3d(-100,0,400));
+    PointTestIn.push_back(cv::Point3d(   0,0,400));
+    PointTestIn.push_back(cv::Point3d( 100,0,400));
+    PointTestIn.push_back(cv::Point3d( 200,0,400));
+    PointTestIn.push_back(cv::Point3d( 300,0,400));
+
+    PointTestIn.push_back(cv::Point3d(-300,0,800));
+    PointTestIn.push_back(cv::Point3d(-200,0,800));
+    PointTestIn.push_back(cv::Point3d(-100,0,800));
+    PointTestIn.push_back(cv::Point3d(   0,0,800));
+    PointTestIn.push_back(cv::Point3d( 100,0,800));
+    PointTestIn.push_back(cv::Point3d( 200,0,800));
+    PointTestIn.push_back(cv::Point3d( 300,0,800));
+
+    PointTestIn.push_back(cv::Point3d(-300,0,1000));
+    PointTestIn.push_back(cv::Point3d(-200,0,1000));
+    PointTestIn.push_back(cv::Point3d(-100,0,1000));
+    PointTestIn.push_back(cv::Point3d(   0,0,1000));
+    PointTestIn.push_back(cv::Point3d( 100,0,1000));
+    PointTestIn.push_back(cv::Point3d( 200,0,1000));
+    PointTestIn.push_back(cv::Point3d( 300,0,1000));
+
+    size_t step = PointTestIn.size()/4;
+    for(size_t i = 0; i < step; i++){
+        std::cout<<rotateToCamera(PointTestIn[i])<<rotateToCamera(PointTestIn[i+step])
+                 <<rotateToCamera(PointTestIn[i+step*2])<<rotateToCamera(PointTestIn[i+step*3])<<std::endl;
+    }
 }
 
 void Camera::setUseCorrection(bool c)

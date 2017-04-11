@@ -33,6 +33,7 @@ public:
 
     void correct_Image(cv::Mat img);
     cv::Rect correct_Rect(cv::Rect rec);
+    void correctTest();
 
     void setUseCorrection(bool c);
 
