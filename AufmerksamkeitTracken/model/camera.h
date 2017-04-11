@@ -33,7 +33,7 @@ public:
 
     void correct_Image(cv::Mat img);
     cv::Rect correct_Rect(cv::Rect rec);
-    void correctTest();
+    void correctTest(cv::Scalar col, std::string name);
 
     void setUseCorrection(bool c);
 

@@ -13,15 +13,24 @@ Camera::Camera(int id)
     mRotation = cv::Vec3d(1.852973068655717, -0.04104046258180141, -0.1144534716463462);
     //cv::Rodrigues(mRotation,mRotMatrix);
 
-    mTranslation = cv::Vec3d(0, -206, 31);
+    //mTranslation = cv::Vec3d(0, 206, 31);
     //mTranslation = cv::Vec3d(0, 148+40, 0);
     //mTranslation = cv::Vec3d(23.41559466243473, 239.1545806718657, 69.81405332352804);
 
-    mRotMatrix = cv::Matx33d(0.994502496350403, -0.1000653087409978, 0.03084993904995423,
-                  -0.08740706975903308, -0.9555289961807667, -0.2816457732931845,
-                  -0.0576609825528202, -0.2774009218520103, 0.9590223874585506);
+    mRotMatrix = cv::Matx33d(0.994502496350403, 0.03084993904995423, -0.1000653087409978,
+                             -0.08740706975903308, -0.2816457732931845, -0.9555289961807667,
+                             -0.0576609825528202, 0.9590223874585506, -0.2774009218520103);
+    mTranslation = cv::Vec3d(23.41559466243473, 239.1545806718657, 69.81405332352804);
 
-    correctTest();
+    std::cout<<"Null"<<std::endl;
+    correctTest(cv::Scalar(255, 0, 0,255),"A");
+
+    mRotMatrix = cv::Matx33d(0.994502496350403, 0.1000653087409978, 0.03084993904995423,
+                             -0.08740706975903308, 0.9555289961807667, -0.2816457732931845,
+                             -0.0576609825528202, 0.2774009218520103, 0.9590223874585506);
+    mTranslation = cv::Vec3d(0, 206, 31);
+    std::cout<<"Neu"<<std::endl;
+    correctTest(cv::Scalar(0, 255, 255,255),"B");
 }
 
 Camera::~Camera()
@@ -130,9 +139,22 @@ cv::Rect Camera::correct_Rect(cv::Rect rec)
     return ret;
 }
 
-void Camera::correctTest()
+void Camera::correctTest(cv::Scalar col, std::string name)
 {
     std::vector<cv::Point3d> PointTestIn;
+
+    PointTestIn.push_back(cv::Point3d(-300,0,100));
+    PointTestIn.push_back(cv::Point3d( 300,0,100));
+    PointTestIn.push_back(cv::Point3d(-300,0,1000));
+    PointTestIn.push_back(cv::Point3d( 300,0,1000));
+
+    PointTestIn.push_back(cv::Point3d( 0,0,500));
+
+    for(size_t i = 0; i < PointTestIn.size(); i++){
+        std::cout<<PointTestIn[i]<<rotateToCamera(PointTestIn[i])<<std::endl;
+    }
+
+    PointTestIn.clear();
     PointTestIn.push_back(cv::Point3d(-300,0,100));
     PointTestIn.push_back(cv::Point3d(-200,0,100));
     PointTestIn.push_back(cv::Point3d(-100,0,100));
@@ -165,11 +187,19 @@ void Camera::correctTest()
     PointTestIn.push_back(cv::Point3d( 200,0,1000));
     PointTestIn.push_back(cv::Point3d( 300,0,1000));
 
-    size_t step = PointTestIn.size()/4;
-    for(size_t i = 0; i < step; i++){
-        std::cout<<rotateToCamera(PointTestIn[i])<<rotateToCamera(PointTestIn[i+step])
-                 <<rotateToCamera(PointTestIn[i+step*2])<<rotateToCamera(PointTestIn[i+step*3])<<std::endl;
+    PointTestIn.push_back(cv::Point3d( 0,170,500));
+
+    cv::Mat Testbild = cv::imread("/home/falko/Bilder/Bildschirmfoto von Test_Positionen_1.mp4.png", -1);
+    for(size_t i = 0; i < PointTestIn.size(); i++){
+        cv::Vec3d pos = rotateToCamera(PointTestIn[i]);
+        cv::Point2d pnt(1380.443342245189*pos[0]/pos[2]+1134.2184893459,
+                        1173.443931755887*pos[1]/pos[2]+596.7089856685562);
+        cv::circle(Testbild,pnt,4,col);
     }
+    std::vector<int> compression_params;
+    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(9);
+    cv::imwrite("Test_Img_"+name+".png",Testbild,compression_params);
 }
 
 void Camera::setUseCorrection(bool c)
@@ -227,7 +257,7 @@ cv::Vec3d Camera::rotateToWorld(cv::Vec3d in)
 
 cv::Vec3d Camera::rotateToCamera(cv::Vec3d in)
 {
-    return mRotMatrix * in + mTranslation;
+    return mRotMatrix * cv::Vec3d(in[0],in[2],-in[1]) + mTranslation;
 }
 
 cv::Vec3d Camera::getRotation()
