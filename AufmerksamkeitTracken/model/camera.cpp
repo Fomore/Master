@@ -149,6 +149,7 @@ void Camera::correctTest(cv::Scalar col, std::string name)
     PointTestIn.push_back(cv::Point3d( 300,0,1000));
 
     PointTestIn.push_back(cv::Point3d( 0,0,500));
+    PointTestIn.push_back(cv::Point3d( 0,170,500));
 
     for(size_t i = 0; i < PointTestIn.size(); i++){
         std::cout<<PointTestIn[i]<<rotateToCamera(PointTestIn[i])<<std::endl;
@@ -257,7 +258,7 @@ cv::Vec3d Camera::rotateToWorld(cv::Vec3d in)
 
 cv::Vec3d Camera::rotateToCamera(cv::Vec3d in)
 {
-    return mRotMatrix * cv::Vec3d(in[0],in[2],-in[1]) + mTranslation;
+    return mRotMatrix * cv::Vec3d(in[0],in[2],in[1]) + mTranslation;
 }
 
 cv::Vec3d Camera::getRotation()
