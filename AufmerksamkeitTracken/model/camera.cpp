@@ -108,25 +108,20 @@ void Camera::correct_Image(cv::Mat img){
 
 cv::Rect Camera::correct_Rect(cv::Rect rec)
 {
-    if(rec.width > 0 && rec.height >= 0){
-        std::vector<cv::Point2d> PointTestIn;
-        PointTestIn.push_back(cv::Point2d(rec.x,rec.y));
-        PointTestIn.push_back(cv::Point2d(rec.x+rec.width,rec.y+rec.height));
-        std::vector<cv::Point2d> PointTestOut;
+    std::vector<cv::Point2d> PointTestIn;
+    PointTestIn.push_back(cv::Point2d(rec.x,rec.y));
+    PointTestIn.push_back(cv::Point2d(rec.x+rec.width,rec.y+rec.height));
+    std::vector<cv::Point2d> PointTestOut;
 
-        cv::undistortPoints(PointTestIn,PointTestOut,cameraMatrix,distCoeffs);
+    cv::undistortPoints(PointTestIn,PointTestOut,cameraMatrix,distCoeffs,cv::noArray(), cameraMatrix);
 
-        cv::Rect ret;
-        ret.x = (PointTestOut[0].x*ImageWight)+0.5+ImageWight;
-        ret.y = (PointTestOut[0].y*ImageHeight)+0.5+ImageWight;
-        ret.width = (PointTestOut[0].x-PointTestOut[1].x)*ImageWight+0.5+ImageWight;
-        ret.height= (PointTestOut[0].y-PointTestOut[1].y)*ImageHeight+0.5;
-        std::cout<<rec<<ret<<"|"<<PointTestIn[0]<<PointTestIn[1]<<"|"<<PointTestOut[0]<<PointTestOut[1]<<std::endl;
-        return ret;
-    }else{
-        std::cout<<rec<<std::endl;
-        return rec;
-    }
+    cv::Rect ret;
+    ret.x = PointTestOut[0].x+0.5;
+    ret.y = PointTestOut[0].y+0.5;
+    ret.width = PointTestOut[1].x-PointTestOut[0].x+0.5;
+    ret.height= PointTestOut[1].y-PointTestOut[0].y+0.5;
+
+    return ret;
 }
 
 void Camera::setUseCorrection(bool c)
