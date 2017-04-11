@@ -10,7 +10,6 @@ private:
     cv::Mat cameraMatrix, distCoeffs;
     cv::Mat map1, map2;
     cv::Matx33d mRotMatrix;
-    cv::Vec3d mRotation;
     cv::Vec3d mTranslation;
     int ImageWight, ImageHeight;
     int ID;
@@ -31,6 +30,8 @@ public:
     bool setPath(QString path);
     void setCameraParameter(int id);
 
+    bool UseCorrection();
+
     void correct_Image(cv::Mat img);
     cv::Rect correct_Rect(cv::Rect rec);
     void correctTest(cv::Scalar col, std::string name);
@@ -46,7 +47,6 @@ public:
     cv::Vec3d rotateToWorld(cv::Vec3d in);
     cv::Vec3d rotateToCamera(cv::Vec3d in);
 
-    cv::Vec3d getRotation();
     cv::Matx33d getRotationMatrix();
 
     size_t getFrameNr();

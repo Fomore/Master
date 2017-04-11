@@ -9,28 +9,25 @@ Camera::Camera(int id)
 {
     setCameraParameter(id);
     setPath("/home/falko/Uni/Master/Film/Test_Positionen_1.mp4");
-    //mRotation = cv::Vec3d(1.852973068655717-M_PI/2, -0.04104046258180141, -0.1144534716463462);
-    mRotation = cv::Vec3d(1.852973068655717, -0.04104046258180141, -0.1144534716463462);
-    //cv::Rodrigues(mRotation,mRotMatrix);
 
     //mTranslation = cv::Vec3d(0, 206, 31);
     //mTranslation = cv::Vec3d(0, 148+40, 0);
-    //mTranslation = cv::Vec3d(23.41559466243473, 239.1545806718657, 69.81405332352804);
 
+    //Innenaufnahme
     mRotMatrix = cv::Matx33d(0.994502496350403, 0.03084993904995423, -0.1000653087409978,
                              -0.08740706975903308, -0.2816457732931845, -0.9555289961807667,
                              -0.0576609825528202, 0.9590223874585506, -0.2774009218520103);
     mTranslation = cv::Vec3d(23.41559466243473, 239.1545806718657, 69.81405332352804);
 
-    std::cout<<"Null"<<std::endl;
-    correctTest(cv::Scalar(255, 0, 0,255),"A");
+    /*
+    // Außenaufnahme
+    mTranslation = cv::Vec3d(30.26724668629392,609.8980156101935,110.8105900292293);
+    mRotMatrix = cv::Matx33d(0.9964204032876007, -0.009962914111061379, -0.08394712773282327,
+                             -0.08066650012911067, 0.1849534353018227, -0.9794310300000582,
+                             0.02528429688750553, 0.9826967828951463, 0.1834877031804431);
+    */
 
-    mRotMatrix = cv::Matx33d(0.994502496350403, 0.1000653087409978, 0.03084993904995423,
-                             -0.08740706975903308, 0.9555289961807667, -0.2816457732931845,
-                             -0.0576609825528202, 0.2774009218520103, 0.9590223874585506);
-    mTranslation = cv::Vec3d(0, 206, 31);
-    std::cout<<"Neu"<<std::endl;
-    correctTest(cv::Scalar(0, 255, 255,255),"B");
+    //correctTest(cv::Scalar(255, 0, 0,255),"A");
 }
 
 Camera::~Camera()
@@ -116,6 +113,11 @@ void Camera::setCameraParameter(int id){
                                 CV_16SC2, map1, map2);
 }
 
+bool Camera::UseCorrection()
+{
+    return mUseCorrection;
+}
+
 void Camera::correct_Image(cv::Mat img){
         cv::undistort(img.clone(),img, cameraMatrix, distCoeffs);//Korrektur mit beschneiden
         //cv::remap(frame, frame, map1, map2, cv::INTER_LINEAR);//Korrektur mit skallierung
@@ -123,6 +125,7 @@ void Camera::correct_Image(cv::Mat img){
 
 cv::Rect Camera::correct_Rect(cv::Rect rec)
 {
+    if(mUseCorrection){
     std::vector<cv::Point2d> PointTestIn;
     PointTestIn.push_back(cv::Point2d(rec.x,rec.y));
     PointTestIn.push_back(cv::Point2d(rec.x+rec.width,rec.y+rec.height));
@@ -137,6 +140,9 @@ cv::Rect Camera::correct_Rect(cv::Rect rec)
     ret.height= PointTestOut[1].y-PointTestOut[0].y+0.5;
 
     return ret;
+    }else{
+        return rec;
+    }
 }
 
 void Camera::correctTest(cv::Scalar col, std::string name)
@@ -259,11 +265,6 @@ cv::Vec3d Camera::rotateToWorld(cv::Vec3d in)
 cv::Vec3d Camera::rotateToCamera(cv::Vec3d in)
 {
     return mRotMatrix * cv::Vec3d(in[0],in[2],in[1]) + mTranslation;
-}
-
-cv::Vec3d Camera::getRotation()
-{
-    return mRotation;
 }
 
 cv::Matx33d Camera::getRotationMatrix()
