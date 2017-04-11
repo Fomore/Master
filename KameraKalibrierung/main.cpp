@@ -99,7 +99,7 @@ void DisplayImage(string titel, cv::Mat &img){
 }
 
 void correct_Image(cv::Mat cameraMatrix, cv::Mat distCoeffs){
-//    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_1.mp4");
+    //    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_1.mp4");
     cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Webcam_640_0.mp4");
     if(video.isOpened()){
         cv::namedWindow("Image Raw",1);
@@ -128,24 +128,40 @@ void correct_Image(cv::Mat cameraMatrix, cv::Mat distCoeffs){
 }
 
 void loadFromFile(std::vector<cv::Point3f> &WorldPoints, std::vector<cv::Point2f> &ImagePoints, cv::Mat &img){
-    std::ifstream file("/home/falko/Uni/Master/Dateien/Positions_Data.txt");
+    std::cout<<"Load Data"<<std::endl;
+    std::ifstream file("/home/falko/Uni/Master/Dateien/Positions_Data3.txt");
+    std::cout<<"Data: "<<file.is_open()<<std::endl;
     std::string str;
     size_t count = 0;
     while (std::getline(file, str)){
         std::vector<std::string> v;
         boost::split(v, str, boost::is_any_of(" ") );
+
+        int x,y;
+        if(count >= 125){
+            x = atoi(v[2].c_str());
+            y = atoi(v[3].c_str());
+            cv::circle(img,cv::Point2i(x,y),4,
+                       cv::Scalar(count%125*2,count%125*2,255-count%125*2,255));
+        }else{
+            x = atoi(v[2].c_str());
+            y = atoi(v[3].c_str());
+            cv::circle(img,cv::Point2i(x,y),4,
+                       cv::Scalar(count%125*2,count%125*2,255-count%125*2,255));
+        }
+
+        //cv::putText(img,std::to_string(count),cv::Point2i(x,y),cv::FONT_HERSHEY_PLAIN, 2, cv::Scalar(0,0,255,255));
+
+        ImagePoints.push_back(cv::Point2f(x,y));
         WorldPoints.push_back(cv::Point3f((atoi(v[1].c_str())-4)*100,atoi(v[0].c_str())*100,0));
-        ImagePoints.push_back(cv::Point2f(atoi(v[2].c_str()),atoi(v[3].c_str())));
-        cv::circle(img,cv::Point2i(atoi(v[2].c_str()),atoi(v[3].c_str())),4,
-                cv::Scalar(count%124*2,100,255-count%124*2,255));
+
         count++;
-        if(count >= 124)
-            break;
     }
     file.close();
     for(size_t i = 0; i < WorldPoints.size(); i++){
         std::cout<<WorldPoints[i]<<ImagePoints[i]<<std::endl;
     }
+    std::cout<<"Load ende"<<std::endl;
 }
 
 int main()
@@ -155,6 +171,7 @@ int main()
     std::vector<cv::Point3f> WorldPoints;
     std::vector<cv::Point2f> ImagePoints;
     loadFromFile(WorldPoints, ImagePoints,Testbild);
+
     std::vector<std::vector<cv::Point3f>> World;
     World.push_back(WorldPoints);
     std::vector<std::vector<cv::Point2f>> Image;
@@ -178,26 +195,46 @@ int main()
     T.at<double>(1,0) = tvecs[0].at<double>(1,0);
     T.at<double>(2,0) = tvecs[0].at<double>(2,0);
     cv::Rodrigues(rvecs[0],R);
-    std::cout<<R<<std::endl;
+
+    cv::Mat_<double> R2(3,3);
+    R2.at<double>(0,0) = 1;
+    R2.at<double>(0,1) = 0;
+    R2.at<double>(0,2) = 0;
+    R2.at<double>(1,0) = 0;
+    R2.at<double>(1,1) = 0;
+    R2.at<double>(1,2) = 1;
+    R2.at<double>(2,0) = 0;
+    R2.at<double>(2,1) = 1;
+    R2.at<double>(2,2) = 0;
+
+    std::cout<<R<<std::endl<<R2<<std::endl<<R*R2<<std::endl<<R2*R<<std::endl;
+    R2.at<double>(1,2) = -1;
+    R2.at<double>(2,1) = 1;
+    std::cout<<R*R2<<std::endl<<R2*R<<std::endl;
+    R2.at<double>(1,2) = 1;
+    R2.at<double>(2,1) = -1;
+    std::cout<<R*R2<<std::endl<<R2*R<<std::endl;
+
     std::vector<cv::Point3f> PointTestIn;
     std::vector<cv::Point2f> PointTestOut;
+
     for(int i = -3; i <= 3; i++){
-        for(int j = 0; j < 11; j++){
+        for(int j = 2; j < 11; j++){
             PointTestIn.push_back(cv::Point3f(i*100.0, j*100.0, 0.0));
         }
     }
     cv::projectPoints(PointTestIn,rvecs[0],tvecs[0],cameraMatrix,distCoeffs,PointTestOut);
 
     for(size_t i = 0; i < PointTestOut.size(); i++){
-        cv::circle(Testbild,PointTestOut[i],4,cv::Scalar(0,4*i,255-(4*i),255));
+        //std::cout<<PointTestIn[i]<<PointTestOut[i]<<std::endl;
+        cv::putText(Testbild, std::to_string(i), PointTestOut[i], cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,255,0,255));
+        cv::circle(Testbild,PointTestOut[i],4,cv::Scalar(0,255,0,255),-1);
     }
 
     vector<int> compression_params;
     compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
     compression_params.push_back(9);
-    cv::imwrite("Position.png",Testbild,compression_params);
-
-    std::cout<<"Ende: "<<Testbild.cols<<" "<<Testbild.rows<<std::endl;
+    cv::imwrite("Position_N.png",Testbild,compression_params);
 
     /*
 
