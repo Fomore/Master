@@ -165,19 +165,19 @@ void loadFromFile(std::vector<cv::Point3f> &WorldPoints, std::vector<cv::Point2f
     std::cout<<"Load ende"<<std::endl;
 }
 
-void SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> ImagePoints, double fx, double fy, double cx, double cy){
+void SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> ImagePoints, cv::Point3d CamPos, double fx, double fy, double cx, double cy){
     double in[ImagePoints.size()][8];
     for(size_t i = 0; i < ImagePoints.size(); i++){
         double x = (ImagePoints[i].x-cx)/fx;
         double y = (ImagePoints[i].y-cy)/fy;
 
-        in[i][0] = (x*WorldPoints[i].x);
-        in[i][1] = (x*WorldPoints[i].y);
-        in[i][2] = (x*WorldPoints[i].z);
+        in[i][0] = (x*(WorldPoints[i].x+CamPos.x));
+        in[i][1] = (x*(WorldPoints[i].y+CamPos.y));
+        in[i][2] = (x*(WorldPoints[i].z+CamPos.z));
         in[i][3] = (x);
-        in[i][4] = (-y*WorldPoints[i].x);
-        in[i][5] = (-y*WorldPoints[i].y);
-        in[i][6] = (-y*WorldPoints[i].z);
+        in[i][4] = (-y*(WorldPoints[i].x+CamPos.x));
+        in[i][5] = (-y*(WorldPoints[i].y+CamPos.y));
+        in[i][6] = (-y*(WorldPoints[i].z+CamPos.z));
         in[i][7] = (-y);
 
         std::cout<<i<<": ";
@@ -190,24 +190,33 @@ void SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> ImagePoi
     cv::Mat A(WorldPoints.size(),8, CV_64F, in);
     cv::Mat w, u, vt;
     std::cout<<"Compute"<<std::endl;
-    cv::SVD::compute(A, w, u, vt);
-    std::cout<<A<<std::endl<<w<<std::endl<<u<<std::endl<<vt<<std::endl<<u*vt<<std::endl;
+    cv::SVDecomp(A, w, u, vt, cv::SVD::FULL_UV);
 
-    std::cout<<"Bla: "<<w.cols<<" "<<w.rows<<std::endl;
     cv::Mat wi = cv::Mat::zeros(WorldPoints.size(),8, CV_64F);
+    cv::Mat D = cv::Mat::zeros(WorldPoints.size(),8, CV_64F);
+    size_t lastI = 8;
     for(size_t i = 0; i < 8; i++){
         std::cout<<w.at<double>(0,i)<<std::endl;
-        if(w.at<double>(i) != 0.0){
+        if(w.at<double>(i) >= 0.000001){
             wi.at<double>(i,i) = 1/w.at<double>(0,i);
+            D.at<double>(i,i) = w.at<double>(0,i);
         }else{
-            wi.at<double>(i,i) = 0.0;
+            lastI = i;
+            break;
         }
     }
-    std::cout<<"Test: "<<wi<<std::endl;
+
+    cv::Mat E = cv::Mat::zeros(WorldPoints.size(),8, CV_64F);
+    for(size_t i = 0; i < 8; i++){
+        E.at<double>(i,i) = 1.0;
+    }
+    std::cout<<wi<<std::endl<<D<<std::endl<<"Zeile 1:"<<std::endl<<(u*E*vt).row(lastI)<<std::endl
+               <<"Zeile 2:"<<std::endl<<(u*D*vt).row(lastI)<<std::endl
+               <<"Zeile 3:"<<std::endl<<vt.row(lastI-1)<<std::endl;
 
     std::ofstream myfile;
     myfile.open ("Matrix.txt", std::ios::in | std::ios::app);
-    myfile <<A<<std::endl<<w<<std::endl<<u<<std::endl<<vt<<std::endl<<u*vt<<std::endl;//<<vt.t()*wi*u.t()<<std::endl;
+    myfile <<A<<std::endl<<w<<std::endl<<u<<std::endl<<vt<<std::endl<<D<<std::endl<<u*D*vt<<std::endl;//<<std::endl<<u*vt;
     myfile.close();
     std::cout<<"Ende"<<std::endl;
 }
@@ -220,7 +229,7 @@ int main()
     std::vector<cv::Point2f> ImagePoints;
     loadFromFile(WorldPoints, ImagePoints,Testbild);
 
-    SVD(WorldPoints,ImagePoints,6245.985171734248, 6593.452572771233, 1340.851224182062, 755.2799615988556);
+    SVD(WorldPoints,ImagePoints,cv::Point3d(0, 206, 31),6245.985171734248, 6593.452572771233, 1340.851224182062, 755.2799615988556);
 
     std::vector<std::vector<cv::Point3f>> World;
     World.push_back(WorldPoints);
