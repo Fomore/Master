@@ -165,38 +165,64 @@ void loadFromFile(std::vector<cv::Point3f> &WorldPoints, std::vector<cv::Point2f
     std::cout<<"Load ende"<<std::endl;
 }
 
-void SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> ImagePoints, cv::Point3d CamPos, double fx, double fy, double cx, double cy){
-    double in[ImagePoints.size()][8];
+void SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> ImagePoints, cv::Point3d CamPos, double fx, double fy, double cx, double cy,
+         cv::Mat Image){
+    double in[ImagePoints.size()][6];
+    double inNeu[ImagePoints.size()*2][12];
     for(size_t i = 0; i < ImagePoints.size(); i++){
         std::cout<<WorldPoints[i]<<std::endl;
-        double x = (ImagePoints[i].x-cx)/fx;
-        double y = (ImagePoints[i].y-cy)/fy;
+        double x = ImagePoints[i].x-cx;//)/fx;
+        double y = ImagePoints[i].y-cy;//)/fy;
 
-        in[i][0] = (x*(WorldPoints[i].x-CamPos.x));
-        in[i][1] = (x*(WorldPoints[i].z-CamPos.y));
-        in[i][2] = (x*(WorldPoints[i].y-CamPos.z));
-        in[i][3] = (x);
-        in[i][4] = (-y*(WorldPoints[i].x-CamPos.x));
-        in[i][5] = (-y*(WorldPoints[i].z-CamPos.y));
-        in[i][6] = (-y*(WorldPoints[i].y-CamPos.z));
-        in[i][7] = (-y);
+        in[i][0] = (x*(WorldPoints[i].x+CamPos.x));
+        in[i][1] = (x*(WorldPoints[i].z+CamPos.y));
+        in[i][2] = (x*(WorldPoints[i].y+CamPos.z));
+        in[i][3] = (-y*(WorldPoints[i].x+CamPos.x));
+        in[i][4] = (-y*(WorldPoints[i].z+CamPos.y));
+        in[i][5] = (-y*(WorldPoints[i].y+CamPos.z));
+
+        inNeu[i*2][0] = WorldPoints[i].x;
+        inNeu[i*2][1] = WorldPoints[i].y;
+        inNeu[i*2][2] = WorldPoints[i].z;
+        inNeu[i*2][3] = 1;
+        inNeu[i*2][4] = 0;
+        inNeu[i*2][5] = 0;
+        inNeu[i*2][6] = 0;
+        inNeu[i*2][7] = 0;
+        inNeu[i*2][8] = -x*(WorldPoints[i].x+CamPos.x);
+        inNeu[i*2][9] = -x*(WorldPoints[i].z+CamPos.y);
+        inNeu[i*2][10]= -x*(WorldPoints[i].y+CamPos.z);
+        inNeu[i*2][11]= -x;
+
+        inNeu[i*2+1][0] = 0;
+        inNeu[i*2+1][1] = 0;
+        inNeu[i*2+1][2] = 0;
+        inNeu[i*2+1][3] = 0;
+        inNeu[i*2+1][4] = WorldPoints[i].x;
+        inNeu[i*2+1][4] = WorldPoints[i].y;
+        inNeu[i*2+1][6] = WorldPoints[i].z;
+        inNeu[i*2+1][7] = 1;
+        inNeu[i*2+1][8] = -y*(WorldPoints[i].x+CamPos.x);
+        inNeu[i*2+1][9] = -y*(WorldPoints[i].z+CamPos.y);
+        inNeu[i*2+1][10]= -y*(WorldPoints[i].y+CamPos.z);
+        inNeu[i*2+1][11]= -y;
 
         std::cout<<i<<": ";
-        for(size_t j = 0; j < 8; j++){
+        for(size_t j = 0; j < 6; j++){
             std::cout<<in[i][j]<<" ";
         }
         std::cout<<std::endl;
     }
     //cv::SVD matrix(cv::Mat(8, WorldPoints.size(), CV_64F, in));
-    cv::Mat A(WorldPoints.size(),8, CV_64F, in);
+    cv::Mat A(WorldPoints.size(),6, CV_64F, in);
     cv::Mat w, u, vt;
     std::cout<<"Compute"<<std::endl;
     cv::SVDecomp(A, w, u, vt, cv::SVD::FULL_UV);
 
-    cv::Mat wi = cv::Mat::zeros(WorldPoints.size(),8, CV_64F);
-    cv::Mat D = cv::Mat::zeros(WorldPoints.size(),8, CV_64F);
-    size_t lastI = 8;
-    for(size_t i = 0; i < 8; i++){
+    cv::Mat wi = cv::Mat::zeros(WorldPoints.size(),6, CV_64F);
+    cv::Mat D = cv::Mat::zeros(WorldPoints.size(),6, CV_64F);
+    size_t lastI = 5;
+    for(size_t i = 0; i < 6; i++){
         std::cout<<w.at<double>(0,i)<<std::endl;
         if(w.at<double>(i) >= 0.00001){
             wi.at<double>(i,i) = 1/w.at<double>(0,i);
@@ -206,39 +232,95 @@ void SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> ImagePoi
             break;
         }
     }
-    cv::Mat E = cv::Mat::zeros(WorldPoints.size(),8, CV_64F);
-    for(size_t i = 0; i < 8; i++){
-        E.at<double>(i,i) = 1.0;
-    }
 
+    std::cout<<"E"<<std::endl;
     cv::Mat line = vt.row(lastI);
     double l1 = sqrt(line.at<double>(0,0)*line.at<double>(0,0)
                      +line.at<double>(0,1)*line.at<double>(0,1)
                      +line.at<double>(0,2)*line.at<double>(0,2));
-    double l2 = sqrt(line.at<double>(0,4)*line.at<double>(0,4)
-                     +line.at<double>(0,5)*line.at<double>(0,5)
-                     +line.at<double>(0,6)*line.at<double>(0,6));
+    double l2 = sqrt(line.at<double>(0,3)*line.at<double>(0,3)
+                     +line.at<double>(0,4)*line.at<double>(0,4)
+                     +line.at<double>(0,5)*line.at<double>(0,5));
+    std::cout<<"R"<<std::endl;
     cv::Mat R = cv::Mat::zeros(3,3, CV_64F);
     R.at<double>(1,0) = line.at<double>(0,0)/l1;
     R.at<double>(1,1) = line.at<double>(0,1)/l1;
     R.at<double>(1,2) = line.at<double>(0,2)/l1;
 
-    R.at<double>(0,0) = line.at<double>(0,4)/l2;
-    R.at<double>(0,1) = line.at<double>(0,5)/l2;
-    R.at<double>(0,2) = line.at<double>(0,6)/l2;
+    R.at<double>(0,0) = line.at<double>(0,3)/l2;
+    R.at<double>(0,1) = line.at<double>(0,4)/l2;
+    R.at<double>(0,2) = line.at<double>(0,5)/l2;
 
     R.at<double>(2,0) = R.at<double>(0,1)*R.at<double>(1,2)-R.at<double>(0,2)*R.at<double>(1,1);
     R.at<double>(2,1) = R.at<double>(0,2)*R.at<double>(1,0)-R.at<double>(0,0)*R.at<double>(1,2);
     R.at<double>(2,2) = R.at<double>(0,0)*R.at<double>(1,1)-R.at<double>(0,1)*R.at<double>(1,0);
 
-    std::cout<<wi<<std::endl<<D<<std::endl<<"Zeile 1:"<<std::endl<<vt.row(lastI)<<std::endl
+    std::cout<<wi<<std::endl<<D<<std::endl<<"Zeile 1:"<<std::endl<<vt.row(lastI-1)<<std::endl
                <<"Ergebnis :"<<std::endl<<l1<<" "<<l2<<std::endl
                <<"Ergebnis2 :"<<std::endl<<R<<std::endl;
 
     cv::Mat Rw, Ru, Rvt;
     cv::SVDecomp(R, Rw, Ru, Rvt, cv::SVD::FULL_UV);
-    std::cout<<"Orthogonal: "<<Rw.t()<<std::endl<<Ru*Rvt<<std::endl;
+    cv::Matx33d R2 = cv::Matx33d(Ru)*cv::Matx33d(Rvt);
 
+    if(R2.val[0]*(WorldPoints[0].x+CamPos.x) + R2.val[1]*(WorldPoints[0].z+CamPos.y)+R2.val[2]*(WorldPoints[0].y+CamPos.z) < 0){
+        R.at<double>(1,0) = -line.at<double>(0,0)/l1;
+        R.at<double>(1,1) = -line.at<double>(0,1)/l1;
+        R.at<double>(1,2) = -line.at<double>(0,2)/l1;
+
+        R.at<double>(0,0) = -line.at<double>(0,3)/l2;
+        R.at<double>(0,1) = -line.at<double>(0,4)/l2;
+        R.at<double>(0,2) = -line.at<double>(0,5)/l2;
+
+        R.at<double>(2,0) = R.at<double>(0,1)*R.at<double>(1,2)-R.at<double>(0,2)*R.at<double>(1,1);
+        R.at<double>(2,1) = R.at<double>(0,2)*R.at<double>(1,0)-R.at<double>(0,0)*R.at<double>(1,2);
+        R.at<double>(2,2) = R.at<double>(0,0)*R.at<double>(1,1)-R.at<double>(0,1)*R.at<double>(1,0);
+    }
+    cv::SVDecomp(R, Rw, Ru, Rvt, cv::SVD::FULL_UV);
+    cv::Matx33d R3 = cv::Matx33d(Ru)*cv::Matx33d(Rvt);
+
+    std::cout<<"Matrix"<<std::endl;
+    for(size_t i = 0; i < 9; i++){
+        std::cout<<i<<":" <<R3.val[i]<<std::endl;
+    }
+
+    fx = (ImagePoints[0].x-cx)*(R3.val[6]*(WorldPoints[0].x+CamPos.x) + R3.val[7]*(WorldPoints[0].z+CamPos.y)+R3.val[8]*(WorldPoints[0].y+CamPos.x))/
+            (R3.val[0]*(WorldPoints[0].x+CamPos.x) + R3.val[1]*(WorldPoints[0].z+CamPos.y)+R3.val[2]*(WorldPoints[0].y+CamPos.x));
+    fy = fx/(l2/l1);
+
+    std::cout<<"Orthogonal: "<<Rw.t()<<std::endl<<R2<<std::endl<<R3<<std::endl<<fx<<" "<<fy<<std::endl;
+
+    for(size_t i = 0; i < WorldPoints.size(); i++){
+        cv::circle(Image,ImagePoints[i],4,cv::Scalar(255,0,0,255));
+        cv::Vec3d pos = R3*cv::Vec3d(WorldPoints[i].x+CamPos.x, WorldPoints[i].z+CamPos.y, WorldPoints[i].y+CamPos.z);
+        cv::Point2d point(pos[0]/pos[2]*fx+cx,pos[1]/pos[2]*fy+cy);
+        std::cout<<pos<<point<<std::endl;
+        cv::circle(Image,point,4,cv::Scalar(0,0,255,255),-1);
+    }
+
+    //------------------------------------------
+/*
+    cv::Mat ANeu(WorldPoints.size()*2,12, CV_64F, inNeu);
+    cv::Mat WNeu, UNeu, VtNeu;
+    std::cout<<"SVD"<<std::endl;
+    cv::SVDecomp(ANeu, WNeu, UNeu, VtNeu, cv::SVD::FULL_UV);
+
+    double lastW = WNeu.at<double>(0,0);
+    size_t lastPos = 0;
+    for(size_t i = 1; i < WorldPoints.size()*2; i++){
+        if(WNeu.at<double>(0,i) < lastW){
+            lastPos = i;
+            lastW = WNeu.at<double>(0,i);
+            std::cout<<i<<": "<<lastW<<std::endl;
+        }
+    }
+    std::cout<<"Neu:"<<std::endl<<VtNeu<<std::endl<<VtNeu.row(lastPos-1)<<std::endl;
+    */
+
+    vector<int> compression_params;
+    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(9);
+    cv::imwrite("Position_1.png",Image,compression_params);
 
     std::ofstream myfile;
     myfile.open ("Matrix.txt", std::ios::in | std::ios::app);
@@ -249,14 +331,15 @@ void SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> ImagePoi
 
 int main()
 {
+    //cv::Mat Testbild = cv::imread("/home/falko/Bilder/Bildschirmfoto von Test_Positionen_1.mp4.png", -1);
     cv::Mat Testbild = cv::imread("/home/falko/Bilder/Bildschirmfoto von 20170408_124949A.mp4.png", -1);
 
     std::vector<cv::Point3f> WorldPoints;
     std::vector<cv::Point2f> ImagePoints;
     loadFromFile(WorldPoints, ImagePoints,Testbild);
 
-    //SVD(WorldPoints,ImagePoints,cv::Point3d(0, 206, 31),5906.900190890472, 5979.120910258862, 1350.264438984915, 763.7137371523507);
-    SVD(WorldPoints,ImagePoints,cv::Point3d(0, 148+40, 0),6245.985171734248, 6593.452572771233, 1340.851224182062, 755.2799615988556);
+    //SVD(WorldPoints,ImagePoints,cv::Point3d(0, 206, 31),5906.900190890472, 5979.120910258862, 1350.264438984915, 763.7137371523507, Testbild.clone());
+    SVD(WorldPoints,ImagePoints,cv::Point3d(0, 148+40, 0),6245.985171734248, 6593.452572771233, 1344, 756, Testbild.clone());
 
     std::vector<std::vector<cv::Point3f>> World;
     World.push_back(WorldPoints);
