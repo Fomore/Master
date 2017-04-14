@@ -56,7 +56,7 @@ Target::Target(Camera *cam)
 
 
     mPoint2[1][0] = 0;
-    mPoint2[1][1] = -70;
+    mPoint2[1][1] = -(70+40);
     mPoint2[1][2] = 0;
 
     mPoint2[2][0] = 0;
@@ -76,7 +76,8 @@ void Target::getWorldPosition(QStringList list, double &x, double &y, double &z)
         }
 
         if(b >= 0 && b <= 7){
-            x = (b-4)*100.0;
+            //x = (b-4)*100.0;//Innen
+            x = (4-b)*100.0;//Außen
         }else{
             x = 0.0;
         }
@@ -136,7 +137,7 @@ void Target::getPoint(QString Name, cv::Point3d &Point)
                     id = 12;
                 }
             }else if(b >= 0 && b <= 7){
-                Point.x = (b-4)*100;
+                Point.x = (4-b)*100;
                 Point.y = (a-1)*100;
             }
         }
@@ -154,6 +155,8 @@ void Target::getPoint(size_t id, double &x, double &y, double &z)
         x = mPoint2[id-10][0];
         y = mPoint2[id-10][1];
         z = mPoint2[id-10][2];
+    }else{
+        x=y=z=0.0;
     }
 }
 
@@ -174,7 +177,5 @@ void Target::getOrienation(QString name, cv::Point3d &WAngle, cv::Point3d &WPosi
     cv::Vec3d pos = mKamera->rotateToCamera(point);
     cv::Vec3d pnt = mKamera->rotateToCamera(WPosition);
 
-    std::cout<<name.toStdString()<<": "<<WPosition<<point<<pnt<<pos<<WAngle*180.0/M_PI
-             <<calcAngle(point.x-WPosition.x, WPosition.y-point.y, WPosition.z-point.z)*180.0/M_PI
-             <<calcAngle(pos[0]-pnt[0],pnt[1]-pos[1],pnt[2]-pos[2])*180.0/M_PI<<std::endl;
+    std::cout<<name.toStdString()<<": "<<WPosition<<pnt<<" Point: "<<point<<pos<<std::endl;
 }

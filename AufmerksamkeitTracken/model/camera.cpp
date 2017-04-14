@@ -239,16 +239,6 @@ void Camera::setImageSize(int Wight, int Height)
     }
 }
 
-cv::Matx33d Camera::rotateWorldToCamera(cv::Matx33d in)
-{
-    return mRotMatrix * in;
-}
-
-cv::Matx33d Camera::rotateCameraToWorld(cv::Matx33d in)
-{
-    return mRotMatrix.t() * in;
-}
-
 cv::Vec3d Camera::rotateToWorld(cv::Point3f in)
 {
     return rotateToWorld(cv::Vec3d(in.x, in.y, in.z));
@@ -256,12 +246,12 @@ cv::Vec3d Camera::rotateToWorld(cv::Point3f in)
 
 cv::Vec3d Camera::rotateToWorld(cv::Vec3d in)
 {
-    return mRotMatrix.t() * in;
+    return (mRotMatrix.t() * in) - mTranslation;
 }
 
 cv::Vec3d Camera::rotateToCamera(cv::Vec3d in)
 {
-    return mRotMatrix * cv::Vec3d(in[0],in[2],in[1]) + mTranslation;
+    return mRotMatrix * (in + mTranslation);
 }
 
 cv::Matx33d Camera::getRotationMatrix()

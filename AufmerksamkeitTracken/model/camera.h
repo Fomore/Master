@@ -41,10 +41,9 @@ public:
     void setFrame(size_t frame);
     void setImageSize(int Wight, int Height);
 
-    cv::Matx33d rotateWorldToCamera(cv::Matx33d in);
-    cv::Matx33d rotateCameraToWorld(cv::Matx33d in);
     cv::Vec3d rotateToWorld(cv::Point3f in);
     cv::Vec3d rotateToWorld(cv::Vec3d in);
+
     cv::Vec3d rotateToCamera(cv::Vec3d in);
 
     cv::Matx33d getRotationMatrix();
