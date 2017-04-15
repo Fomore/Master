@@ -6,6 +6,9 @@
 #include <string>
 #include <boost/algorithm/string.hpp>
 
+#include <opencv2/viz/vizcore.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+
 using namespace std;
 
 std::vector<std::vector<cv::Point2f> > get_perfect_Points(std::vector<std::vector<cv::Point2f> > points, const cv::Size dim, int maxImages){
@@ -165,7 +168,7 @@ void loadFromFile(std::vector<cv::Point3f> &WorldPoints, std::vector<cv::Point2f
     std::cout<<"Load ende"<<std::endl;
 }
 
-void SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> ImagePoints, cv::Point3d CamPos, double fx, double fy, double cx, double cy,
+cv::Matx33d SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> ImagePoints, cv::Point3d CamPos, double cx, double cy,
          cv::Mat Image){
     double in[ImagePoints.size()][6];
     for(size_t i = 0; i < ImagePoints.size(); i++){
@@ -219,7 +222,10 @@ void SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> ImagePoi
     cv::SVDecomp(R, Rw, Ru, Rvt, cv::SVD::FULL_UV);
     cv::Matx33d R2 = cv::Matx33d(Ru)*cv::Matx33d(Rvt);
 
-    if(R2.val[0]*(WorldPoints[0].x+CamPos.x) + R2.val[1]*(WorldPoints[0].z+CamPos.y)+R2.val[2]*(WorldPoints[0].y+CamPos.z) > 0){
+    bool posTerm = R2.val[0]*(WorldPoints[0].x+CamPos.x) + R2.val[1]*(WorldPoints[0].z+CamPos.y)+R2.val[2]*(WorldPoints[0].y+CamPos.z) >= 0;
+    bool posX = ImagePoints[0].x >= 0;
+
+    if(posTerm == posX){
         R.at<double>(1,0) = -line.at<double>(0,0)/l1;
         R.at<double>(1,1) = -line.at<double>(0,1)/l1;
         R.at<double>(1,2) = -line.at<double>(0,2)/l1;
@@ -235,9 +241,9 @@ void SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> ImagePoi
     cv::SVDecomp(R, Rw, Ru, Rvt, cv::SVD::FULL_UV);
     cv::Matx33d R3 = cv::Matx33d(Ru)*cv::Matx33d(Rvt);
 
-    fx = (ImagePoints[0].x-cx)*(R3.val[6]*(WorldPoints[0].x+CamPos.x) + R3.val[7]*(WorldPoints[0].z+CamPos.y)+R3.val[8]*(WorldPoints[0].y+CamPos.x))/
+    double fx = (ImagePoints[0].x-cx)*(R3.val[6]*(WorldPoints[0].x+CamPos.x) + R3.val[7]*(WorldPoints[0].z+CamPos.y)+R3.val[8]*(WorldPoints[0].y+CamPos.x))/
             (R3.val[0]*(WorldPoints[0].x+CamPos.x) + R3.val[1]*(WorldPoints[0].z+CamPos.y)+R3.val[2]*(WorldPoints[0].y+CamPos.x));
-    fy = fx/(l2/l1);
+    double fy = fx/(l2/l1);
 
     std::cout<<"Orthogonal: "<<R3<<std::endl<<fx<<" "<<fy<<std::endl;
 
@@ -259,6 +265,50 @@ void SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> ImagePoi
     myfile <<R3<<fx<<fy<<std::endl;
     myfile.close();
     std::cout<<"Ende"<<std::endl;
+
+    return R3;
+}
+
+void print3D(std::vector<cv::Point3f> WorldPoints, cv::Matx33d Rotation, cv::Point3d CamPos){
+    // Create a window
+    cv::viz::Viz3d myWindow("Coordinate Frame");
+    cv::viz::Viz3d myWindowRef("Coordinate Frame 2");
+
+    // Add coordinate axes
+    myWindow.showWidget("Coordinate Widget", cv::viz::WCoordinateSystem());
+    myWindowRef.showWidget("Coordinate Widget 2", cv::viz::WCoordinateSystem());
+
+
+    cv::Point3d cam_pos(0.0,0.0,0.0), cam_focal_point(0.0,0.0,500.0), cam_y_dir(0.0,0.0,0.0);
+    cv::Affine3d cam_pose = cv::viz::makeCameraPose(cam_pos, cam_focal_point, cam_y_dir);
+    myWindow.setViewerPose(cam_pose);
+
+    cam_focal_point.y = 200.0;
+    cam_pose = cv::viz::makeCameraPose(cam_pos, cam_focal_point, cam_y_dir);
+    myWindowRef.setViewerPose(cam_pose);
+
+    for(size_t i = 0; i < WorldPoints.size(); i++){
+        cv::Vec3d Pos = cv::Vec3d(WorldPoints[i].x+CamPos.x, WorldPoints[i].z+CamPos.y, WorldPoints[i].y+CamPos.z);
+        cv::Vec3d Position = Rotation*Pos;
+
+        std::cout<<Pos<<Position<<std::endl;
+
+        // Construct a Point widget
+        cv::viz::WSphere sphere_widget(Position,5);
+        sphere_widget.setRenderingProperty(cv::viz::LINE_WIDTH, 4.0);
+        myWindow.showWidget("Sphere Widget"+to_string(i), sphere_widget);
+
+        // Construct a referenz Point widget
+        cv::viz::WSphere sphere_widget2(Pos,5);
+        sphere_widget2.setRenderingProperty(cv::viz::LINE_WIDTH, 4.0);
+        myWindowRef.showWidget("Sphere Widget"+to_string(i), sphere_widget2);
+    }
+
+    while(!myWindow.wasStopped() && !myWindowRef.wasStopped())
+    {
+        myWindow.spinOnce(1, true);
+        myWindowRef.spinOnce(1, true);
+    }
 }
 
 int main()
@@ -270,8 +320,11 @@ int main()
     std::vector<cv::Point2f> ImagePoints;
     loadFromFile(WorldPoints, ImagePoints,Testbild);
 
-    SVD(WorldPoints,ImagePoints,cv::Point3d(0, 206, 31),5906.900190890472, 5979.120910258862, 1350.264438984915, 763.7137371523507, Testbild.clone());
-    //SVD(WorldPoints,ImagePoints,cv::Point3d(0, 148+40, 0),6245.985171734248, 6593.452572771233, 1344, 756, Testbild.clone());
+    //cv::Point3d translation(0, 148+40, 0);
+    cv::Point3d translation(0, 206, 31);
+    cv::Matx33d rotation = SVD(WorldPoints,ImagePoints,translation, 1344, 756, Testbild.clone());
+
+    print3D(WorldPoints,rotation,translation);
 
     std::vector<std::vector<cv::Point3f>> World;
     World.push_back(WorldPoints);
