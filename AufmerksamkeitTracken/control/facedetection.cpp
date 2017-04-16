@@ -198,7 +198,7 @@ void FaceDetection::print_CLNF(cv::Mat img, int model, double itens, double fx, 
 
     // Work out the pose of the head from the tracked model
     cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy);
-
+    
     // Draw it in reddish if uncertain, blueish if certain
     LandmarkDetector::DrawBox(img, pose_estimate, cv::Scalar((1-itens)*255.0,0, itens*255), thickness, fx, fy, cx, cy);
 
@@ -224,32 +224,19 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
     FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection0, fx, fy, cx, cy, true);
     FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection1, fx, fy, cx, cy, false);
 
-    cv::Vec3d eyeR = mKamera->rotateToWorld(gazeDirection0);
-    cv::Vec3d eyeL = mKamera->rotateToWorld(gazeDirection1);
-
-    cv::Vec3d eyeOri_R(asin(eyeR[0]),asin(eyeR[1]),asin(eyeR[2]));
-    cv::Vec3d eyeOri_L(asin(eyeL[0]),asin(eyeL[1]),asin(eyeL[2]));
-
     // Work out the pose of the head from the tracked model
     cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy);
-    cv::Vec3d head = mKamera->rotateToWorld(LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5]))
-            * cv::Vec3d(0,0,-1));
-    cv::Vec3d headOri(asin(head[0]),asin(head[1]),asin(head[2]));
 
-    cv::Point3d worldAngle;
+    cv::Point2d worldAngle, rotatAngle;
     cv::Point3d worlPoint;
-    mTarget->getOrienation(name,worldAngle,worlPoint);
+    mTarget->getOrienation(name,worldAngle,worlPoint, rotatAngle);
 
     std::ofstream myfile;
     myfile.open ("./data/BerechnungWinkel_Video.txt", std::ios::in | std::ios::app);
-    myfile <<worlPoint<<worldAngle<< eyeOri_R << eyeOri_L << headOri <<std::endl;
+    myfile <<worlPoint<<worldAngle<<rotatAngle<<"|"<<pose_estimate<<gazeDirection0<<gazeDirection1<<"|"
+          <<mTarget->calcAngle(gazeDirection0.x,gazeDirection0.y,gazeDirection0.z)
+          <<mTarget->calcAngle(gazeDirection1.x,gazeDirection1.y,gazeDirection1.z)<<std::endl;
     myfile.close();
-
-    std::ofstream myfile2;
-    myfile2.open ("./data/Messwerte_Video.txt", std::ios::in | std::ios::app);
-    myfile2 <<worlPoint<<worldAngle
-           << gazeDirection0 << gazeDirection1 << cv::Vec3d(pose_estimate[3], pose_estimate[4], pose_estimate[5]) <<std::endl;
-    myfile2.close();
 }
 
 // Dieser Teil ist aus OpenFace/FaceLandmarkVidMulti.cpp übernommen
@@ -279,25 +266,25 @@ void FaceDetection::NonOverlapingDetections(const vector<LandmarkDetector::CLNF>
 void FaceDetection::initCLNF()
 {    vector<string> arguments;
      arguments.push_back(""); // Hat arguments keine Werte kann wes wegoptimiert werden und dadurch wirft die Initilaisierung unten Fehler
-
+      
       /*
-           -mloc - the location of landmark detection models
-           -sigma -UpdateModelParameters
-           -w_reg -
-           -reg -
-           -multi_view -
-           -validate_detections -
-           -n_iter -
-           -gaze - indicate that gaze estimation should be performed
-           -q - specifying to use quiet mode not visualizing output
-           -wild - flag specifies when the images are more difficult, model considers extended search regions
-           */
+        -mloc - the location of landmark detection models
+        -sigma -UpdateModelParameters
+             -w_reg -
+             -reg -
+             -multi_view -
+             -validate_detections -
+             -n_iter -
+             -gaze - indicate that gaze estimation should be performed
+             -q - specifying to use quiet mode not visualizing output
+             -wild - flag specifies when the images are more difficult, model considers extended search regions
+             */
       // im build-Ordner muss das model von OpenFace sein
       LandmarkDetector::FaceModelParameters det_params(arguments); // Sollte Parameter beinhalten
 
        // Always track gaze in feature extraction
        det_params.track_gaze = true;
-
+        
         det_params.use_face_template = true;
          // This is so that the model would not try re-initialising itself
          det_params.reinit_video_every = -1;

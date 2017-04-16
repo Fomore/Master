@@ -76,8 +76,8 @@ void Target::getWorldPosition(QStringList list, double &x, double &y, double &z)
         }
 
         if(b >= 0 && b <= 7){
-            //x = (b-4)*100.0;//Innen
-            x = (4-b)*100.0;//Außen
+            x = (b-4)*100.0;//Innen
+            //x = (4-b)*100.0;//Außen
         }else{
             x = 0.0;
         }
@@ -95,23 +95,11 @@ void Target::getWorldPosition(QStringList list, double &x, double &y, double &z)
     }
 }
 
-double Target::calcAngle(double ge, double an)
+cv::Point2d Target::calcAngle(double X, double Y, double Z)
 {
-    if(an == 0.0){
-        return M_PI;
-    }else{
-        if(ge == 0.0){
-            return 0;
-        }else{
-            return atan(ge/an);
-        }
-    }
-}
-
-cv::Point3d Target::calcAngle(double x, double y, double z)
-{
-    double bet = sqrt(x*x+y*y+z*z);
-    return cv::Point3d(acos(x/bet),acos(y/bet),acos(z/bet));
+    double z_x = cv::sqrt(X * X + Z * Z);
+    double z_y = cv::sqrt(Y * Y + Z * Z);
+    return cv::Point2d(atan2(Y, z_x),atan2(X, z_y));
 }
 
 void Target::getPoint(QString Name, cv::Point3d &Point)
@@ -160,7 +148,7 @@ void Target::getPoint(size_t id, double &x, double &y, double &z)
     }
 }
 
-void Target::getOrienation(QString name, cv::Point3d &WAngle, cv::Point3d &WPosition)
+void Target::getOrienation(QString name, cv::Point2d &WAngle, cv::Point3d &WPosition, cv::Point2d &RAngle)
 {
     QRegExp rx("(\\ |\\_)");
     QStringList list = name.split(rx);
@@ -170,12 +158,10 @@ void Target::getOrienation(QString name, cv::Point3d &WAngle, cv::Point3d &WPosi
     cv::Point3d point;
     getPoint(list[1],point);
 
-    WAngle.x = calcAngle(point.x-WPosition.x,WPosition.z-point.z);
-    WAngle.y = calcAngle(WPosition.y-point.y,WPosition.z-point.z);
-    WAngle.z = 0.0;
+    WAngle = calcAngle(WPosition.x-point.x,WPosition.y-point.y,WPosition.z-point.z);
 
     cv::Vec3d pos = mKamera->rotateToCamera(point);
     cv::Vec3d pnt = mKamera->rotateToCamera(WPosition);
 
-    std::cout<<name.toStdString()<<": "<<WPosition<<pnt<<" Point: "<<point<<pos<<std::endl;
+    RAngle = calcAngle(pnt[0]-pos[0],pnt[1]-pos[1],pnt[2]-pos[2]);
 }
