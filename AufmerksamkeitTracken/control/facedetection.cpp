@@ -226,35 +226,28 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
 
     // Work out the pose of the head from the tracked model
     cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy);
+    cv::Vec6d pose_estimateSelbst = calcFaceAngle(clnf_models[model].params_global);
+
+    cv::Point2d worldAngle, rotatAngle;
+    cv::Point3d worlPoint, target;
+    mTarget->getOrienation(name,worldAngle,worlPoint, rotatAngle, target);
+
+    cv::Point3d abwichung = calcAbweichung(pose_estimateSelbst,target);
 
     std::cout<<clnf_models[model].params_global<<pose_estimate<<std::endl
             <<calcAngle(pose_estimate)<<std::endl
-           <<LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], 1540, 1540, 1334, 760)
-          <<LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], 1540, 1540, 1334, 760)<<std::endl
-         <<LandmarkDetector::GetPoseCamera(clnf_models[model], 1540, 1540, 1334, 760)
-        <<LandmarkDetector::GetPoseWorld(clnf_models[model], 1540, 1540, 1334, 760)<<std::endl;
-              /*
-           <<LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy)
-          <<LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy)<<std::endl
-         <<LandmarkDetector::GetPoseCamera(clnf_models[model], fx, fy, cx, cy)
-        <<LandmarkDetector::GetPoseWorld(clnf_models[model], fx, fy, cx, cy)<<std::endl;
-    */
-
-    calcFaceAngle(clnf_models[model].params_global);
-
-    cv::Point2d worldAngle, rotatAngle;
-    cv::Point3d worlPoint;
-    mTarget->getOrienation(name,worldAngle,worlPoint, rotatAngle);
+           <<pose_estimateSelbst<<abwichung<<std::endl;
 
     std::ofstream myfile;
     myfile.open ("./data/BerechnungWinkel_Video.txt", std::ios::in | std::ios::app);
     myfile <<worlPoint<<worldAngle<<rotatAngle<<"|"<<pose_estimate<<gazeDirection0<<gazeDirection1<<"|"
           <<mTarget->calcAngle(gazeDirection0.x,gazeDirection0.y,gazeDirection0.z)
-          <<mTarget->calcAngle(gazeDirection1.x,gazeDirection1.y,gazeDirection1.z)<<std::endl;
+         <<mTarget->calcAngle(gazeDirection1.x,gazeDirection1.y,gazeDirection1.z)
+        <<pose_estimateSelbst<<std::endl;
     myfile.close();
 }
 
-void FaceDetection::calcFaceAngle(cv::Vec6d Params_Global)
+cv::Vec6d FaceDetection::calcFaceAngle(cv::Vec6d Params_Global)
 {
     double fx = 1540;
     double fy = 1540;
@@ -266,10 +259,9 @@ void FaceDetection::calcFaceAngle(cv::Vec6d Params_Global)
     double Y = (Params_Global[5] - cy) / fy * Z;
 
     cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(Params_Global[1],Params_Global[2],Params_Global[3]));
-    cv::Vec3d ori = R*cv::Vec3d(0,0,-1);
 
-    double q = Z/ori[2];
-    std::cout<<"Neu 1: "<<X<<" "<<Y<<" "<<Z<<" | "<<cv::Vec3d(X,Y,Z)-ori*q<<std::endl;
+    cv::Vec3d ori = R*cv::Vec3d(0,0,-1);
+    //std::cout<<"Neu 1: "<<X<<" "<<Y<<" "<<Z<<" | "<<cv::Vec3d(X,Y,Z)-ori*(Z/ori[2])<<std::endl;
 
     double z_x = cv::sqrt(X * X + Z * Z);
     double eul_x = atan2(Y, z_x);
@@ -280,11 +272,26 @@ void FaceDetection::calcFaceAngle(cv::Vec6d Params_Global)
     cv::Matx33d corrected_rotation = camera_rotation.t() * R;
 
     ori = corrected_rotation*cv::Vec3d(0,0,-1);
-    q = Z/ori[2];
-    std::cout<<"Neu 2: "<<X<<" "<<Y<<" "<<Z<<" | "<<cv::Vec3d(X,Y,Z)-ori*q<<std::endl;
+    //std::cout<<"Neu 2: "<<X<<" "<<Y<<" "<<Z<<" | "<<cv::Vec3d(X,Y,Z)-ori*(Z/ori[2])<<std::endl;
 
+    // Verbesserung durch LandmarkDetectorFunc::GetCorrectedPoseWorld()
     cv::Vec3d euler_corrected = LandmarkDetector::RotationMatrix2Euler(corrected_rotation);
 
+    return cv::Vec6d(X, Y, Z, euler_corrected[0], euler_corrected[1], euler_corrected[2]);
+}
+
+cv::Point3d FaceDetection::calcAbweichung(cv::Vec6d Params,cv::Point3d Target)
+{
+    cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(Params[3],Params[4],Params[5]));
+    cv::Vec3d Pos(Params[0],Params[1],Params[2]);
+
+    cv::Vec3d TargetRot = mKamera->rotateToCamera(Target);
+
+    cv::Vec3d ori = R*cv::Vec3d(0,0,-1);
+
+    double q = (TargetRot[2]-Pos[2])/ori[2];
+    //std::cout<<"Werte: "<<Pos<<Target<<ori<<std::endl<<TargetRot<<Pos+ori*q<<std::endl;
+    return Pos+ori*q-TargetRot;
 }
 
 cv::Mat FaceDetection::print_Eye(const cv::Mat img, int model, int pos, int step, bool clacElse, float &quality){
@@ -697,7 +704,7 @@ void FaceDetection::FaceTrackingAutoSize(){
 
     cv::Mat frame_colore;
 
-    for(size_t FrameID = 400;getFrame(frame_colore, FrameID);FrameID++){
+    for(size_t FrameID = 0;getFrame(frame_colore, FrameID);FrameID++){
         QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
         pixmapL->fill(Qt::transparent);
         QPainter *painterL=new QPainter(pixmapL);

@@ -6,8 +6,8 @@ ImageSection::ImageSection(int width, int height)
     mImageSize.height = height;
     Rec_new.x = Rec_new.y = Rec_new.width = Rec_new.height = 0;
     Rec_old.x = Rec_old.y = Rec_old.width = Rec_old.height = 0;
-    mMinSize.width = 10;//140;
-    mMinSize.height = 10;//180;
+    mMinSize.width = 140;
+    mMinSize.height = 180;
 }
 
 

@@ -37,7 +37,8 @@ private:
     cv::Vec2d calcAngle(double X, double Y, double Z);
     cv::Vec2d calcAngle(cv::Vec6d Point);
 
-    void calcFaceAngle(cv::Vec6d Params_Global);
+    cv::Vec6d calcFaceAngle(cv::Vec6d Params_Global);
+    cv::Point3d calcAbweichung(cv::Vec6d Params, cv::Point3d Target);
 
     Image mImage;
     int Model_Init;

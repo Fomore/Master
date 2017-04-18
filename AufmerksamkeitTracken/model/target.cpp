@@ -3,7 +3,6 @@
 #include <iostream>
 #include <math.h>
 #include <fstream>
-
 Target::Target(Camera *cam)
 {
     mKamera = cam;
@@ -153,19 +152,18 @@ void Target::getPoint(size_t id, double &x, double &y, double &z)
     }
 }
 
-void Target::getOrienation(QString name, cv::Point2d &WAngle, cv::Point3d &WPosition, cv::Point2d &RAngle)
+void Target::getOrienation(QString name, cv::Point2d &WAngle, cv::Point3d &WPosition, cv::Point2d &RAngle, cv::Point3d &Target)
 {
     QRegExp rx("(\\ |\\_)");
     QStringList list = name.split(rx);
 
     getWorldPosition(list,WPosition.x, WPosition.y, WPosition.z);
 
-    cv::Point3d point;
-    getPoint(list[1],point);
+    getPoint(list[1],Target);
 
-    WAngle = calcAngle(WPosition.x-point.x,WPosition.y-point.y,WPosition.z-point.z);
+    WAngle = calcAngle(WPosition.x-Target.x,WPosition.y-Target.y,WPosition.z-Target.z);
 
-    cv::Vec3d pos = mKamera->rotateToCamera(point);
+    cv::Vec3d pos = mKamera->rotateToCamera(Target);
     cv::Vec3d pnt = mKamera->rotateToCamera(WPosition);
 
     RAngle = calcAngle(pnt[0]-pos[0],pnt[1]-pos[1],pnt[2]-pos[2]);
