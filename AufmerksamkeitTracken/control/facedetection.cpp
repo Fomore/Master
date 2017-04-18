@@ -232,7 +232,7 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
     cv::Point3d worlPoint, target;
     mTarget->getOrienation(name,worldAngle,worlPoint, rotatAngle, target);
 
-    cv::Point3d abwichung = calcAbweichung(pose_estimateSelbst,target);
+    cv::Vec6d abwichung = calcAbweichung(pose_estimateSelbst,target);
 
     std::cout<<clnf_models[model].params_global<<pose_estimate<<std::endl
             <<calcAngle(pose_estimate)<<std::endl
@@ -240,10 +240,11 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
 
     std::ofstream myfile;
     myfile.open ("./data/BerechnungWinkel_Video.txt", std::ios::in | std::ios::app);
-    myfile <<worlPoint<<worldAngle<<rotatAngle<<"|"<<pose_estimate<<gazeDirection0<<gazeDirection1<<"|"
-          <<mTarget->calcAngle(gazeDirection0.x,gazeDirection0.y,gazeDirection0.z)
-         <<mTarget->calcAngle(gazeDirection1.x,gazeDirection1.y,gazeDirection1.z)
-        <<pose_estimateSelbst<<std::endl;
+    myfile <<worlPoint<<target<<pose_estimateSelbst<<abwichung
+          <<calcAbweichung(cv::Vec3d(pose_estimateSelbst[0],pose_estimateSelbst[1],pose_estimateSelbst[2]),
+            cv::Vec3d(gazeDirection0.x,gazeDirection0.y,gazeDirection0.z),target)
+            <<calcAbweichung(cv::Vec3d(pose_estimateSelbst[0],pose_estimateSelbst[1],pose_estimateSelbst[2]),
+            cv::Vec3d(gazeDirection1.x,gazeDirection1.y,gazeDirection1.z),target)<<std::endl;
     myfile.close();
 }
 
@@ -280,7 +281,7 @@ cv::Vec6d FaceDetection::calcFaceAngle(cv::Vec6d Params_Global)
     return cv::Vec6d(X, Y, Z, euler_corrected[0], euler_corrected[1], euler_corrected[2]);
 }
 
-cv::Point3d FaceDetection::calcAbweichung(cv::Vec6d Params,cv::Point3d Target)
+cv::Vec6d FaceDetection::calcAbweichung(cv::Vec6d Params,cv::Point3d Target)
 {
     cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(Params[3],Params[4],Params[5]));
     cv::Vec3d Pos(Params[0],Params[1],Params[2]);
@@ -289,9 +290,17 @@ cv::Point3d FaceDetection::calcAbweichung(cv::Vec6d Params,cv::Point3d Target)
 
     cv::Vec3d ori = R*cv::Vec3d(0,0,-1);
 
-    double q = (TargetRot[2]-Pos[2])/ori[2];
-    //std::cout<<"Werte: "<<Pos<<Target<<ori<<std::endl<<TargetRot<<Pos+ori*q<<std::endl;
-    return Pos+ori*q-TargetRot;
+    return calcAbweichung(Pos,ori,TargetRot);
+}
+
+cv::Vec6d FaceDetection::calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target)
+{
+    double q = (Target[2]-Start[2])/Orientierung[2];
+    cv::Vec3d solution = Start+Orientierung*q-Target;
+    return cv::Vec6d(solution[0],solution[1],solution[2],
+            atan2(solution[0],Start[2]-Target[2]),
+            atan2(solution[1],Start[2]-Target[2]),
+            atan2(solution[2],Start[2]-Target[2]));
 }
 
 cv::Mat FaceDetection::print_Eye(const cv::Mat img, int model, int pos, int step, bool clacElse, float &quality){
