@@ -228,10 +228,19 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
     cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy);
 
     std::cout<<clnf_models[model].params_global<<pose_estimate<<std::endl
-             <<LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], 1060, 1060, 1334, 760)
-             <<LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], 1060, 1060, 1334, 760)<<std::endl
-             <<LandmarkDetector::GetPoseWorld(clnf_models[model], 1060, 1060, 1334, 760)
-             <<LandmarkDetector::GetPoseCamera(clnf_models[model], 1060, 1060, 1334, 760)<<std::endl;
+            <<calcAngle(pose_estimate)<<std::endl
+           <<LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], 1540, 1540, 1334, 760)
+          <<LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], 1540, 1540, 1334, 760)<<std::endl
+         <<LandmarkDetector::GetPoseCamera(clnf_models[model], 1540, 1540, 1334, 760)
+        <<LandmarkDetector::GetPoseWorld(clnf_models[model], 1540, 1540, 1334, 760)<<std::endl;
+              /*
+           <<LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy)
+          <<LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy)<<std::endl
+         <<LandmarkDetector::GetPoseCamera(clnf_models[model], fx, fy, cx, cy)
+        <<LandmarkDetector::GetPoseWorld(clnf_models[model], fx, fy, cx, cy)<<std::endl;
+    */
+
+    calcFaceAngle(clnf_models[model].params_global);
 
     cv::Point2d worldAngle, rotatAngle;
     cv::Point3d worlPoint;
@@ -243,6 +252,73 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
           <<mTarget->calcAngle(gazeDirection0.x,gazeDirection0.y,gazeDirection0.z)
           <<mTarget->calcAngle(gazeDirection1.x,gazeDirection1.y,gazeDirection1.z)<<std::endl;
     myfile.close();
+}
+
+void FaceDetection::calcFaceAngle(cv::Vec6d Params_Global)
+{
+    double fx = 1540;
+    double fy = 1540;
+    double cx = 1334;
+    double cy = 760;
+
+    double Z = 154 / Params_Global[0];
+    double X = (Params_Global[4] - cx) / fx * Z;
+    double Y = (Params_Global[5] - cy) / fy * Z;
+
+    cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(Params_Global[1],Params_Global[2],Params_Global[3]));
+    cv::Vec3d ori = R*cv::Vec3d(0,0,-1);
+
+    double q = Z/ori[2];
+    std::cout<<"Neu 1: "<<X<<" "<<Y<<" "<<Z<<" | "<<cv::Vec3d(X,Y,Z)-ori*q<<std::endl;
+
+    double z_x = cv::sqrt(X * X + Z * Z);
+    double eul_x = atan2(Y, z_x);
+    double z_y = cv::sqrt(Y * Y + Z * Z);
+    double eul_y = -atan2(X, z_y);
+
+    cv::Matx33d camera_rotation = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(eul_x, eul_y, 0));
+    cv::Matx33d corrected_rotation = camera_rotation.t() * R;
+
+    ori = corrected_rotation*cv::Vec3d(0,0,-1);
+    q = Z/ori[2];
+    std::cout<<"Neu 2: "<<X<<" "<<Y<<" "<<Z<<" | "<<cv::Vec3d(X,Y,Z)-ori*q<<std::endl;
+
+    cv::Vec3d euler_corrected = LandmarkDetector::RotationMatrix2Euler(corrected_rotation);
+
+}
+
+cv::Mat FaceDetection::print_Eye(const cv::Mat img, int model, int pos, int step, bool clacElse, float &quality){
+    double X,Y,Width,Height;
+    getCLNFBox(model, pos, step, X,Y,Width,Height);
+
+    getImageSize(X,Y,Width,Height,img.cols, img.rows,0.35,0.4,30,30);
+
+    cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
+    if(Width > 8 && Height > 5 && step == 6 && clacElse){
+        cv::Mat gray;
+        Image::convert_to_grayscale(img_Eye, gray);
+
+        cv::RotatedRect ellipse = ELSE::run(gray, quality);
+        cv::ellipse(img_Eye, ellipse, cv::Scalar(0,255,0,255), 1,1 );
+    }
+    return img_Eye;
+}
+
+void FaceDetection::print_FPS_Model(int fps, int model){
+    mTheWindow->FPS_Label->setText(QString::number(fps));
+    mTheWindow->Model_Label->setText(QString::number(model));
+}
+
+cv::Vec2d FaceDetection::calcAngle(double X, double Y, double Z)
+{
+    cv::Vec3d point = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(X,Y,Z)) * cv::Vec3d(0,0,-1);
+    return cv::Vec2d(atan2(point[0],sqrt(point[1]*point[1]+point[2]*point[2])),
+            atan2(point[1],sqrt(point[0]*point[0]+point[2]*point[2])));
+}
+
+cv::Vec2d FaceDetection::calcAngle(cv::Vec6d Point)
+{
+    return calcAngle(Point[3],Point[4],Point[5]);
 }
 
 // Dieser Teil ist aus OpenFace/FaceLandmarkVidMulti.cpp übernommen
@@ -316,52 +392,6 @@ void FaceDetection::initCLNF()
                       det_parameters.push_back(det_params);
                   }
 
-}
-
-void FaceDetection::shift_detected_landmarks(int model, cv::Rect rec, double width)
-{
-    int X = rec.x, Y = rec.y;
-    double fx = (double)width/rec.width;
-    cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
-
-    int n = shape2D.rows/2;
-    for(int pos = 0; pos < n; pos++){
-        if(width > rec.width && rec.width > 0){
-            double x = shape2D.at<double>(pos);
-            double y = shape2D.at<double>(pos + n);
-            shape2D.at<double>(pos) = X + x/fx;
-            shape2D.at<double>(pos + n) = Y + y/fx;
-        }else{
-            shape2D.at<double>(pos) += X;
-            shape2D.at<double>(pos + n) += Y;
-        }
-    }
-    clnf_models[model].detected_landmarks = shape2D.clone();
-
-    clnf_models[model].params_global[4] += X;
-    clnf_models[model].params_global[5] += Y;
-
-    for (size_t part = 0; part < clnf_models[model].hierarchical_models.size(); ++part){
-        cv::Mat_<double> shape2D = clnf_models[model].hierarchical_models[part].detected_landmarks;
-
-        int n = shape2D.rows/2;
-        for(int pos = 0; pos < n; pos++){
-            if(width > rec.width && rec.width > 0){
-                double x = shape2D.at<double>(pos);
-                double y = shape2D.at<double>(pos + n);
-                shape2D.at<double>(pos) = X + x/fx;
-                shape2D.at<double>(pos + n) = Y + y/fx;
-            }else{
-                shape2D.at<double>(pos) += X;
-                shape2D.at<double>(pos + n) += Y;
-            }
-        }
-
-        clnf_models[model].hierarchical_models[part].detected_landmarks = shape2D.clone();
-
-        clnf_models[model].hierarchical_models[part].params_global[4] += X;
-        clnf_models[model].hierarchical_models[part].params_global[5] += Y;
-    }
 }
 
 void FaceDetection::showImage(const cv::Mat image){
@@ -546,28 +576,6 @@ void FaceDetection::CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used)
     }
 }
 
-cv::Mat FaceDetection::print_Eye(const cv::Mat img, int model, int pos, int step, bool clacElse, float &quality){
-    double X,Y,Width,Height;
-    getCLNFBox(model, pos, step, X,Y,Width,Height);
-
-    getImageSize(X,Y,Width,Height,img.cols, img.rows,0.35,0.4,30,30);
-
-    cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
-    if(Width > 8 && Height > 5 && step == 6 && clacElse){
-        cv::Mat gray;
-        Image::convert_to_grayscale(img_Eye, gray);
-
-        cv::RotatedRect ellipse = ELSE::run(gray, quality);
-        cv::ellipse(img_Eye, ellipse, cv::Scalar(0,255,0,255), 1,1 );
-    }
-    return img_Eye;
-}
-
-void FaceDetection::print_FPS_Model(int fps, int model){
-    mTheWindow->FPS_Label->setText(QString::number(fps));
-    mTheWindow->Model_Label->setText(QString::number(model));
-}
-
 void FaceDetection::LearnModel(){
     cv::Mat frame;
     cv::Rect rec;
@@ -623,7 +631,6 @@ void FaceDetection::LearnModel(){
         QPainter *painterR=new QPainter(pixmapR);
 
         if(success){
-            shift_detected_landmarks(Model_Init,rec,50);
             int used;
             CalcualteEyes(disp_image,Model_Init,used);
 
@@ -690,7 +697,7 @@ void FaceDetection::FaceTrackingAutoSize(){
 
     cv::Mat frame_colore;
 
-    for(size_t FrameID = 0;getFrame(frame_colore, FrameID);FrameID++){
+    for(size_t FrameID = 400;getFrame(frame_colore, FrameID);FrameID++){
         QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
         pixmapL->fill(Qt::transparent);
         QPainter *painterL=new QPainter(pixmapL);
@@ -773,7 +780,7 @@ void FaceDetection::FaceTrackingAutoSize(){
                     std::string name;
 
                     if(mFrameEvents->isImageFrame(FrameID,name,mFrameEvents->getName(model))){
-                        std::cout<<mKamera->getFrameNr()<<": "<<model<<" "<<name<<std::endl;
+                        std::cout<<mKamera->getFrameNr()<<": "<<model<<" "<<name<<mImageSections[model].getRect()<<std::endl;
                         print_SolutionToFile(QString::fromStdString(name),model,fx,fy,cx,cy);
                     }
 
@@ -905,66 +912,6 @@ void FaceDetection::setCLAHE(bool c)
 void FaceDetection::setUseEye(bool e)
 {
     mUseEye = e;
-}
-
-void FaceDetection::shift_detected_landmarks_toWorld(int model, int worldX, int worldY, int worldW, int worldH, int imgW, int imgH){
-    cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
-
-    double centerWorldX = worldX+worldW/2.0;
-    double centerWorldY = worldY+worldH/2.0;
-
-    double centerImgX = imgW/2.0;
-    double centerImgY = imgH/2.0;
-
-    double f = (double)worldW/(double)imgW;
-
-    //    std::cout<<"Model tW "<<model<<": "<<worldX<<"/"<<worldY<<" ["<<worldW<<", "<<worldH<<"] -> ["<<imgW<<", "<<imgH<<"] "<<f<<std::endl;
-
-    int n = shape2D.rows/2;
-    for(int pos = 0; pos < n; pos++){
-        double pX = shape2D.at<double>(pos);
-        double pY = shape2D.at<double>(pos + n);
-
-        shape2D.at<double>(pos) = ((pX-centerImgX)*f)+centerWorldX;
-        shape2D.at<double>(pos + n) = ((pY-centerImgY)*f)+centerWorldY;
-        //std::cout<<"["<<pX<<", "<<pY<<"] -> ["<<shape2D.at<double>(pos)<<", "<<shape2D.at<double>(pos+n)<<"]"<<std::endl;
-    }
-    clnf_models[model].detected_landmarks = shape2D.clone();
-
-    clnf_models[model].params_global[4] = ((clnf_models[model].params_global[4]-centerImgX)*f)+centerWorldX;
-    clnf_models[model].params_global[5] = ((clnf_models[model].params_global[5]-centerImgY)*f)+centerWorldY;
-    //ToDo: Skallierung anpassen
-}
-void FaceDetection::shift_detected_landmarks_toImage(int model, int worldX, int worldY, int worldW, int worldH, int minSize){
-    cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
-
-    double centerWorldX = worldX+worldW/2.0;
-    double centerWorldY = worldY+worldH/2.0;
-
-    double f = 1;
-    if(worldW < minSize){
-        f = (double)minSize/(double)worldW;
-    }
-
-    double centerImgX = worldW*f/2.0;
-    double centerImgY = worldH*f/2.0;
-
-    //    std::cout<<"Model tI "<<model<<": "<<worldX<<"/"<<worldY<<" ["<<worldW<<", "<<worldH<<"] -> ["<<centerImgX*2<<", "<<centerImgY*2<<"] "<<f<<std::endl;
-
-    int n = shape2D.rows/2;
-    for(int pos = 0; pos < n; pos++){
-        double pX = shape2D.at<double>(pos);
-        double pY = shape2D.at<double>(pos + n);
-
-        shape2D.at<double>(pos) = ((pX-centerWorldX)*f)+centerImgX;
-        shape2D.at<double>(pos + n) = ((pY-centerWorldY)*f)+centerImgY;
-        //std::cout<<"["<<pX<<", "<<pY<<"] -> ["<<shape2D.at<double>(pos)<<", "<<shape2D.at<double>(pos+n)<<"]"<<std::endl;
-    }
-    clnf_models[model].detected_landmarks = shape2D.clone();
-
-    clnf_models[model].params_global[4] = ((clnf_models[model].params_global[4]-centerWorldX)*f)+centerImgX;
-    clnf_models[model].params_global[5] = ((clnf_models[model].params_global[5]-centerWorldY)*f)+centerImgY;
-    //ToDo: Skallierung anpassen
 }
 
 bool FaceDetection::getFrame(cv::Mat &img)

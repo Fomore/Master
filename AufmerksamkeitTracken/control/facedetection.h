@@ -34,6 +34,11 @@ private:
 
     void CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used);
 
+    cv::Vec2d calcAngle(double X, double Y, double Z);
+    cv::Vec2d calcAngle(cv::Vec6d Point);
+
+    void calcFaceAngle(cv::Vec6d Params_Global);
+
     Image mImage;
     int Model_Init;
     int imgCount;
@@ -55,10 +60,6 @@ private:
     void initCLNF();
 
     int num_faces_max = 2;
-
-    void shift_detected_landmarks(int model, cv::Rect rec, double width); //f skallierung img/world
-    void shift_detected_landmarks_toWorld(int model, int worldX, int worldY, int worldW, int worldH, int imgW, int imgH); //f skallierung img/world
-    void shift_detected_landmarks_toImage(int model, int worldX, int worldY, int worldW, int worldH, int minSize); //f skallierung world/img
 
     bool mAutoSize = false;
     bool mUseBox = false;

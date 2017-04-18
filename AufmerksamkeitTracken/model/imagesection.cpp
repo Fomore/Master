@@ -6,8 +6,8 @@ ImageSection::ImageSection(int width, int height)
     mImageSize.height = height;
     Rec_new.x = Rec_new.y = Rec_new.width = Rec_new.height = 0;
     Rec_old.x = Rec_old.y = Rec_old.width = Rec_old.height = 0;
-    mMinSize.width = 140;
-    mMinSize.height = 180;
+    mMinSize.width = 10;//140;
+    mMinSize.height = 10;//180;
 }
 
 
@@ -22,6 +22,11 @@ bool ImageSection::getSection(int &x, int &y, int &w, int &h){
     w = Rec_new.width;
     h = Rec_new.height;
     return true;
+}
+
+cv::Rect ImageSection::getRect()
+{
+    return Rec_new;
 }
 
 void ImageSection::getImage(cv::Mat Image,cv::Mat &Part)
@@ -82,6 +87,7 @@ void ImageSection::toImage(LandmarkDetector::CLNF &clnf)
     }
     clnf.detected_landmarks = shape2D.clone();
 
+    clnf.params_global[0] = clnf.params_global[0]/fx;
     clnf.params_global[4] = clnf.params_global[4]/fx + Rec_new.x;
     clnf.params_global[5] = clnf.params_global[5]/fx + Rec_new.y;
 
@@ -103,6 +109,7 @@ void ImageSection::toImage(LandmarkDetector::CLNF &clnf)
 
         clnf.hierarchical_models[part].detected_landmarks = shape2D.clone();
 
+        clnf.hierarchical_models[part].params_global[0] = clnf.hierarchical_models[part].params_global[0]/fx;
         clnf.hierarchical_models[part].params_global[4] = clnf.hierarchical_models[part].params_global[4]/fx + Rec_new.x;
         clnf.hierarchical_models[part].params_global[5] = clnf.hierarchical_models[part].params_global[5]/fx + Rec_new.y;
     }
@@ -126,6 +133,7 @@ void ImageSection::toSection(LandmarkDetector::CLNF &clnf)
     }
     clnf.detected_landmarks = shape2D.clone();
 
+    clnf.params_global[0] = clnf.params_global[0]*fx;
     clnf.params_global[4] = (clnf.params_global[4]- Rec_new.x)*fx;
     clnf.params_global[5] = (clnf.params_global[5]- Rec_new.y)*fx;
 
@@ -147,6 +155,7 @@ void ImageSection::toSection(LandmarkDetector::CLNF &clnf)
 
         clnf.hierarchical_models[part].detected_landmarks = shape2D.clone();
 
+        clnf.hierarchical_models[part].params_global[0] = clnf.hierarchical_models[part].params_global[0]*fx;
         clnf.hierarchical_models[part].params_global[4] = (clnf.hierarchical_models[part].params_global[4]- Rec_new.x)*fx;
         clnf.hierarchical_models[part].params_global[5] = (clnf.hierarchical_models[part].params_global[5]- Rec_new.y)*fx;
     }

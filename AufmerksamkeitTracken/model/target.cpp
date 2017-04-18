@@ -102,6 +102,11 @@ cv::Point2d Target::calcAngle(double X, double Y, double Z)
     return cv::Point2d(atan2(Y, z_x),atan2(X, z_y));
 }
 
+cv::Point2d Target::calcAngle(cv::Point3d Point)
+{
+    return calcAngle(Point.x,Point.y,Point.z);
+}
+
 void Target::getPoint(QString Name, cv::Point3d &Point)
 {
     size_t id = 0;

@@ -16,6 +16,7 @@ public:
     ImageSection(int width, int height);
     ~ImageSection();
     bool getSection(int &x, int &y, int &w, int &h);
+    cv::Rect getRect();
     void getImage(cv::Mat Image, cv::Mat &Part);
     void newRect(cv::Rect rec);
     void setScall(double s);

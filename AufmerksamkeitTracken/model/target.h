@@ -21,6 +21,7 @@ private:
 public:
     Target(Camera *cam);
     cv::Point2d calcAngle(double X, double Y, double Z);
+    cv::Point2d calcAngle(cv::Point3d Point);
     void getPoint(QString Name, cv::Point3d &Point);
     void getPoint(size_t id, double &x, double &y, double &z);
     void getOrienation(QString name, cv::Point2d& WAngle, cv::Point3d& WPosition, cv::Point2d& RAngle);
