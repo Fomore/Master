@@ -227,6 +227,12 @@ void FaceDetection::print_SolutionToFile(QString name, int model, double fx, dou
     // Work out the pose of the head from the tracked model
     cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy);
 
+    std::cout<<clnf_models[model].params_global<<pose_estimate<<std::endl
+             <<LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], 1060, 1060, 1334, 760)
+             <<LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], 1060, 1060, 1334, 760)<<std::endl
+             <<LandmarkDetector::GetPoseWorld(clnf_models[model], 1060, 1060, 1334, 760)
+             <<LandmarkDetector::GetPoseCamera(clnf_models[model], 1060, 1060, 1334, 760)<<std::endl;
+
     cv::Point2d worldAngle, rotatAngle;
     cv::Point3d worlPoint;
     mTarget->getOrienation(name,worldAngle,worlPoint, rotatAngle);
