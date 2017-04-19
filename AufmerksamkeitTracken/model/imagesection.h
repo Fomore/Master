@@ -12,6 +12,7 @@ class ImageSection
     cv::Size2d mMinSize;
     double mScall = 1.3;
     double fx = 1.0;
+    bool mAutoSize = true;
 public:
     ImageSection(int width, int height);
     ~ImageSection();
@@ -22,6 +23,8 @@ public:
     void setScall(double s);
     void toSection(LandmarkDetector::CLNF &clnf);
     void toImage(LandmarkDetector::CLNF &clnf);
+    void setAutoSize(bool use);
+
 };
 
 #endif // IMAGESECTION_H

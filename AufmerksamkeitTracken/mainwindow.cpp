@@ -28,7 +28,7 @@ void MainWindow::on_pushButton_clicked()
     if(ui->checkBox_Autorun->isChecked()){
         mFaceDetection->FaceTracking();
     }else{
-        mFaceDetection->FaceTrackingAutoSize();
+        mFaceDetection->FaceTrackingNewVersion();
     }
 }
 
@@ -37,7 +37,7 @@ void MainWindow::on_Learn_Button_clicked()
     if(ui->actionFrom_XML_File->isChecked()){
         mFaceDetection->ShowFromeFile();
     }else{
-        mFaceDetection->LearnModel();
+        mFaceDetection->FaceTrackingImage();
     }
 }
 

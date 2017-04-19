@@ -6,8 +6,8 @@ ImageSection::ImageSection(int width, int height)
     mImageSize.height = height;
     Rec_new.x = Rec_new.y = Rec_new.width = Rec_new.height = 0;
     Rec_old.x = Rec_old.y = Rec_old.width = Rec_old.height = 0;
-    mMinSize.width = 140;
-    mMinSize.height = 180;
+    mMinSize.width = 150;
+    mMinSize.height = 200;
 }
 
 
@@ -75,7 +75,7 @@ void ImageSection::toImage(LandmarkDetector::CLNF &clnf)
 
     int n = shape2D.rows/2;
     for(int pos = 0; pos < n; pos++){
-        if(fx != 1.0){
+        if(mAutoSize && fx != 1.0){
             double x = shape2D.at<double>(pos);
             double y = shape2D.at<double>(pos + n);
             shape2D.at<double>(pos) = Rec_new.x + x/fx;
@@ -115,13 +115,18 @@ void ImageSection::toImage(LandmarkDetector::CLNF &clnf)
     }
 }
 
+void ImageSection::setAutoSize(bool use)
+{
+    mAutoSize = true;
+}
+
 void ImageSection::toSection(LandmarkDetector::CLNF &clnf)
 {
     cv::Mat_<double> shape2D = clnf.detected_landmarks;
 
     int n = shape2D.rows/2;
     for(int pos = 0; pos < n; pos++){
-        if(fx != 1.0){
+        if(mAutoSize && fx != 1.0){
             double x = shape2D.at<double>(pos);
             double y = shape2D.at<double>(pos + n);
             shape2D.at<double>(pos) = (x - Rec_new.x)*fx;

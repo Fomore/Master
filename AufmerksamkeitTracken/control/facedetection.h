@@ -23,14 +23,14 @@ private:
     void print_FPS_Model(int fps, int model);
     void print_CLNF(cv::Mat img, int model, double itens, double fx, double fy, double cx, double cy);
     void print_Orientation(cv::Mat img, int model);
-    void print_SolutionToFile(QString name, int model, double fx, double fy, double cx, double cy);
+    void writeSolutionToFile(QString name, int model, double fx, double fy, double cx, double cy);
     void getCLNFBox(int model, int pos, int step, double &X, double &Y, double &W, double &H);
 
     void printSmallImage(cv::Mat img, int model, QPainter &painterR, QPainter &painterL, bool print, string titel);
     void printSmallImage(cv::Mat img, cv::Rect rec, int id, QPainter &paint, bool save, string titel);
     void prinEyeCLNFImage(cv::Mat img, int model, string titel, bool save);
 
-    void getImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY, double sX, double sY, double sMaxX, double sMaxY);
+    void getEyeImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY, double sX, double sY, double sMaxX, double sMaxY);
 
     void CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used);
 
@@ -77,8 +77,8 @@ public:
     FaceDetection(Ui::MainWindow *parent = 0, FrameEvents *frameEV = 0, Camera* cam = 0);
     ~FaceDetection();
     void FaceTracking();
-    void FaceTrackingAutoSize();
-    void LearnModel();
+    void FaceTrackingNewVersion();
+    void FaceTrackingImage();
 
     void ShowFromeFile();
 

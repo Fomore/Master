@@ -179,521 +179,7 @@ void FaceDetection::FaceTracking(){
     }
 }
 
-void FaceDetection::print_CLNF(cv::Mat img, int model, double itens, double fx, double fy, double cx, double cy){
-    LandmarkDetector::Draw(img, clnf_models[model]);
-
-    // A rough heuristic for box around the face width
-    int thickness = (int)std::ceil(2.0* ((double)img.cols) / 640.0);
-
-    if (clnf_models[model].detection_success && clnf_models[model].eye_model)
-    {
-        // Gaze tracking, absolute gaze direction
-        cv::Point3f gazeDirection0(0, 0, -1);
-        cv::Point3f gazeDirection1(0, 0, -1);
-        FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection0, fx, fy, cx, cy, true);
-        FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection1, fx, fy, cx, cy, false);
-
-        FaceAnalysis::DrawGaze(img, clnf_models[model], gazeDirection0, gazeDirection1, fx, fy, cx, cy);
-    }
-
-    // Work out the pose of the head from the tracked model
-    cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy);
-    
-    // Draw it in reddish if uncertain, blueish if certain
-    LandmarkDetector::DrawBox(img, pose_estimate, cv::Scalar((1-itens)*255.0,0, itens*255), thickness, fx, fy, cx, cy);
-
-    // Stellt die Gesichtsorientierung dar
-    print_Orientation(img,model);
-}
-//Hier wird die Kopforientierung dargestellt
-void FaceDetection::print_Orientation(cv::Mat img, int model){
-    // A rough heuristic for box around the face width
-    int thickness = (int)std::ceil(1.2* ((double)img.cols) / 640.0);
-    cv::Vec6d gparam = clnf_models[model].params_global;
-    cv::Matx33d rot = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(gparam[1],gparam[2],gparam[3]));
-    cv::Vec3d ln = rot*cv::Vec3d(0,0,(-(double)img.cols)/15.0);
-    cv::Scalar colore(255/num_faces_max*(num_faces_max-model),255/num_faces_max*model,0);
-    cv::arrowedLine(img, cv::Point(gparam[4],gparam[5]),cv::Point(gparam[4]+ln(0),gparam[5]+ln(1)), colore,thickness);
-}
-
-void FaceDetection::print_SolutionToFile(QString name, int model, double fx, double fy, double cx, double cy)
-{
-    // Gaze tracking, absolute gaze direction
-    cv::Point3f gazeDirection0(0, 0, -1);
-    cv::Point3f gazeDirection1(0, 0, -1);
-    FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection0, fx, fy, cx, cy, true);
-    FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection1, fx, fy, cx, cy, false);
-
-    // Work out the pose of the head from the tracked model
-    cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy);
-    cv::Vec6d pose_estimateSelbst = calcFaceAngle(clnf_models[model].params_global);
-
-    cv::Point2d worldAngle, rotatAngle;
-    cv::Point3d worlPoint, target;
-    mTarget->getOrienation(name,worldAngle,worlPoint, rotatAngle, target);
-
-    cv::Vec6d abwichung = calcAbweichung(pose_estimateSelbst,target);
-
-    std::cout<<clnf_models[model].params_global<<pose_estimate<<std::endl
-            <<calcAngle(pose_estimate)<<std::endl
-           <<pose_estimateSelbst<<abwichung<<std::endl;
-
-    std::ofstream myfile;
-    myfile.open ("./data/BerechnungWinkel_Video.txt", std::ios::in | std::ios::app);
-    myfile <<worlPoint<<target<<pose_estimateSelbst<<abwichung
-          <<calcAbweichung(cv::Vec3d(pose_estimateSelbst[0],pose_estimateSelbst[1],pose_estimateSelbst[2]),
-            cv::Vec3d(gazeDirection0.x,gazeDirection0.y,gazeDirection0.z),target)
-            <<calcAbweichung(cv::Vec3d(pose_estimateSelbst[0],pose_estimateSelbst[1],pose_estimateSelbst[2]),
-            cv::Vec3d(gazeDirection1.x,gazeDirection1.y,gazeDirection1.z),target)<<std::endl;
-    myfile.close();
-}
-
-cv::Vec6d FaceDetection::calcFaceAngle(cv::Vec6d Params_Global)
-{
-    double fx = 1540;
-    double fy = 1540;
-    double cx = 1334;
-    double cy = 760;
-
-    double Z = 154 / Params_Global[0];
-    double X = (Params_Global[4] - cx) / fx * Z;
-    double Y = (Params_Global[5] - cy) / fy * Z;
-
-    cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(Params_Global[1],Params_Global[2],Params_Global[3]));
-
-    cv::Vec3d ori = R*cv::Vec3d(0,0,-1);
-    //std::cout<<"Neu 1: "<<X<<" "<<Y<<" "<<Z<<" | "<<cv::Vec3d(X,Y,Z)-ori*(Z/ori[2])<<std::endl;
-
-    double z_x = cv::sqrt(X * X + Z * Z);
-    double eul_x = atan2(Y, z_x);
-    double z_y = cv::sqrt(Y * Y + Z * Z);
-    double eul_y = -atan2(X, z_y);
-
-    cv::Matx33d camera_rotation = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(eul_x, eul_y, 0));
-    cv::Matx33d corrected_rotation = camera_rotation.t() * R;
-
-    ori = corrected_rotation*cv::Vec3d(0,0,-1);
-    //std::cout<<"Neu 2: "<<X<<" "<<Y<<" "<<Z<<" | "<<cv::Vec3d(X,Y,Z)-ori*(Z/ori[2])<<std::endl;
-
-    // Verbesserung durch LandmarkDetectorFunc::GetCorrectedPoseWorld()
-    cv::Vec3d euler_corrected = LandmarkDetector::RotationMatrix2Euler(corrected_rotation);
-
-    return cv::Vec6d(X, Y, Z, euler_corrected[0], euler_corrected[1], euler_corrected[2]);
-}
-
-cv::Vec6d FaceDetection::calcAbweichung(cv::Vec6d Params,cv::Point3d Target)
-{
-    cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(Params[3],Params[4],Params[5]));
-    cv::Vec3d Pos(Params[0],Params[1],Params[2]);
-
-    cv::Vec3d TargetRot = mKamera->rotateToCamera(Target);
-
-    cv::Vec3d ori = R*cv::Vec3d(0,0,-1);
-
-    return calcAbweichung(Pos,ori,TargetRot);
-}
-
-cv::Vec6d FaceDetection::calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target)
-{
-    double q = (Target[2]-Start[2])/Orientierung[2];
-    cv::Vec3d solution = Start+Orientierung*q-Target;
-    return cv::Vec6d(solution[0],solution[1],solution[2],
-            atan2(solution[0],Start[2]-Target[2]),
-            atan2(solution[1],Start[2]-Target[2]),
-            atan2(solution[2],Start[2]-Target[2]));
-}
-
-cv::Mat FaceDetection::print_Eye(const cv::Mat img, int model, int pos, int step, bool clacElse, float &quality){
-    double X,Y,Width,Height;
-    getCLNFBox(model, pos, step, X,Y,Width,Height);
-
-    getImageSize(X,Y,Width,Height,img.cols, img.rows,0.35,0.4,30,30);
-
-    cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
-    if(Width > 8 && Height > 5 && step == 6 && clacElse){
-        cv::Mat gray;
-        Image::convert_to_grayscale(img_Eye, gray);
-
-        cv::RotatedRect ellipse = ELSE::run(gray, quality);
-        cv::ellipse(img_Eye, ellipse, cv::Scalar(0,255,0,255), 1,1 );
-    }
-    return img_Eye;
-}
-
-void FaceDetection::print_FPS_Model(int fps, int model){
-    mTheWindow->FPS_Label->setText(QString::number(fps));
-    mTheWindow->Model_Label->setText(QString::number(model));
-}
-
-cv::Vec2d FaceDetection::calcAngle(double X, double Y, double Z)
-{
-    cv::Vec3d point = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(X,Y,Z)) * cv::Vec3d(0,0,-1);
-    return cv::Vec2d(atan2(point[0],sqrt(point[1]*point[1]+point[2]*point[2])),
-            atan2(point[1],sqrt(point[0]*point[0]+point[2]*point[2])));
-}
-
-cv::Vec2d FaceDetection::calcAngle(cv::Vec6d Point)
-{
-    return calcAngle(Point[3],Point[4],Point[5]);
-}
-
-// Dieser Teil ist aus OpenFace/FaceLandmarkVidMulti.cpp übernommen
-void FaceDetection::NonOverlapingDetections(const vector<LandmarkDetector::CLNF>& clnf_models, vector<cv::Rect_<double> >& face_detections){
-
-    // Go over the model and eliminate detections that are not informative (there already is a tracker there)
-    for(size_t model = 0; model < clnf_models.size(); ++model)
-    {
-
-        // See if the detections intersect
-        cv::Rect_<double> model_rect = clnf_models[model].GetBoundingBox();
-
-        for(int detection = face_detections.size()-1; detection >=0; --detection)
-        {
-            double intersection_area = (model_rect & face_detections[detection]).area();
-            double union_area = model_rect.area() + face_detections[detection].area() - 2 * intersection_area;
-
-            // If the model is already tracking what we're detecting ignore the detection, this is determined by amount of overlap
-            if( intersection_area/union_area > 0.5)
-            {
-                face_detections.erase(face_detections.begin() + detection);
-            }
-        }
-    }
-}
-
-void FaceDetection::initCLNF()
-{    vector<string> arguments;
-     arguments.push_back(""); // Hat arguments keine Werte kann wes wegoptimiert werden und dadurch wirft die Initilaisierung unten Fehler
-      
-      /*
-        -mloc - the location of landmark detection models
-        -sigma -UpdateModelParameters
-             -w_reg -
-             -reg -
-             -multi_view -
-             -validate_detections -
-             -n_iter -
-             -gaze - indicate that gaze estimation should be performed
-             -q - specifying to use quiet mode not visualizing output
-             -wild - flag specifies when the images are more difficult, model considers extended search regions
-             */
-      // im build-Ordner muss das model von OpenFace sein
-      LandmarkDetector::FaceModelParameters det_params(arguments); // Sollte Parameter beinhalten
-
-       // Always track gaze in feature extraction
-       det_params.track_gaze = true;
-        
-        det_params.use_face_template = true;
-         // This is so that the model would not try re-initialising itself
-         det_params.reinit_video_every = -1;
-
-          det_params.curr_face_detector = LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR;
-
-           det_parameters.push_back(det_params);
-
-            // Maximale Gesichter im Fil, Achtung: Schnitte und vieles Wechseln scherschlechtert die Qualität
-            LandmarkDetector::CLNF clnf_model(det_parameters[0].model_location);
-             clnf_model.face_detector_HAAR.load(det_parameters[0].face_detector_location);
-              clnf_model.face_detector_location = det_parameters[0].face_detector_location;
-
-               clnf_models.reserve(num_faces_max);
-
-                clnf_models.push_back(clnf_model);
-                 active_models.push_back(false);
-
-                  for (int i = 1; i < num_faces_max; ++i)
-                  {
-                      clnf_models.push_back(clnf_model);
-                      active_models.push_back(false);
-                      det_parameters.push_back(det_params);
-                  }
-
-}
-
-void FaceDetection::showImage(const cv::Mat image){
-    QImage img = Image::MatToQImage(image);
-    QImage img2 = img.scaled(mTheWindow->Main_Label->size(),Qt::KeepAspectRatio);
-    mTheWindow->Main_Label->setPixmap(QPixmap::fromImage(img2));
-}
-
-void FaceDetection::getCLNFBox(int model, int pos, int step, double &X, double &Y, double &W, double &H){
-    cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
-
-    int n = shape2D.rows/2;
-
-    X = cvRound(shape2D.at<double>(pos));
-    Y = cvRound(shape2D.at<double>(pos + n));
-    W = cvRound(shape2D.at<double>(pos));
-    H = cvRound(shape2D.at<double>(pos + n));
-    for(int i = pos+1; i < pos+step; ++i)// Beginnt bei 0 das Output-Format
-    {
-        double x = (shape2D.at<double>(i));
-        double y = (shape2D.at<double>(i + n));
-        X = min(X,x);
-        Y = min(Y,y);
-        W = max(W,x);
-        H = max(H,y);
-    }
-    W = W-X;
-    H = H-Y;
-}
-
-void FaceDetection::getImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY, double sX, double sY, double sMaxX, double sMaxY){
-    double fr_X = min(Width*sX, sMaxX);
-    double fr_Y = min(Height*sY,sMaxY);
-    X -= fr_X;
-    Y -= fr_Y;
-    Width += fr_X*2;
-    Height += fr_Y*2;
-
-    X = max(X,0.0);
-    Y = max(Y,0.0);
-    Width = min(Width,maxX-X);
-    Height = min(Height, maxY-Y);
-
-    X= cvRound(X);
-    Y= cvRound(Y);
-    Width= cvRound(Width);
-    Height= cvRound(Height);
-
-}
-
-void FaceDetection::CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used)
-{
-    /*
-     * used
-     * 0: OpenFace
-     * 1: ELSE
-     * 2: ELSE & OpenFace
-
-     * Landmarks der Augen
-     * Groß
-          2
-        1   3
-      0       4
-        7   5
-          6
-     * Klein
-         25
-       26  24
-     27      23
-       20  22
-         21
-     */
-    used = 0;
-    int hir_id[2] = {-1,-1};
-
-    for (size_t part = 0; part < clnf_models[CLNF_ID].hierarchical_models.size(); ++part){
-        if(clnf_models[CLNF_ID].hierarchical_models[part].detected_landmarks.rows == 56){
-            if(hir_id[0] == -1){
-                hir_id[0] = part;
-            }else{
-                hir_id[1] = part;
-            }
-        }
-    }
-
-    for(size_t hir = 0; hir < 2; hir++){
-        if(hir_id[hir] >= 0){
-            cv::Mat_<double> shape2D = clnf_models[CLNF_ID].hierarchical_models[hir_id[hir]].detected_landmarks;
-            int n = shape2D.rows/2;
-            cv::Rect2d rec = clnf_models[CLNF_ID].hierarchical_models[hir_id[hir]].GetBoundingBox();
-            double sx = rec.width*0.3;
-            double sy = rec.height*0.4;
-            rec.x = max(0.0,rec.x - sx/2.0);
-            rec.y = max(0.0,rec.y - sy/2.0);
-            rec.width = min(rec.width + sx, img.cols-rec.x);
-            rec.height = min(rec.height + sy, img.rows-rec.y);
-
-            std::vector<cv::Point2f> pos, pos2;
-            for(size_t i = 20; i < 28; i++){
-                pos.push_back(cv::Point2d(shape2D.at<double>(i),shape2D.at<double>(i+n)));
-                pos2.push_back(cv::Point2d(shape2D.at<double>(i-20),shape2D.at<double>(i-20+n)));
-            }
-            cv::RotatedRect min_eye = cv::fitEllipse(pos);
-            cv::RotatedRect max_eye = cv::fitEllipse(pos2);
-            if((min_eye.size.width+min_eye.size.height)/2 > 4.5){
-                cv::Mat gray;
-                Image::convert_to_grayscale(img(rec), gray);
-                float quality;
-                cv::RotatedRect ellipse = ELSE::run(gray, quality);
-                if(ellipse.size.width > 0 && ellipse.size.height >0
-                        && sqrt(pow(max_eye.center.x - (rec.x + ellipse.center.x),2.0) + pow(max_eye.center.y - (rec.y + ellipse.center.y),2.0))
-                        < (max_eye.size.width+max_eye.size.height)/5.0){
-                    used += (int)pow(10,hir);
-                    if((min_eye.size.width+min_eye.size.height)/2 < 6.0){
-                        used += (int)pow(10,hir);
-                    }
-                    for( int i = 0; i < n; ++i){
-                        if( i < 8){
-                            if((min_eye.size.width+min_eye.size.height)/2 < 6.0){
-                                double x = (shape2D.at<double>(i) + ellipse.center.x+rec.x + cos((i-4)*M_PI/4.0)*ellipse.size.width/2*1.727)/2;
-                                double y = (shape2D.at<double>(i+n) + ellipse.center.y+rec.y + sin((i-4)*M_PI/4.0)*ellipse.size.height/2*1.727)/2;
-                                shape2D.at<double>(i)  = x;
-                                shape2D.at<double>(i+n)= y;
-                            }else{
-                                shape2D.at<double>(i)  = ellipse.center.x+rec.x + cos((i-4)*M_PI/4.0)*ellipse.size.width/2*1.727;
-                                shape2D.at<double>(i+n)= ellipse.center.y+rec.y + sin((i-4)*M_PI/4.0)*ellipse.size.height/2*1.727;
-                            }
-                        }else if(i > 19){
-                            if((min_eye.size.width+min_eye.size.height)/2 < 6.0){
-                                double x = (shape2D.at<double>(i) + ellipse.center.x+rec.x + cos((23-i)*M_PI/4.0)*ellipse.size.width/2*0.738)/2;
-                                double y = (shape2D.at<double>(i+n) + ellipse.center.y+rec.y + sin((23-i)*M_PI/4.0)*ellipse.size.height/2*0.738)/2;
-                                shape2D.at<double>(i)  = x;
-                                shape2D.at<double>(i+n)= y;
-                            }else{
-                                shape2D.at<double>(i)  = ellipse.center.x+rec.x + cos((23-i)*M_PI/4.0)*ellipse.size.width/2*0.738;
-                                shape2D.at<double>(i+n)= ellipse.center.y+rec.y + sin((23-i)*M_PI/4.0)*ellipse.size.height/2*0.738;
-                            }
-                        }
-                    }
-                }
-                clnf_models[CLNF_ID].hierarchical_models[hir_id[hir]].detected_landmarks = shape2D.clone();
-            }
-        }
-    }
-
-    if(hir_id[0] >= 0 && hir_id[1] >= 0){
-        cv::Rect2d rec_0 = clnf_models[CLNF_ID].hierarchical_models[hir_id[0]].GetBoundingBox();
-        cv::Rect2d rec_1 = clnf_models[CLNF_ID].hierarchical_models[hir_id[1]].GetBoundingBox();
-        cv::Mat_<double> shape2D_0 = clnf_models[CLNF_ID].hierarchical_models[hir_id[0]].detected_landmarks;
-        cv::Mat_<double> shape2D_1 = clnf_models[CLNF_ID].hierarchical_models[hir_id[1]].detected_landmarks;
-        int n = shape2D_0.rows/2;
-        for(size_t i = 20; i < 28; i++){
-            cv::Point2d pos0G(shape2D_0.at<double>(i),shape2D_0.at<double>(i+n));
-            cv::Point2d pos0S(shape2D_0.at<double>(i-20),shape2D_0.at<double>(i-20+n));
-            cv::Point2d pos1G(shape2D_1.at<double>(i),shape2D_1.at<double>(i+n));
-            cv::Point2d pos1S(shape2D_1.at<double>(i-20),shape2D_1.at<double>(i-20+n));
-            pos0S.x -= rec_0.x; pos0S.y -= rec_0.y;
-            pos0G.x -= rec_0.x; pos0G.y -= rec_0.y;
-            pos1S.x -= rec_1.x; pos1S.y -= rec_1.y;
-            pos1G.x -= rec_1.x; pos1G.y -= rec_1.y;
-
-            double sxS = (pos0S.x/rec_0.width + pos1S.x/rec_1.width)/2.0;
-            double syS = (pos0S.y/rec_0.height+ pos1S.y/rec_1.height)/2.0;
-            double sxG = (pos0G.x/rec_0.width + pos1G.x/rec_1.width)/2.0;
-            double syG = (pos0G.y/rec_0.height+ pos1G.y/rec_1.height)/2.0;
-
-            //std::cout<<pos0S<<pos0G<<pos1S<<pos1G<<cv::Vec4d(sxS,syS,sxG,syG)<<std::endl;
-
-            shape2D_0.at<double>(i) = rec_0.x + rec_0.width * sxG;
-            shape2D_0.at<double>(i+n) = rec_0.y + rec_0.height * syG;
-            shape2D_0.at<double>(i-20) = rec_0.x + rec_0.width * sxS;
-            shape2D_0.at<double>(i-20+n) = rec_0.y + rec_0.height * syS;
-
-            shape2D_1.at<double>(i) = rec_1.x + rec_1.width * sxG;
-            shape2D_1.at<double>(i+n) = rec_1.y + rec_1.height * syG;
-            shape2D_1.at<double>(i-20) = rec_1.x + rec_1.width * sxS;
-            shape2D_1.at<double>(i-20+n) = rec_1.y + rec_1.height * syS;
-        }
-        //std::cout<<std::endl;
-        clnf_models[CLNF_ID].hierarchical_models[hir_id[0]].detected_landmarks = shape2D_0.clone();
-        clnf_models[CLNF_ID].hierarchical_models[hir_id[1]].detected_landmarks = shape2D_1.clone();
-    }
-}
-
-void FaceDetection::LearnModel(){
-    cv::Mat frame;
-    cv::Rect rec;
-    std::string name = "";
-
-    // Initialisiierung
-    double fx,fy,cx,cy;
-    int x,y;
-
-    size_t frm=0;
-    while(getFrame(frame,frm,rec,name,fx,fy,cx,cy,x,y)){
-        name = "img/Head_"+name;
-
-        //        cv::Mat frame_col = mImage.get_Face_Image(frame,rec,50);
-        cv::Mat disp_image = frame.clone();
-
-        //std::cout<<name<<" : "<<frm<<" ["<<rec.x<<" "<<rec.y<<" "<<rec.width<<" "<<rec.height<<"] "<<frame.cols<<" "<<frame.rows<<std::endl;
-
-        bool success = false;
-        cv::Mat_<uchar> grayscale_image;
-        //Image::convert_to_grayscale(frame_col,grayIMG);
-        Image::convert_to_grayscale(frame,grayscale_image);
-        for(int clahe = 0; !success && clahe < 2 ; clahe++){
-            if(mCLAHE && clahe > 0){
-                // Image::CLAHE(grayIMG,grayscale_image,0.875);
-                Image::Histogram(grayscale_image,grayscale_image);
-            }
-            clnf_models[Model_Init].Reset();
-
-            // Detect faces in an image
-            vector<cv::Rect_<double> > face_detections;
-
-            if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
-                vector<double> confidences;
-                LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_models[0].face_detector_HOG, confidences);
-            }else{
-                LandmarkDetector::DetectFaces(face_detections, grayscale_image, clnf_models[0].face_detector_HAAR);
-            }
-
-            for(size_t face=0; face < face_detections.size(); ++face){
-                // if there are multiple detections go through them
-                success = LandmarkDetector::DetectLandmarksInImage(grayscale_image, face_detections[face], clnf_models[Model_Init], det_parameters[Model_Init]);
-            }
-        }
-
-        // perform landmark detection for every face detected
-        QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
-        pixmapL->fill(Qt::transparent);
-        QPainter *painterL=new QPainter(pixmapL);
-
-        QPixmap *pixmapR=new QPixmap(mTheWindow->Right_Label->size());
-        pixmapR->fill(Qt::transparent);
-        QPainter *painterR=new QPainter(pixmapR);
-
-        if(success){
-            int used;
-            CalcualteEyes(disp_image,Model_Init,used);
-
-            print_SolutionToFile(QString::fromStdString(name),Model_Init,fx,fy,cx,cy);
-
-            name += "_"+std::to_string(used);
-            name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
-
-            prinEyeCLNFImage(disp_image,Model_Init,name, false);
-            printSmallImage(disp_image.clone(),Model_Init,*painterR,*painterL, false, name);
-            print_CLNF(disp_image,Model_Init,0.5,fx,fy,cx,cy);
-
-            mAtentionTracer->newPosition((double)Model_Init/num_faces_max,
-                                         LandmarkDetector::GetCorrectedPoseCamera(clnf_models[Model_Init], fx, fy, cx, cy),
-                                         clnf_models[Model_Init].params_global);
-            mAtentionTracer->print();
-
-            //std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
-            active_models[Model_Init] = false;
-
-            std::ofstream myfile;
-            myfile.open ("./data/HeadPosition_Image.txt", std::ios::in | std::ios::app);
-            myfile <<name<<std::endl;
-            myfile.close();
-            /*
-            vector<int> compression_params;
-            compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
-            compression_params.push_back(9);
-            cv::imwrite(name+"_Calc.png",disp_image(rec),compression_params);
-            */
-        }
-
-        painterL->end();
-        painterR->end();
-
-        imgCount++;
-        showImage(disp_image);
-        mTheWindow->Right_Label->setPixmap(*pixmapL);
-        mTheWindow->Left_Label->setPixmap(*pixmapR);
-
-        if(cv::waitKey(30) >= 0)
-            return;
-    }
-    Model_Init= Model_Init%num_faces_max;
-}
-
-void FaceDetection::FaceTrackingAutoSize(){
+void FaceDetection::FaceTrackingNewVersion(){
     std::cout<<"AutoSize Tracking"<<std::endl;
     // Initialisiierung
     double fx,fy,cx,cy;
@@ -797,7 +283,7 @@ void FaceDetection::FaceTrackingAutoSize(){
 
                     if(mFrameEvents->isImageFrame(FrameID,name,mFrameEvents->getName(model))){
                         std::cout<<mKamera->getFrameNr()<<": "<<model<<" "<<name<<mImageSections[model].getRect()<<std::endl;
-                        print_SolutionToFile(QString::fromStdString(name),model,fx,fy,cx,cy);
+                        writeSolutionToFile(QString::fromStdString(name),model,fx,fy,cx,cy);
                     }
 
                     printSmallImage(frame_colore,model,*painterR,*painterL, false,"");
@@ -838,6 +324,518 @@ void FaceDetection::FaceTrackingAutoSize(){
     }
 }
 
+void FaceDetection::FaceTrackingImage(){
+    cv::Mat frame;
+    cv::Rect rec;
+    std::string name = "";
+
+    // Initialisiierung
+    double fx,fy,cx,cy;
+    int x,y;
+
+    size_t frm=0;
+    while(getFrame(frame,frm,rec,name,fx,fy,cx,cy,x,y)){
+        name = "img/Head_"+name;
+
+        cv::Mat disp_image = frame.clone();
+
+        bool success = false;
+        cv::Mat_<uchar> grayscale_image;
+        //Image::convert_to_grayscale(frame_col,grayIMG);
+        Image::convert_to_grayscale(frame,grayscale_image);
+        for(int clahe = 0; !success && clahe < 2 ; clahe++){
+            if(mCLAHE && clahe > 0){
+                // Image::CLAHE(grayIMG,grayscale_image,0.875);
+                Image::Histogram(grayscale_image,grayscale_image);
+            }
+            clnf_models[Model_Init].Reset();
+
+            // Detect faces in an image
+            vector<cv::Rect_<double> > face_detections;
+
+            if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
+                vector<double> confidences;
+                LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_models[0].face_detector_HOG, confidences);
+            }else{
+                LandmarkDetector::DetectFaces(face_detections, grayscale_image, clnf_models[0].face_detector_HAAR);
+            }
+
+            for(size_t face=0; face < face_detections.size(); ++face){
+                // if there are multiple detections go through them
+                success = LandmarkDetector::DetectLandmarksInImage(grayscale_image, face_detections[face], clnf_models[Model_Init], det_parameters[Model_Init]);
+            }
+        }
+
+        // perform landmark detection for every face detected
+        QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
+        pixmapL->fill(Qt::transparent);
+        QPainter *painterL=new QPainter(pixmapL);
+
+        QPixmap *pixmapR=new QPixmap(mTheWindow->Right_Label->size());
+        pixmapR->fill(Qt::transparent);
+        QPainter *painterR=new QPainter(pixmapR);
+
+        if(success){
+            int used;
+            CalcualteEyes(disp_image,Model_Init,used);
+
+            writeSolutionToFile(QString::fromStdString(name),Model_Init,fx,fy,cx,cy);
+
+            name += "_"+std::to_string(used);
+            name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
+
+            prinEyeCLNFImage(disp_image,Model_Init,name, false);
+            printSmallImage(disp_image.clone(),Model_Init,*painterR,*painterL, false, name);
+            print_CLNF(disp_image,Model_Init,0.5,fx,fy,cx,cy);
+
+            mAtentionTracer->newPosition((double)Model_Init/num_faces_max,
+                                         LandmarkDetector::GetCorrectedPoseCamera(clnf_models[Model_Init], fx, fy, cx, cy),
+                                         clnf_models[Model_Init].params_global);
+            mAtentionTracer->print();
+
+            //std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
+            active_models[Model_Init] = false;
+
+            std::ofstream myfile;
+            myfile.open ("./data/HeadPosition_Image.txt", std::ios::in | std::ios::app);
+            myfile <<name<<std::endl;
+            myfile.close();
+            /*
+            vector<int> compression_params;
+            compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+            compression_params.push_back(9);
+            cv::imwrite(name+"_Calc.png",disp_image(rec),compression_params);
+            */
+        }
+
+        painterL->end();
+        painterR->end();
+
+        imgCount++;
+        showImage(disp_image);
+        mTheWindow->Right_Label->setPixmap(*pixmapL);
+        mTheWindow->Left_Label->setPixmap(*pixmapR);
+
+        if(cv::waitKey(30) >= 0)
+            return;
+    }
+    Model_Init= Model_Init%num_faces_max;
+}
+
+void FaceDetection::print_CLNF(cv::Mat img, int model, double itens, double fx, double fy, double cx, double cy){
+    LandmarkDetector::Draw(img, clnf_models[model]);
+
+    // A rough heuristic for box around the face width
+    int thickness = (int)std::ceil(2.0* ((double)img.cols) / 640.0);
+
+    if (clnf_models[model].detection_success && clnf_models[model].eye_model)
+    {
+        // Gaze tracking, absolute gaze direction
+        cv::Point3f gazeDirection0(0, 0, -1);
+        cv::Point3f gazeDirection1(0, 0, -1);
+        FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection0, fx, fy, cx, cy, true);
+        FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection1, fx, fy, cx, cy, false);
+
+        FaceAnalysis::DrawGaze(img, clnf_models[model], gazeDirection0, gazeDirection1, fx, fy, cx, cy);
+    }
+
+    // Work out the pose of the head from the tracked model
+    cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy);
+    
+    // Draw it in reddish if uncertain, blueish if certain
+    LandmarkDetector::DrawBox(img, pose_estimate, cv::Scalar((1-itens)*255.0,0, itens*255), thickness, fx, fy, cx, cy);
+
+    // Stellt die Gesichtsorientierung dar
+    print_Orientation(img,model);
+}
+
+//Hier wird die Kopforientierung dargestellt
+void FaceDetection::print_Orientation(cv::Mat img, int model){
+    // A rough heuristic for box around the face width
+    int thickness = (int)std::ceil(1.2* ((double)img.cols) / 640.0);
+    cv::Vec6d gparam = clnf_models[model].params_global;
+    cv::Matx33d rot = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(gparam[1],gparam[2],gparam[3]));
+    cv::Vec3d ln = rot*cv::Vec3d(0,0,(-(double)img.cols)/15.0);
+    cv::Scalar colore(255/num_faces_max*(num_faces_max-model),255/num_faces_max*model,0);
+    cv::arrowedLine(img, cv::Point(gparam[4],gparam[5]),cv::Point(gparam[4]+ln(0),gparam[5]+ln(1)), colore,thickness);
+}
+
+void FaceDetection::writeSolutionToFile(QString name, int model, double fx, double fy, double cx, double cy)
+{
+    // Gaze tracking, absolute gaze direction
+    cv::Point3f gazeDirection0(0, 0, -1);
+    cv::Point3f gazeDirection1(0, 0, -1);
+    FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection0, fx, fy, cx, cy, true);
+    FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection1, fx, fy, cx, cy, false);
+
+    // Work out the pose of the head from the tracked model
+    cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy);
+    cv::Vec6d pose_estimateSelbst = calcFaceAngle(clnf_models[model].params_global);
+
+    cv::Point2d worldAngle, rotatAngle;
+    cv::Point3d worlPoint, target;
+    mTarget->getOrienation(name,worldAngle,worlPoint, rotatAngle, target);
+
+    cv::Vec6d abwichung = calcAbweichung(pose_estimateSelbst,target);
+
+    std::cout<<clnf_models[model].params_global<<pose_estimate<<std::endl
+            <<calcAngle(pose_estimate)<<std::endl
+           <<pose_estimateSelbst<<abwichung<<std::endl;
+
+    std::ofstream myfile;
+    myfile.open ("./data/BerechnungWinkel_Video.txt", std::ios::in | std::ios::app);
+    myfile <<worlPoint<<target<<pose_estimateSelbst<<abwichung
+          <<calcAbweichung(cv::Vec3d(pose_estimateSelbst[0],pose_estimateSelbst[1],pose_estimateSelbst[2]),
+            cv::Vec3d(gazeDirection0.x,gazeDirection0.y,gazeDirection0.z),target)
+            <<calcAbweichung(cv::Vec3d(pose_estimateSelbst[0],pose_estimateSelbst[1],pose_estimateSelbst[2]),
+            cv::Vec3d(gazeDirection1.x,gazeDirection1.y,gazeDirection1.z),target)<<std::endl;
+    myfile.close();
+}
+
+cv::Mat FaceDetection::print_Eye(const cv::Mat img, int model, int pos, int step, bool clacElse, float &quality){
+    double X,Y,Width,Height;
+    getCLNFBox(model, pos, step, X,Y,Width,Height);
+
+    getEyeImageSize(X,Y,Width,Height,img.cols, img.rows,0.35,0.4,30,30);
+
+    cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
+    if(Width > 8 && Height > 5 && step == 6 && clacElse){
+        cv::Mat gray;
+        Image::convert_to_grayscale(img_Eye, gray);
+
+        cv::RotatedRect ellipse = ELSE::run(gray, quality);
+        cv::ellipse(img_Eye, ellipse, cv::Scalar(0,255,0,255), 1,1 );
+    }
+    return img_Eye;
+}
+
+void FaceDetection::print_FPS_Model(int fps, int model){
+    mTheWindow->FPS_Label->setText(QString::number(fps));
+    mTheWindow->Model_Label->setText(QString::number(model));
+}
+
+cv::Vec6d FaceDetection::calcFaceAngle(cv::Vec6d Params_Global)
+{
+    double fx = 1540;
+    double fy = 1540;
+    double cx = 1334;
+    double cy = 760;
+
+    double Z = 154 / Params_Global[0];
+    double X = (Params_Global[4] - cx) / fx * Z;
+    double Y = (Params_Global[5] - cy) / fy * Z;
+
+    cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(Params_Global[1],Params_Global[2],Params_Global[3]));
+
+    cv::Vec3d ori = R*cv::Vec3d(0,0,-1);
+    //std::cout<<"Neu 1: "<<X<<" "<<Y<<" "<<Z<<" | "<<cv::Vec3d(X,Y,Z)-ori*(Z/ori[2])<<std::endl;
+
+    double z_x = cv::sqrt(X * X + Z * Z);
+    double eul_x = atan2(Y, z_x);
+    double z_y = cv::sqrt(Y * Y + Z * Z);
+    double eul_y = -atan2(X, z_y);
+
+    cv::Matx33d camera_rotation = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(eul_x, eul_y, 0));
+    cv::Matx33d corrected_rotation = camera_rotation.t() * R;
+
+    ori = corrected_rotation*cv::Vec3d(0,0,-1);
+    //std::cout<<"Neu 2: "<<X<<" "<<Y<<" "<<Z<<" | "<<cv::Vec3d(X,Y,Z)-ori*(Z/ori[2])<<std::endl;
+
+    // Verbesserung durch LandmarkDetectorFunc::GetCorrectedPoseWorld()
+    cv::Vec3d euler_corrected = LandmarkDetector::RotationMatrix2Euler(corrected_rotation);
+
+    return cv::Vec6d(X, Y, Z, euler_corrected[0], euler_corrected[1], euler_corrected[2]);
+}
+
+cv::Vec6d FaceDetection::calcAbweichung(cv::Vec6d Params,cv::Point3d Target)
+{
+    cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(Params[3],Params[4],Params[5]));
+    cv::Vec3d Pos(Params[0],Params[1],Params[2]);
+
+    cv::Vec3d TargetRot = mKamera->rotateToCamera(Target);
+
+    cv::Vec3d ori = R*cv::Vec3d(0,0,-1);
+
+    return calcAbweichung(Pos,ori,TargetRot);
+}
+
+cv::Vec6d FaceDetection::calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target)
+{
+    double q = (Target[2]-Start[2])/Orientierung[2];
+    cv::Vec3d solution = Start+Orientierung*q-Target;
+    return cv::Vec6d(solution[0],solution[1],solution[2],
+            atan2(solution[0],Start[2]-Target[2]),
+            atan2(solution[1],Start[2]-Target[2]),
+            atan2(solution[2],Start[2]-Target[2]));
+}
+
+cv::Vec2d FaceDetection::calcAngle(double X, double Y, double Z)
+{
+    cv::Vec3d point = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(X,Y,Z)) * cv::Vec3d(0,0,-1);
+    return cv::Vec2d(atan2(point[0],sqrt(point[1]*point[1]+point[2]*point[2])),
+            atan2(point[1],sqrt(point[0]*point[0]+point[2]*point[2])));
+}
+
+cv::Vec2d FaceDetection::calcAngle(cv::Vec6d Point)
+{
+    return calcAngle(Point[3],Point[4],Point[5]);
+}
+
+// Dieser Teil ist aus OpenFace/FaceLandmarkVidMulti.cpp übernommen
+void FaceDetection::NonOverlapingDetections(const vector<LandmarkDetector::CLNF>& clnf_models, vector<cv::Rect_<double> >& face_detections){
+
+    // Go over the model and eliminate detections that are not informative (there already is a tracker there)
+    for(size_t model = 0; model < clnf_models.size(); ++model)
+    {
+
+        // See if the detections intersect
+        cv::Rect_<double> model_rect = clnf_models[model].GetBoundingBox();
+
+        for(int detection = face_detections.size()-1; detection >=0; --detection)
+        {
+            double intersection_area = (model_rect & face_detections[detection]).area();
+            double union_area = model_rect.area() + face_detections[detection].area() - 2 * intersection_area;
+
+            // If the model is already tracking what we're detecting ignore the detection, this is determined by amount of overlap
+            if( intersection_area/union_area > 0.5)
+            {
+                face_detections.erase(face_detections.begin() + detection);
+            }
+        }
+    }
+}
+
+void FaceDetection::CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used)
+{
+    /*
+     * used
+     * 0: OpenFace
+     * 1: ELSE
+     * 2: ELSE & OpenFace
+
+     * Landmarks der Augen
+     * Groß
+          2
+        1   3
+      0       4
+        7   5
+          6
+     * Klein
+         25
+       26  24
+     27      23
+       20  22
+         21
+     */
+    used = 0;
+    int hir_id[2] = {-1,-1};
+
+    for (size_t part = 0; part < clnf_models[CLNF_ID].hierarchical_models.size(); ++part){
+        if(clnf_models[CLNF_ID].hierarchical_models[part].detected_landmarks.rows == 56){
+            if(hir_id[0] == -1){
+                hir_id[0] = part;
+            }else{
+                hir_id[1] = part;
+            }
+        }
+    }
+
+    for(size_t hir = 0; hir < 2; hir++){
+        if(hir_id[hir] >= 0){
+            cv::Mat_<double> shape2D = clnf_models[CLNF_ID].hierarchical_models[hir_id[hir]].detected_landmarks;
+            int n = shape2D.rows/2;
+            cv::Rect2d rec = clnf_models[CLNF_ID].hierarchical_models[hir_id[hir]].GetBoundingBox();
+            double sx = rec.width*0.3;
+            double sy = rec.height*0.4;
+            rec.x = max(0.0,rec.x - sx/2.0);
+            rec.y = max(0.0,rec.y - sy/2.0);
+            rec.width = min(rec.width + sx, img.cols-rec.x);
+            rec.height = min(rec.height + sy, img.rows-rec.y);
+
+            std::vector<cv::Point2f> pos, pos2;
+            for(size_t i = 20; i < 28; i++){
+                pos.push_back(cv::Point2d(shape2D.at<double>(i),shape2D.at<double>(i+n)));
+                pos2.push_back(cv::Point2d(shape2D.at<double>(i-20),shape2D.at<double>(i-20+n)));
+            }
+            cv::RotatedRect min_eye = cv::fitEllipse(pos);
+            cv::RotatedRect max_eye = cv::fitEllipse(pos2);
+            if((min_eye.size.width+min_eye.size.height)/2 > 4.5){
+                cv::Mat gray;
+                Image::convert_to_grayscale(img(rec), gray);
+                float quality;
+                cv::RotatedRect ellipse = ELSE::run(gray, quality);
+                if(ellipse.size.width > 0 && ellipse.size.height >0
+                        && sqrt(pow(max_eye.center.x - (rec.x + ellipse.center.x),2.0) + pow(max_eye.center.y - (rec.y + ellipse.center.y),2.0))
+                        < (max_eye.size.width+max_eye.size.height)/5.0){
+                    used += (int)pow(10,hir);
+                    if((min_eye.size.width+min_eye.size.height)/2 < 6.0){
+                        used += (int)pow(10,hir);
+                    }
+                    for( int i = 0; i < n; ++i){
+                        if( i < 8){
+                            if((min_eye.size.width+min_eye.size.height)/2 < 6.0){
+                                double x = (shape2D.at<double>(i) + ellipse.center.x+rec.x + cos((i-4)*M_PI/4.0)*ellipse.size.width/2*1.727)/2;
+                                double y = (shape2D.at<double>(i+n) + ellipse.center.y+rec.y + sin((i-4)*M_PI/4.0)*ellipse.size.height/2*1.727)/2;
+                                shape2D.at<double>(i)  = x;
+                                shape2D.at<double>(i+n)= y;
+                            }else{
+                                shape2D.at<double>(i)  = ellipse.center.x+rec.x + cos((i-4)*M_PI/4.0)*ellipse.size.width/2*1.727;
+                                shape2D.at<double>(i+n)= ellipse.center.y+rec.y + sin((i-4)*M_PI/4.0)*ellipse.size.height/2*1.727;
+                            }
+                        }else if(i > 19){
+                            if((min_eye.size.width+min_eye.size.height)/2 < 6.0){
+                                double x = (shape2D.at<double>(i) + ellipse.center.x+rec.x + cos((23-i)*M_PI/4.0)*ellipse.size.width/2*0.738)/2;
+                                double y = (shape2D.at<double>(i+n) + ellipse.center.y+rec.y + sin((23-i)*M_PI/4.0)*ellipse.size.height/2*0.738)/2;
+                                shape2D.at<double>(i)  = x;
+                                shape2D.at<double>(i+n)= y;
+                            }else{
+                                shape2D.at<double>(i)  = ellipse.center.x+rec.x + cos((23-i)*M_PI/4.0)*ellipse.size.width/2*0.738;
+                                shape2D.at<double>(i+n)= ellipse.center.y+rec.y + sin((23-i)*M_PI/4.0)*ellipse.size.height/2*0.738;
+                            }
+                        }
+                    }
+                }
+                clnf_models[CLNF_ID].hierarchical_models[hir_id[hir]].detected_landmarks = shape2D.clone();
+            }
+        }
+    }
+
+    if(mUseEye && hir_id[0] >= 0 && hir_id[1] >= 0){
+        cv::Rect2d rec_0 = clnf_models[CLNF_ID].hierarchical_models[hir_id[0]].GetBoundingBox();
+        cv::Rect2d rec_1 = clnf_models[CLNF_ID].hierarchical_models[hir_id[1]].GetBoundingBox();
+        cv::Mat_<double> shape2D_0 = clnf_models[CLNF_ID].hierarchical_models[hir_id[0]].detected_landmarks;
+        cv::Mat_<double> shape2D_1 = clnf_models[CLNF_ID].hierarchical_models[hir_id[1]].detected_landmarks;
+        int n = shape2D_0.rows/2;
+        for(size_t i = 20; i < 28; i++){
+            cv::Point2d pos0G(shape2D_0.at<double>(i),shape2D_0.at<double>(i+n));
+            cv::Point2d pos0S(shape2D_0.at<double>(i-20),shape2D_0.at<double>(i-20+n));
+            cv::Point2d pos1G(shape2D_1.at<double>(i),shape2D_1.at<double>(i+n));
+            cv::Point2d pos1S(shape2D_1.at<double>(i-20),shape2D_1.at<double>(i-20+n));
+            pos0S.x -= rec_0.x; pos0S.y -= rec_0.y;
+            pos0G.x -= rec_0.x; pos0G.y -= rec_0.y;
+            pos1S.x -= rec_1.x; pos1S.y -= rec_1.y;
+            pos1G.x -= rec_1.x; pos1G.y -= rec_1.y;
+
+            double sxS = (pos0S.x/rec_0.width + pos1S.x/rec_1.width)/2.0;
+            double syS = (pos0S.y/rec_0.height+ pos1S.y/rec_1.height)/2.0;
+            double sxG = (pos0G.x/rec_0.width + pos1G.x/rec_1.width)/2.0;
+            double syG = (pos0G.y/rec_0.height+ pos1G.y/rec_1.height)/2.0;
+
+            //std::cout<<pos0S<<pos0G<<pos1S<<pos1G<<cv::Vec4d(sxS,syS,sxG,syG)<<std::endl;
+
+            shape2D_0.at<double>(i) = rec_0.x + rec_0.width * sxG;
+            shape2D_0.at<double>(i+n) = rec_0.y + rec_0.height * syG;
+            shape2D_0.at<double>(i-20) = rec_0.x + rec_0.width * sxS;
+            shape2D_0.at<double>(i-20+n) = rec_0.y + rec_0.height * syS;
+
+            shape2D_1.at<double>(i) = rec_1.x + rec_1.width * sxG;
+            shape2D_1.at<double>(i+n) = rec_1.y + rec_1.height * syG;
+            shape2D_1.at<double>(i-20) = rec_1.x + rec_1.width * sxS;
+            shape2D_1.at<double>(i-20+n) = rec_1.y + rec_1.height * syS;
+        }
+        //std::cout<<std::endl;
+        clnf_models[CLNF_ID].hierarchical_models[hir_id[0]].detected_landmarks = shape2D_0.clone();
+        clnf_models[CLNF_ID].hierarchical_models[hir_id[1]].detected_landmarks = shape2D_1.clone();
+    }
+}
+
+void FaceDetection::initCLNF()
+{
+    vector<string> arguments;
+    arguments.push_back(""); // Hat arguments keine Werte kann wes wegoptimiert werden und dadurch wirft die Initilaisierung unten Fehler
+
+    /*
+        -mloc - the location of landmark detection models
+        -sigma -UpdateModelParameters
+        -w_reg -
+        -reg -
+        -multi_view -
+        -validate_detections -
+        -n_iter -
+        -gaze - indicate that gaze estimation should be performed
+        -q - specifying to use quiet mode not visualizing output
+        -wild - flag specifies when the images are more difficult, model considers extended search regions
+    */
+    // im build-Ordner muss das model von OpenFace sein
+    LandmarkDetector::FaceModelParameters det_params(arguments); // Sollte Parameter beinhalten
+
+    // Always track gaze in feature extraction
+    det_params.track_gaze = true;
+
+    det_params.use_face_template = true;
+    // This is so that the model would not try re-initialising itself
+    det_params.reinit_video_every = -1;
+
+    det_params.curr_face_detector = LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR;
+
+    det_parameters.push_back(det_params);
+
+    // Maximale Gesichter im Fil, Achtung: Schnitte und vieles Wechseln scherschlechtert die Qualität
+    LandmarkDetector::CLNF clnf_model(det_parameters[0].model_location);
+    clnf_model.face_detector_HAAR.load(det_parameters[0].face_detector_location);
+    clnf_model.face_detector_location = det_parameters[0].face_detector_location;
+
+    clnf_models.reserve(num_faces_max);
+
+    clnf_models.push_back(clnf_model);
+    active_models.push_back(false);
+
+    for (int i = 1; i < num_faces_max; ++i)
+    {
+        clnf_models.push_back(clnf_model);
+        active_models.push_back(false);
+        det_parameters.push_back(det_params);
+    }
+
+}
+
+void FaceDetection::showImage(const cv::Mat image){
+    QImage img = Image::MatToQImage(image);
+    QImage img2 = img.scaled(mTheWindow->Main_Label->size(),Qt::KeepAspectRatio);
+    mTheWindow->Main_Label->setPixmap(QPixmap::fromImage(img2));
+}
+
+void FaceDetection::getCLNFBox(int model, int pos, int step, double &X, double &Y, double &W, double &H){
+    cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
+
+    int n = shape2D.rows/2;
+
+    X = cvRound(shape2D.at<double>(pos));
+    Y = cvRound(shape2D.at<double>(pos + n));
+    W = cvRound(shape2D.at<double>(pos));
+    H = cvRound(shape2D.at<double>(pos + n));
+    for(int i = pos+1; i < pos+step; ++i)// Beginnt bei 0 das Output-Format
+    {
+        double x = (shape2D.at<double>(i));
+        double y = (shape2D.at<double>(i + n));
+        X = min(X,x);
+        Y = min(Y,y);
+        W = max(W,x);
+        H = max(H,y);
+    }
+    W = W-X;
+    H = H-Y;
+}
+
+void FaceDetection::getEyeImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY, double sX, double sY, double sMaxX, double sMaxY){
+    double fr_X = min(Width*sX, sMaxX);
+    double fr_Y = min(Height*sY,sMaxY);
+    X -= fr_X;
+    Y -= fr_Y;
+    Width += fr_X*2;
+    Height += fr_Y*2;
+
+    X = max(X,0.0);
+    Y = max(Y,0.0);
+    Width = min(Width,maxX-X);
+    Height = min(Height, maxY-Y);
+
+    X= cvRound(X);
+    Y= cvRound(Y);
+    Width= cvRound(Width);
+    Height= cvRound(Height);
+}
+
 void FaceDetection::ShowFromeFile()
 {
     cv::Mat frame;
@@ -854,7 +852,6 @@ void FaceDetection::ShowFromeFile()
     int i = -1;
     while(mFrameEvents->getNextImageFrame(frm,box,name, i)){
         name = "img/"+name;
-        //    while(mFrameEvents->getNextFrame(frm,frameID)){
         mKamera->getFrame(frame,frm);
         // perform landmark detection for every face detected
         QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
@@ -864,9 +861,6 @@ void FaceDetection::ShowFromeFile()
         QPixmap *pixmapR=new QPixmap(mTheWindow->Right_Label->size());
         pixmapR->fill(Qt::transparent);
         QPainter *painterR=new QPainter(pixmapR);
-
-        //        for(size_t i = 0; i < mFrameEvents->getBoxSizeInFrame(frameID); i++){
-        //            cv::Rect box = mFrameEvents->getRect(frameID,i);
 
         printSmallImage(frame,box,i,*painterL, false, name);
 
@@ -881,7 +875,6 @@ void FaceDetection::ShowFromeFile()
         printSmallImage(frame,box,i,*painterR, true, name);
 
         cv::rectangle(frame,box,cv::Scalar(0,255,0),3);
-        //        }
 
         mTheWindow->Right_Label->setPixmap(*pixmapR);
         mTheWindow->Left_Label->setPixmap(*pixmapL);
@@ -907,7 +900,9 @@ int FaceDetection::getMaxFaces()
 
 void FaceDetection::setAutoSize(bool a)
 {
-    mAutoSize = a;
+    for(size_t i = 0; i < mImageSections.size(); i++){
+        mImageSections[i].setAutoSize(a);
+    }
 }
 
 void FaceDetection::setUseBox(bool b)
