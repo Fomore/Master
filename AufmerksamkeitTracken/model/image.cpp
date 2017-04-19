@@ -202,14 +202,6 @@ QImage Image::MatToQImage(const cv::Mat& mat)
     }
 }
 
-void Image::saveImage(cv::Mat img, std::string name){
-    std::vector<int> compression_params;
-    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
-    compression_params.push_back(9);
-
-    imwrite("Image/"+name+".png", img, compression_params);
-}
-
 int Image::getImageID(){
     return Image_ID;
 }

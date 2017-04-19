@@ -134,7 +134,8 @@ void FaceDetection::FaceTracking(){
             // Only draw if the reliability is reasonable, the value is slightly ad-hoc
             if(detection_certainty < visualisation_boundary){
 
-                printSmallImage(frame_col,model,*painterR,*painterL, false,"");
+                mPrinter.printSmallImage(frame_col,clnf_models[model],*painterR,*painterL, false,"", false,
+                                mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, model);
 
                 if(detection_certainty > 1)
                     detection_certainty = 1;
@@ -142,7 +143,7 @@ void FaceDetection::FaceTracking(){
                     detection_certainty = -1;
 
                 double itens = (detection_certainty + 1)/(visualisation_boundary +1);
-                print_CLNF(disp_image,model,itens,fx,fy,cx,cy);
+                mPrinter.print_CLNF(disp_image,clnf_models[model],itens,fx,fy,cx,cy);
 
                 mAtentionTracer->newPosition((double)model/num_faces_max,
                                              LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy),
@@ -168,9 +169,7 @@ void FaceDetection::FaceTracking(){
         }
 
         print_FPS_Model(cvRound(fps),num_active_models);
-        showImage(disp_image);
-        mTheWindow->Right_Label->setPixmap(*pixmapL);
-        mTheWindow->Left_Label->setPixmap(*pixmapR);
+        showImage(disp_image, *pixmapL, *pixmapR);
 
         mAtentionTracer->print();
 
@@ -286,15 +285,15 @@ void FaceDetection::FaceTrackingNewVersion(){
                         writeSolutionToFile(QString::fromStdString(name),model,fx,fy,cx,cy);
                     }
 
-                    printSmallImage(frame_colore,model,*painterR,*painterL, false,"");
+                    mPrinter.printSmallImage(frame_colore,clnf_models[model],*painterR,*painterL, false,"", false,
+                                    mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, model);
 
                     // Estimate head pose and eye gaze
                     mAtentionTracer->newPosition((double)model/num_faces_max,
                                                  LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy),
                                                  clnf_models[model].params_global);
 
-                    print_Orientation(disp_image,model);
-                    print_CLNF(disp_image,model,0.5,fx,fy,cx,cy);
+                    mPrinter.print_CLNF(disp_image,clnf_models[model],0.5,fx,fy,cx,cy);
 
                     num_active_models++;
                 }
@@ -312,9 +311,7 @@ void FaceDetection::FaceTrackingNewVersion(){
         painterL->end();
         painterR->end();
 
-        showImage(disp_image);
-        mTheWindow->Right_Label->setPixmap(*pixmapL);
-        mTheWindow->Left_Label->setPixmap(*pixmapR);
+        showImage(disp_image, *pixmapL, *pixmapR);
 
         print_FPS_Model(cvRound(fps),num_active_models);
 
@@ -384,9 +381,10 @@ void FaceDetection::FaceTrackingImage(){
             name += "_"+std::to_string(used);
             name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
 
-            prinEyeCLNFImage(disp_image,Model_Init,name, false);
-            printSmallImage(disp_image.clone(),Model_Init,*painterR,*painterL, false, name);
-            print_CLNF(disp_image,Model_Init,0.5,fx,fy,cx,cy);
+            mPrinter.printSmallImage(disp_image.clone(),clnf_models[Model_Init],*painterR,*painterL, false,"", false,
+                            mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, Model_Init);
+
+            mPrinter.print_CLNF(disp_image,clnf_models[Model_Init],0.5,fx,fy,cx,cy);
 
             mAtentionTracer->newPosition((double)Model_Init/num_faces_max,
                                          LandmarkDetector::GetCorrectedPoseCamera(clnf_models[Model_Init], fx, fy, cx, cy),
@@ -400,21 +398,15 @@ void FaceDetection::FaceTrackingImage(){
             myfile.open ("./data/HeadPosition_Image.txt", std::ios::in | std::ios::app);
             myfile <<name<<std::endl;
             myfile.close();
-            /*
-            vector<int> compression_params;
-            compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
-            compression_params.push_back(9);
-            cv::imwrite(name+"_Calc.png",disp_image(rec),compression_params);
-            */
+
+            //mPrinter.saveImage(name+"_Calc.png",disp_image(rec));
         }
 
         painterL->end();
         painterR->end();
 
         imgCount++;
-        showImage(disp_image);
-        mTheWindow->Right_Label->setPixmap(*pixmapL);
-        mTheWindow->Left_Label->setPixmap(*pixmapR);
+        showImage(disp_image, *pixmapL, *pixmapR);
 
         if(cv::waitKey(30) >= 0)
             return;
@@ -422,42 +414,53 @@ void FaceDetection::FaceTrackingImage(){
     Model_Init= Model_Init%num_faces_max;
 }
 
-void FaceDetection::print_CLNF(cv::Mat img, int model, double itens, double fx, double fy, double cx, double cy){
-    LandmarkDetector::Draw(img, clnf_models[model]);
+void FaceDetection::ShowFromeFile()
+{
+    cv::Mat frame;
 
-    // A rough heuristic for box around the face width
-    int thickness = (int)std::ceil(2.0* ((double)img.cols) / 640.0);
+    // Initialisiierung
+    double fx,fy,cx,cy;
+    int x,y;
+    mKamera->get_camera_params(fx,fy,cx,cy,x,y);
 
-    if (clnf_models[model].detection_success && clnf_models[model].eye_model)
-    {
-        // Gaze tracking, absolute gaze direction
-        cv::Point3f gazeDirection0(0, 0, -1);
-        cv::Point3f gazeDirection1(0, 0, -1);
-        FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection0, fx, fy, cx, cy, true);
-        FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection1, fx, fy, cx, cy, false);
+    size_t frm = 0;
+    size_t frameID = 0;
+    std::string name = "";
+    cv::Rect box;
+    int i = -1;
+    while(mFrameEvents->getNextImageFrame(frm,box,name, i)){
+        name = "img/"+name;
+        mKamera->getFrame(frame,frm);
+        // perform landmark detection for every face detected
+        QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
+        pixmapL->fill(Qt::transparent);
+        QPainter *painterL=new QPainter(pixmapL);
 
-        FaceAnalysis::DrawGaze(img, clnf_models[model], gazeDirection0, gazeDirection1, fx, fy, cx, cy);
+        QPixmap *pixmapR=new QPixmap(mTheWindow->Right_Label->size());
+        pixmapR->fill(Qt::transparent);
+        QPainter *painterR=new QPainter(pixmapR);
+
+        mPrinter.printSmallImage(frame,box,i,*painterL, false, name,
+                        mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max);
+
+        frameID = mFrameEvents->getFramePos(frm);
+        if(mFrameEvents->isLandmark(frameID,i)){
+            double land[5][2];
+            mFrameEvents->getLandmarks(frameID,i,land);
+            for(int j = 0; j < 5; j++){
+                cv::circle(frame, cv::Point2d(land[j][0],land[j][1]),std::min(5,std::max(1,(box.width+box.height)/70)),cv::Scalar(0,255,0),-1);
+            }
+        }
+        mPrinter.printSmallImage(frame,box,i,*painterR, true, name,
+                        mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max);
+
+        cv::rectangle(frame,box,cv::Scalar(0,255,0),3);
+
+        showImage(frame, *pixmapL, *pixmapR);
+
+        if(cv::waitKey(30) >= 0)
+            return;
     }
-
-    // Work out the pose of the head from the tracked model
-    cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy);
-    
-    // Draw it in reddish if uncertain, blueish if certain
-    LandmarkDetector::DrawBox(img, pose_estimate, cv::Scalar((1-itens)*255.0,0, itens*255), thickness, fx, fy, cx, cy);
-
-    // Stellt die Gesichtsorientierung dar
-    print_Orientation(img,model);
-}
-
-//Hier wird die Kopforientierung dargestellt
-void FaceDetection::print_Orientation(cv::Mat img, int model){
-    // A rough heuristic for box around the face width
-    int thickness = (int)std::ceil(1.2* ((double)img.cols) / 640.0);
-    cv::Vec6d gparam = clnf_models[model].params_global;
-    cv::Matx33d rot = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(gparam[1],gparam[2],gparam[3]));
-    cv::Vec3d ln = rot*cv::Vec3d(0,0,(-(double)img.cols)/15.0);
-    cv::Scalar colore(255/num_faces_max*(num_faces_max-model),255/num_faces_max*model,0);
-    cv::arrowedLine(img, cv::Point(gparam[4],gparam[5]),cv::Point(gparam[4]+ln(0),gparam[5]+ln(1)), colore,thickness);
 }
 
 void FaceDetection::writeSolutionToFile(QString name, int model, double fx, double fy, double cx, double cy)
@@ -479,7 +482,6 @@ void FaceDetection::writeSolutionToFile(QString name, int model, double fx, doub
     cv::Vec6d abwichung = calcAbweichung(pose_estimateSelbst,target);
 
     std::cout<<clnf_models[model].params_global<<pose_estimate<<std::endl
-            <<calcAngle(pose_estimate)<<std::endl
            <<pose_estimateSelbst<<abwichung<<std::endl;
 
     std::ofstream myfile;
@@ -490,28 +492,6 @@ void FaceDetection::writeSolutionToFile(QString name, int model, double fx, doub
             <<calcAbweichung(cv::Vec3d(pose_estimateSelbst[0],pose_estimateSelbst[1],pose_estimateSelbst[2]),
             cv::Vec3d(gazeDirection1.x,gazeDirection1.y,gazeDirection1.z),target)<<std::endl;
     myfile.close();
-}
-
-cv::Mat FaceDetection::print_Eye(const cv::Mat img, int model, int pos, int step, bool clacElse, float &quality){
-    double X,Y,Width,Height;
-    getCLNFBox(model, pos, step, X,Y,Width,Height);
-
-    getEyeImageSize(X,Y,Width,Height,img.cols, img.rows,0.35,0.4,30,30);
-
-    cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
-    if(Width > 8 && Height > 5 && step == 6 && clacElse){
-        cv::Mat gray;
-        Image::convert_to_grayscale(img_Eye, gray);
-
-        cv::RotatedRect ellipse = ELSE::run(gray, quality);
-        cv::ellipse(img_Eye, ellipse, cv::Scalar(0,255,0,255), 1,1 );
-    }
-    return img_Eye;
-}
-
-void FaceDetection::print_FPS_Model(int fps, int model){
-    mTheWindow->FPS_Label->setText(QString::number(fps));
-    mTheWindow->Model_Label->setText(QString::number(model));
 }
 
 cv::Vec6d FaceDetection::calcFaceAngle(cv::Vec6d Params_Global)
@@ -567,18 +547,6 @@ cv::Vec6d FaceDetection::calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung,
             atan2(solution[0],Start[2]-Target[2]),
             atan2(solution[1],Start[2]-Target[2]),
             atan2(solution[2],Start[2]-Target[2]));
-}
-
-cv::Vec2d FaceDetection::calcAngle(double X, double Y, double Z)
-{
-    cv::Vec3d point = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(X,Y,Z)) * cv::Vec3d(0,0,-1);
-    return cv::Vec2d(atan2(point[0],sqrt(point[1]*point[1]+point[2]*point[2])),
-            atan2(point[1],sqrt(point[0]*point[0]+point[2]*point[2])));
-}
-
-cv::Vec2d FaceDetection::calcAngle(cv::Vec6d Point)
-{
-    return calcAngle(Point[3],Point[4],Point[5]);
 }
 
 // Dieser Teil ist aus OpenFace/FaceLandmarkVidMulti.cpp übernommen
@@ -789,102 +757,6 @@ void FaceDetection::initCLNF()
 
 }
 
-void FaceDetection::showImage(const cv::Mat image){
-    QImage img = Image::MatToQImage(image);
-    QImage img2 = img.scaled(mTheWindow->Main_Label->size(),Qt::KeepAspectRatio);
-    mTheWindow->Main_Label->setPixmap(QPixmap::fromImage(img2));
-}
-
-void FaceDetection::getCLNFBox(int model, int pos, int step, double &X, double &Y, double &W, double &H){
-    cv::Mat_<double> shape2D = clnf_models[model].detected_landmarks;
-
-    int n = shape2D.rows/2;
-
-    X = cvRound(shape2D.at<double>(pos));
-    Y = cvRound(shape2D.at<double>(pos + n));
-    W = cvRound(shape2D.at<double>(pos));
-    H = cvRound(shape2D.at<double>(pos + n));
-    for(int i = pos+1; i < pos+step; ++i)// Beginnt bei 0 das Output-Format
-    {
-        double x = (shape2D.at<double>(i));
-        double y = (shape2D.at<double>(i + n));
-        X = min(X,x);
-        Y = min(Y,y);
-        W = max(W,x);
-        H = max(H,y);
-    }
-    W = W-X;
-    H = H-Y;
-}
-
-void FaceDetection::getEyeImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY, double sX, double sY, double sMaxX, double sMaxY){
-    double fr_X = min(Width*sX, sMaxX);
-    double fr_Y = min(Height*sY,sMaxY);
-    X -= fr_X;
-    Y -= fr_Y;
-    Width += fr_X*2;
-    Height += fr_Y*2;
-
-    X = max(X,0.0);
-    Y = max(Y,0.0);
-    Width = min(Width,maxX-X);
-    Height = min(Height, maxY-Y);
-
-    X= cvRound(X);
-    Y= cvRound(Y);
-    Width= cvRound(Width);
-    Height= cvRound(Height);
-}
-
-void FaceDetection::ShowFromeFile()
-{
-    cv::Mat frame;
-
-    // Initialisiierung
-    double fx,fy,cx,cy;
-    int x,y;
-    mKamera->get_camera_params(fx,fy,cx,cy,x,y);
-
-    size_t frm = 0;
-    size_t frameID = 0;
-    std::string name = "";
-    cv::Rect box;
-    int i = -1;
-    while(mFrameEvents->getNextImageFrame(frm,box,name, i)){
-        name = "img/"+name;
-        mKamera->getFrame(frame,frm);
-        // perform landmark detection for every face detected
-        QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
-        pixmapL->fill(Qt::transparent);
-        QPainter *painterL=new QPainter(pixmapL);
-
-        QPixmap *pixmapR=new QPixmap(mTheWindow->Right_Label->size());
-        pixmapR->fill(Qt::transparent);
-        QPainter *painterR=new QPainter(pixmapR);
-
-        printSmallImage(frame,box,i,*painterL, false, name);
-
-        frameID = mFrameEvents->getFramePos(frm);
-        if(mFrameEvents->isLandmark(frameID,i)){
-            double land[5][2];
-            mFrameEvents->getLandmarks(frameID,i,land);
-            for(int j = 0; j < 5; j++){
-                cv::circle(frame, cv::Point2d(land[j][0],land[j][1]),std::min(5,std::max(1,(box.width+box.height)/70)),cv::Scalar(0,255,0),-1);
-            }
-        }
-        printSmallImage(frame,box,i,*painterR, true, name);
-
-        cv::rectangle(frame,box,cv::Scalar(0,255,0),3);
-
-        mTheWindow->Right_Label->setPixmap(*pixmapR);
-        mTheWindow->Left_Label->setPixmap(*pixmapL);
-        showImage(frame);
-
-        if(cv::waitKey(30) >= 0)
-            return;
-    }
-}
-
 void FaceDetection::setMaxFaces(int i)
 {
     if(i > 0 && i != num_faces_max){
@@ -992,77 +864,16 @@ bool FaceDetection::getFrame(cv::Mat &Img, size_t &Frame, cv::Rect &Rec, string 
     }
 }
 
-void FaceDetection::printSmallImage(cv::Mat img, int model, QPainter &painterR, QPainter &painterL, bool print, std::string titel){
-    int sImageW = mTheWindow->Right_Label->size().width();
-    int sImageH = mTheWindow->Right_Label->size().height()/num_faces_max;
+void FaceDetection::showImage(const cv::Mat image, const QPixmap &pixmapL, const QPixmap &pixmapR){
+    QImage img = Image::MatToQImage(image);
+    QImage img2 = img.scaled(mTheWindow->Main_Label->size(),Qt::KeepAspectRatio);
+    mTheWindow->Main_Label->setPixmap(QPixmap::fromImage(img2));
 
-    float quR, quL; // Qualität des Berechnung
-
-    cv::Mat R = print_Eye(img,model,36,6, true,quR); //Left
-    cv::Mat L = print_Eye(img,model,42,6, true,quL); //Right
-
-    if((L.cols > 16 && L.rows > 10) || (R.cols > 16 && R.rows > 10)){
-        if((R.cols < 8 || R.rows < 5)){
-            R = print_Eye(img,model,0,27, false, quR);
-        }else{
-            L = print_Eye(img,model,0,27, false, quL);
-        }
-    }
-    if(print){
-        vector<int> compression_params;
-        compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
-        compression_params.push_back(9);
-        //            cv::imwrite(titel+".png",print_Eye(img,model,0,27, false),compression_params);
-        cv::imwrite(titel+".png",print_Eye(img,model,36,12, false,quL),compression_params);
-    }
-    if(L.data){
-        QImage img = Image::MatToQImage(L);
-        QImage img2 = img.scaled(sImageW,sImageH,Qt::KeepAspectRatio);
-        QPixmap pix = QPixmap::fromImage(img2);
-        painterL.drawPixmap(0, sImageH*model, pix);
-    }
-    if(R.data){
-        QImage img = Image::MatToQImage(R);
-        QImage img2 = img.scaled(sImageW,sImageH,Qt::KeepAspectRatio);
-        QPixmap pix = QPixmap::fromImage(img2);
-        painterR.drawPixmap(0, sImageH*model, pix);
-    }
+    mTheWindow->Right_Label->setPixmap(pixmapL);
+    mTheWindow->Left_Label->setPixmap(pixmapR);
 }
 
-void FaceDetection::printSmallImage(cv::Mat img, cv::Rect rec, int id, QPainter &paint, bool save, std::string titel)
-{
-    if(save){
-        vector<int> compression_params;
-        compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
-        compression_params.push_back(9);
-        cv::imwrite(titel+".png",img(rec),compression_params);
-    }
-
-    int sImageW = mTheWindow->Right_Label->size().width();
-    int sImageH = mTheWindow->Right_Label->size().height()/num_faces_max;
-
-    QImage img1 = Image::MatToQImage(img(rec));
-    QImage img2 = img1.scaled(sImageW,sImageH,Qt::KeepAspectRatio);
-    QPixmap pix = QPixmap::fromImage(img2);
-    paint.drawPixmap(0, sImageH*id, pix);
-}
-
-void FaceDetection::prinEyeCLNFImage(cv::Mat img, int model, string titel, bool save)
-{
-    for(size_t i = 0; i < clnf_models[model].hierarchical_models.size(); ++i)
-    {
-        if(clnf_models[model].hierarchical_models[i].pdm.NumberOfPoints() != clnf_models[model].hierarchical_mapping[i].size()
-                && clnf_models[model].hierarchical_models[i].detected_landmarks.rows == 56){
-            int idx = clnf_models[model].patch_experts.GetViewIdx(clnf_models[model].params_global, 0);
-            LandmarkDetector::Draw(img, clnf_models[model].hierarchical_models[i].detected_landmarks, clnf_models[model].patch_experts.visibilities[0][idx]);
-
-        }
-    }
-    if(save){
-        float quality;
-        vector<int> compression_params;
-        compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
-        compression_params.push_back(9);
-        cv::imwrite(titel+"E3.png",print_Eye(img,model,36,12, false,quality),compression_params);
-    }
+void FaceDetection::print_FPS_Model(int fps, int model){
+    mTheWindow->FPS_Label->setText(QString::number(fps));
+    mTheWindow->Model_Label->setText(QString::number(model));
 }

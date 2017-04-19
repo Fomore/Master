@@ -10,6 +10,7 @@
 #include "src/algo.h"
 #include "control/atentiontracer.h"
 #include "control/frameevents.h"
+#include "control/printer.h"
 
 #include "ui_mainwindow.h"
 
@@ -17,25 +18,12 @@ class FaceDetection
 {
 private:
     Ui::MainWindow* mTheWindow;
-    void showImage(const cv::Mat image);
-
-    cv::Mat print_Eye(const cv::Mat img, int model, int pos, int step, bool clacElse, float &quality);
     void print_FPS_Model(int fps, int model);
-    void print_CLNF(cv::Mat img, int model, double itens, double fx, double fy, double cx, double cy);
-    void print_Orientation(cv::Mat img, int model);
+    void showImage(const cv::Mat image, const QPixmap &pixmapL, const QPixmap &pixmapR);
+
     void writeSolutionToFile(QString name, int model, double fx, double fy, double cx, double cy);
-    void getCLNFBox(int model, int pos, int step, double &X, double &Y, double &W, double &H);
-
-    void printSmallImage(cv::Mat img, int model, QPainter &painterR, QPainter &painterL, bool print, string titel);
-    void printSmallImage(cv::Mat img, cv::Rect rec, int id, QPainter &paint, bool save, string titel);
-    void prinEyeCLNFImage(cv::Mat img, int model, string titel, bool save);
-
-    void getEyeImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY, double sX, double sY, double sMaxX, double sMaxY);
 
     void CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used);
-
-    cv::Vec2d calcAngle(double X, double Y, double Z);
-    cv::Vec2d calcAngle(cv::Vec6d Point);
 
     cv::Vec6d calcFaceAngle(cv::Vec6d Params_Global);
     cv::Vec6d calcAbweichung(cv::Vec6d Params, cv::Point3d Target);
@@ -50,6 +38,7 @@ private:
     AtentionTracer *mAtentionTracer;
     FrameEvents *mFrameEvents;
     Camera* mKamera;
+    Printer mPrinter;
 
     void NonOverlapingDetections(const vector<LandmarkDetector::CLNF>& clnf_models, vector<cv::Rect_<double> >& face_detections);
 

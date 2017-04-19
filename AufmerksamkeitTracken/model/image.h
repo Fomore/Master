@@ -21,7 +21,6 @@ public:
     bool getImage(cv::Mat& Img, size_t &ImageID, std::string &name);
     bool getScallImage(cv::Mat& out);
     static QImage MatToQImage(const cv::Mat& mat);
-    static void saveImage(cv::Mat img, std::string name);
     int getImageID();
     static void CLAHE(cv::Mat in, cv::Mat &out, double clip);
     static void Histogram(cv::Mat in, cv::Mat &out);

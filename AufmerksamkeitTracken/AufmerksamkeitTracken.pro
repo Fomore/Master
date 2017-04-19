@@ -29,7 +29,8 @@ SOURCES += main.cpp\
     control/frameevents.cpp \
     model/frame.cpp \
     model/box.cpp \
-    model/target.cpp
+    model/target.cpp \
+    control/printer.cpp
 #    FaceLandmarkVidMulti.cpp
 #    FaceLandmarkImg.cpp
 
@@ -45,7 +46,8 @@ HEADERS  += mainwindow.h \
     control/frameevents.h \
     model/frame.h \
     model/box.h \
-    model/target.h
+    model/target.h \
+    control/printer.h
 
 FORMS    += mainwindow.ui
 
