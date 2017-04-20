@@ -46,6 +46,7 @@ bool Camera::setPath(QString path){
 void Camera::setCameraParameter(int id){
     ID = id;
     if(id == 1){ //Webcam (fx und fy besser bei OpenFace wenn halb so groß)
+        mfx = mfy = 500;
         ImageWight = 640; ImageHeight = 480;
         cameraMatrix = (cv::Mat_<double>(3,3) << 1543.184291356096, 0, 350.9031480800631,
                         0, 1526.994309676135, 303.4424747270602,
@@ -66,7 +67,7 @@ void Camera::setCameraParameter(int id){
                         0, 0, 1);
         distCoeffs = (cv::Mat_<double>(1,5) << -9.599320311558495, 153.5177497796487, -0.02105648553599707, -0.03765560152948207, 4.241928717530834);
     }else if(id == 4){ //2688P der 4k Actioncam (2.7K Einstellung)
-        mfx = mfy = 1550;
+        mfx = mfy = 1435.78;
         ImageWight = 2688; ImageHeight = 1520;
         cameraMatrix = (cv::Mat_<double>(3,3) << 15373.97717428267, 0, 1321.996093444815,
                         0, 17764.65120151666, 735.3988503456478,
@@ -88,10 +89,10 @@ void Camera::setCameraParameter(int id){
         distCoeffs = (cv::Mat_<double>(1,5) << -2.006696653082546, 14.50478814130672, 0.01196899857324854, -0.0326620616728269, -56.30904541044546);
     }else{//Default Parameter
         ImageWight = 640; ImageHeight = 480;
-        float fx = 500 * (ImageWight / 640.0);
-        float fy = 500 * (ImageHeight / 480.0);
+        mfx = 500 * (ImageWight / 640.0);
+        mfy = 500 * (ImageHeight / 480.0);
 
-        fx = (fx + fy) / 2.0;
+        double fx = (mfx + mfy) / 2.0;
         cameraMatrix = (cv::Mat_<double>(3,3) << fx, 0, ImageWight/2.0,
                         0, fx, ImageHeight/2.0,
                         0, 0, 1 );

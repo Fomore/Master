@@ -477,24 +477,17 @@ void FaceDetection::writeSolutionToFile(QString name, int model, double fx, doub
 
     // Work out the pose of the head from the tracked model
     cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy); //Distanz in Millimeter
-    cv::Vec6d pose_estimateSelbst = calcFaceAngle(clnf_models[model].params_global);
 
     cv::Point2d worldAngle, rotatAngle;
     cv::Point3d worlPoint, target;
     mTarget->getOrienation(name,worldAngle,worlPoint, rotatAngle, target);
 
-    cv::Vec6d abwichung = calcAbweichung(pose_estimateSelbst,target);
-
     std::ofstream myfile;
     myfile.open ("./data/BerechnungWinkel_Video.txt", std::ios::in | std::ios::app);
     myfile <<worlPoint<<target<<clnf_models[model].params_global<<"|"
-       <<LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], 1540, 1540, 1334, 760)
-      <<"|"<<pose_estimateSelbst
-          /*<<abwichung
-          <<calcAbweichung(cv::Vec3d(pose_estimateSelbst[0],pose_estimateSelbst[1],pose_estimateSelbst[2]),
-            cv::Vec3d(gazeDirection0.x,gazeDirection0.y,gazeDirection0.z),target)
-            <<calcAbweichung(cv::Vec3d(pose_estimateSelbst[0],pose_estimateSelbst[1],pose_estimateSelbst[2]),
-            cv::Vec3d(gazeDirection1.x,gazeDirection1.y,gazeDirection1.z),target) */<<std::endl;
+          <<pose_estimate<<"|"<<calcAbweichung(pose_estimate,target)
+         <<calcAbweichung(cv::Vec3d(pose_estimate[0],pose_estimate[1],pose_estimate[2]),gazeDirection0,target)
+        <<calcAbweichung(cv::Vec3d(pose_estimate[0],pose_estimate[1],pose_estimate[2]),gazeDirection1,target)<<std::endl;
     myfile.close();
 }
 
@@ -541,6 +534,10 @@ cv::Vec6d FaceDetection::calcAbweichung(cv::Vec6d Params,cv::Point3d Target)
     cv::Vec3d ori = R*cv::Vec3d(0,0,-1);
 
     return calcAbweichung(Pos,ori,TargetRot);
+}
+
+cv::Vec6d FaceDetection::calcAbweichung(cv::Vec3d Start, cv::Point3f Orientierung, cv::Vec3d Target){
+    return calcAbweichung(Start,cv::Vec3d(Orientierung.x,Orientierung.y,Orientierung.z),Target);
 }
 
 cv::Vec6d FaceDetection::calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target)
@@ -713,6 +710,10 @@ void FaceDetection::CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used, double
 
 void FaceDetection::initCLNF()
 {
+    clnf_models.clear();
+    active_models.clear();
+    det_parameters.clear();
+
     vector<string> arguments;
     arguments.push_back(""); // Hat arguments keine Werte kann wes wegoptimiert werden und dadurch wirft die Initilaisierung unten Fehler
 
