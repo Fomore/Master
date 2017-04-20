@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     mKamera = new Camera(5);
+
     mFrameEvents = new FrameEvents();
 
     mKamera->setPath("/home/falko/Uni/Master/Film/Test_Positionen_2.mp4");
@@ -25,10 +26,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-    if(ui->checkBox_Autorun->isChecked()){
-        mFaceDetection->FaceTracking();
-    }else{
+    if(ui->actionVerbesserter_Ablauf->isChecked()){
         mFaceDetection->FaceTrackingNewVersion();
+    }else{
+        mFaceDetection->FaceTracking();
     }
 }
 
@@ -103,4 +104,28 @@ void MainWindow::on_actionUse_CLAHE_triggered(bool checked)
 void MainWindow::on_actionAugen_Mitteln_triggered(bool checked)
 {
     mFaceDetection->setUseEye(checked);
+}
+
+void MainWindow::on_actionSet_fx_fy_triggered()
+{
+    double fx = QInputDialog::getDouble(this,"Brennweite","Eingabe der Brennweite fx",
+                                  mKamera->getFx(),-1);
+    double fy = QInputDialog::getDouble(this,"Brennweite","Eingabe der Brennweite fy",
+                                  mKamera->getFy(),-1);
+    mKamera->setFxFy(fx,fy);
+}
+
+void MainWindow::on_actionScale_Box_triggered()
+{
+    double s = QInputDialog::getDouble(this,"Skallierung","Um welchen Faktor soll die Box (XML) verändert werden?",
+                                  1.0,0,300,2);
+    mFaceDetection->setBoxScall(s);
+}
+
+void MainWindow::on_actionSet_min_Box_Size_triggered()
+{
+    int w = QInputDialog::getInt(this,"Box Width","Mindesbreite der Box",100,1);
+    int h = QInputDialog::getInt(this,"Box Height","Mindeshöhe der Box",100,1);
+
+    mFaceDetection->setBoxMinSize(w,h);
 }

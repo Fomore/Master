@@ -14,6 +14,7 @@ private:
     int ImageWight, ImageHeight;
     int ID;
     bool mUseCorrection = true;
+    double mfx, mfy;
 
     cv::VideoCapture video;
 
@@ -49,6 +50,10 @@ public:
     cv::Matx33d getRotationMatrix();
 
     size_t getFrameNr();
+
+    void setFxFy(double fx, double fy);
+    double getFx();
+    double getFy();
 };
 
 #endif // CAMERA_H

@@ -64,7 +64,7 @@
      </layout>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,1,1,1,10">
+     <layout class="QVBoxLayout" name="verticalLayout_3" stretch="2,1,2,20">
       <item>
        <widget class="QPushButton" name="pushButton">
         <property name="text">
@@ -126,16 +126,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="checkBox_Autorun">
-        <property name="text">
-         <string>Autorun</string>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <widget class="QLabel" name="Left_Label">
@@ -183,15 +173,38 @@
     <property name="title">
      <string>Einstellungen</string>
     </property>
+    <widget class="QMenu" name="menuAblauf_Einstellung">
+     <property name="title">
+      <string>Algorithmen</string>
+     </property>
+     <addaction name="actionAuto_Size"/>
+     <addaction name="actionUse_CLAHE"/>
+     <addaction name="actionFrom_XML_File"/>
+     <addaction name="actionVerbesserter_Ablauf"/>
+    </widget>
+    <widget class="QMenu" name="menuQuelle">
+     <property name="title">
+      <string>Quelle</string>
+     </property>
+     <addaction name="actionUse_Boxes"/>
+     <addaction name="actionLearn_Model"/>
+    </widget>
+    <widget class="QMenu" name="menuPositionsberechnung">
+     <property name="title">
+      <string>Positionsberechnung</string>
+     </property>
+     <addaction name="actionAugen_Mitteln"/>
+     <addaction name="actionSet_fx_fy"/>
+     <addaction name="actionScale_Box"/>
+     <addaction name="actionSet_min_Box_Size"/>
+    </widget>
     <addaction name="actionSelect_Camera"/>
     <addaction name="actionMax_Faces"/>
-    <addaction name="actionFrom_XML_File"/>
-    <addaction name="actionUse_Boxes"/>
-    <addaction name="actionUse_CLAHE"/>
-    <addaction name="actionAugen_Mitteln"/>
     <addaction name="actionCorrect_Image"/>
-    <addaction name="actionLearn_Model"/>
-    <addaction name="actionAuto_Size"/>
+    <addaction name="separator"/>
+    <addaction name="menuPositionsberechnung"/>
+    <addaction name="menuAblauf_Einstellung"/>
+    <addaction name="menuQuelle"/>
    </widget>
    <addaction name="menuFace_Detection"/>
    <addaction name="menuEinstellungen"/>
@@ -228,7 +241,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Auto Size</string>
+    <string>Hochskallieren</string>
    </property>
   </action>
   <action name="actionSelect_Camera">
@@ -260,18 +273,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Learn Model</string>
-   </property>
-  </action>
-  <action name="actionFrom_XML_File">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>From XML-File</string>
+    <string>Use Image</string>
    </property>
   </action>
   <action name="actionUse_CLAHE">
@@ -294,6 +296,43 @@
    </property>
    <property name="text">
     <string>Augen-Mitteln</string>
+   </property>
+  </action>
+  <action name="actionFrom_XML_File">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>From XML-File</string>
+   </property>
+  </action>
+  <action name="actionSet_fx_fy">
+   <property name="text">
+    <string>Set fx and fy</string>
+   </property>
+  </action>
+  <action name="actionVerbesserter_Ablauf">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Verbesserter Ablauf</string>
+   </property>
+  </action>
+  <action name="actionScale_Box">
+   <property name="text">
+    <string>Set Scale-Factor Box</string>
+   </property>
+  </action>
+  <action name="actionSet_min_Box_Size">
+   <property name="text">
+    <string>Set min Box-Size</string>
    </property>
   </action>
  </widget>

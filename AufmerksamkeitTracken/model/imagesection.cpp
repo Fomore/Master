@@ -64,9 +64,20 @@ void ImageSection::newRect(cv::Rect rec)
     }
 }
 
-void ImageSection::setScall(double s)
+void ImageSection::setBoxScall(double s)
 {
     mScall = s;
+}
+
+double ImageSection::getBoxScall()
+{
+    return mScall;
+}
+
+void ImageSection::setBoxMinSize(int w, int h)
+{
+    mMinSize.width = w;
+    mMinSize.height = h;
 }
 
 void ImageSection::toImage(LandmarkDetector::CLNF &clnf)
@@ -118,6 +129,11 @@ void ImageSection::toImage(LandmarkDetector::CLNF &clnf)
 void ImageSection::setAutoSize(bool use)
 {
     mAutoSize = true;
+}
+
+double ImageSection::getImageScall()
+{
+    return fx;
 }
 
 void ImageSection::toSection(LandmarkDetector::CLNF &clnf)

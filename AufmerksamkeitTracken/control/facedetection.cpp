@@ -277,7 +277,7 @@ void FaceDetection::FaceTrackingNewVersion(){
                     itens = (detection_certainty + 1)/(visualisation_boundary +1);
 
                     int used;
-                    CalcualteEyes(disp_image,model,used);
+                    CalcualteEyes(disp_image,model,used,mImageSections[model].getImageScall());
                     std::string name;
 
                     if(mFrameEvents->isImageFrame(FrameID,name,mFrameEvents->getName(model))){
@@ -340,8 +340,12 @@ void FaceDetection::FaceTrackingImage(){
         cv::Mat_<uchar> grayscale_image;
         //Image::convert_to_grayscale(frame_col,grayIMG);
         Image::convert_to_grayscale(frame,grayscale_image);
-        for(int clahe = 0; !success && clahe < 2 ; clahe++){
-            if(mCLAHE && clahe > 0){
+        int end = 1;
+        if(mCLAHE){
+            end = 2;
+        }
+        for(int clahe = 0; !success && clahe < end ; clahe++){
+            if(clahe > 0){
                 // Image::CLAHE(grayIMG,grayscale_image,0.875);
                 Image::Histogram(grayscale_image,grayscale_image);
             }
@@ -374,7 +378,7 @@ void FaceDetection::FaceTrackingImage(){
 
         if(success){
             int used;
-            CalcualteEyes(disp_image,Model_Init,used);
+            CalcualteEyes(disp_image,Model_Init,used,1.0);
 
             writeSolutionToFile(QString::fromStdString(name),Model_Init,fx,fy,cx,cy);
 
@@ -472,7 +476,7 @@ void FaceDetection::writeSolutionToFile(QString name, int model, double fx, doub
     FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection1, fx, fy, cx, cy, false);
 
     // Work out the pose of the head from the tracked model
-    cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy);
+    cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy); //Distanz in Millimeter
     cv::Vec6d pose_estimateSelbst = calcFaceAngle(clnf_models[model].params_global);
 
     cv::Point2d worldAngle, rotatAngle;
@@ -481,16 +485,16 @@ void FaceDetection::writeSolutionToFile(QString name, int model, double fx, doub
 
     cv::Vec6d abwichung = calcAbweichung(pose_estimateSelbst,target);
 
-    std::cout<<clnf_models[model].params_global<<pose_estimate<<std::endl
-           <<pose_estimateSelbst<<abwichung<<std::endl;
-
     std::ofstream myfile;
     myfile.open ("./data/BerechnungWinkel_Video.txt", std::ios::in | std::ios::app);
-    myfile <<worlPoint<<target<<pose_estimateSelbst<<abwichung
+    myfile <<worlPoint<<target<<clnf_models[model].params_global<<"|"
+       <<LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], 1540, 1540, 1334, 760)
+      <<"|"<<pose_estimateSelbst
+          /*<<abwichung
           <<calcAbweichung(cv::Vec3d(pose_estimateSelbst[0],pose_estimateSelbst[1],pose_estimateSelbst[2]),
             cv::Vec3d(gazeDirection0.x,gazeDirection0.y,gazeDirection0.z),target)
             <<calcAbweichung(cv::Vec3d(pose_estimateSelbst[0],pose_estimateSelbst[1],pose_estimateSelbst[2]),
-            cv::Vec3d(gazeDirection1.x,gazeDirection1.y,gazeDirection1.z),target)<<std::endl;
+            cv::Vec3d(gazeDirection1.x,gazeDirection1.y,gazeDirection1.z),target) */<<std::endl;
     myfile.close();
 }
 
@@ -501,7 +505,7 @@ cv::Vec6d FaceDetection::calcFaceAngle(cv::Vec6d Params_Global)
     double cx = 1334;
     double cy = 760;
 
-    double Z = 154 / Params_Global[0];
+    double Z = 1540 / Params_Global[0];
     double X = (Params_Global[4] - cx) / fx * Z;
     double Y = (Params_Global[5] - cy) / fy * Z;
 
@@ -573,7 +577,7 @@ void FaceDetection::NonOverlapingDetections(const vector<LandmarkDetector::CLNF>
     }
 }
 
-void FaceDetection::CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used)
+void FaceDetection::CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used, double fx)
 {
     /*
      * used
@@ -627,7 +631,7 @@ void FaceDetection::CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used)
             }
             cv::RotatedRect min_eye = cv::fitEllipse(pos);
             cv::RotatedRect max_eye = cv::fitEllipse(pos2);
-            if((min_eye.size.width+min_eye.size.height)/2 > 4.5){
+            if((min_eye.size.width+min_eye.size.height)/2 > 4.5*fx){
                 cv::Mat gray;
                 Image::convert_to_grayscale(img(rec), gray);
                 float quality;
@@ -777,6 +781,19 @@ void FaceDetection::setAutoSize(bool a)
     }
 }
 
+void FaceDetection::setBoxScall(double s){
+    for(size_t i = 0; i < mImageSections.size(); i++){
+        mImageSections[i].setBoxScall(s);
+    }
+}
+
+void FaceDetection::setBoxMinSize(int w, int h)
+{
+    for(size_t i = 0; i < mImageSections.size(); i++){
+        mImageSections[i].setBoxMinSize(w,h);
+    }
+}
+
 void FaceDetection::setUseBox(bool b)
 {
     mUseBox = b;
@@ -784,7 +801,7 @@ void FaceDetection::setUseBox(bool b)
 
 void FaceDetection::setLearn(bool l)
 {
-    mLearn = l;
+    mUseImage = l;
 }
 
 void FaceDetection::setCLAHE(bool c)
@@ -799,19 +816,17 @@ void FaceDetection::setUseEye(bool e)
 
 bool FaceDetection::getFrame(cv::Mat &img)
 {
-    bool ret =  mKamera->getFrame(img);
-    if(ret && mUseBox){
+    if(mUseBox){
         size_t frame = mKamera->getFrameNr();
-        if(mFrameEvents->isFrameUsed(frame)){
-            return true;
-        }else if(mFrameEvents->getNextFrame(frame)){
+        if(mFrameEvents->getNextFrame(frame)){
             mKamera->setFrame(frame);
             return mKamera->getFrame(img);
         }else{
             return false;
         }
+    }else{
+        return mKamera->getFrame(img);
     }
-    return ret;
 }
 
 bool FaceDetection::getFrame(cv::Mat &img, size_t FrameID)
@@ -831,7 +846,7 @@ bool FaceDetection::getFrame(cv::Mat &img, size_t FrameID)
 bool FaceDetection::getFrame(cv::Mat &Img, size_t &Frame, cv::Rect &Rec, string &Name,
                              double fx, double fy, double cx, double cy, int x, int y)
 {
-    if(!mLearn){
+    if(!mUseImage){
         int BoxID = -1;
         if(mFrameEvents->getNextImageFrame(Frame,Rec,Name, BoxID)){
             mKamera->getFrame(Img,Frame);

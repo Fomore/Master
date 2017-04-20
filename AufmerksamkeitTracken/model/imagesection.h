@@ -9,7 +9,7 @@ class ImageSection
     cv::Rect Rec_old;
     cv::Rect Rec_new;
     cv::Size mImageSize;
-    cv::Size2d mMinSize;
+    cv::Size mMinSize;
     double mScall = 1.3;
     double fx = 1.0;
     bool mAutoSize = true;
@@ -20,11 +20,15 @@ public:
     cv::Rect getRect();
     void getImage(cv::Mat Image, cv::Mat &Part);
     void newRect(cv::Rect rec);
-    void setScall(double s);
     void toSection(LandmarkDetector::CLNF &clnf);
     void toImage(LandmarkDetector::CLNF &clnf);
     void setAutoSize(bool use);
+    double getImageScall();
 
+    void setBoxScall(double s);
+    double getBoxScall();
+
+    void setBoxMinSize(int w, int h);
 };
 
 #endif // IMAGESECTION_H

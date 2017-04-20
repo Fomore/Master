@@ -40,7 +40,7 @@ void Printer::getEyeImageSize(double &X, double &Y, double &Width, double &Heigh
     Height= cvRound(Height);
 }
 
-void Printer::print_CLNF(cv::Mat img, LandmarkDetector::CLNF &model, double itens, double fx, double fy, double cx, double cy){
+void Printer::print_CLNF(cv::Mat img,const LandmarkDetector::CLNF &model, double itens, double fx, double fy, double cx, double cy){
     LandmarkDetector::Draw(img, model);
 
     // A rough heuristic for box around the face width
@@ -68,7 +68,7 @@ void Printer::print_CLNF(cv::Mat img, LandmarkDetector::CLNF &model, double iten
 }
 
 //Hier wird die Kopforientierung dargestellt
-void Printer::print_Orientation(cv::Mat img, LandmarkDetector::CLNF &model){
+void Printer::print_Orientation(cv::Mat img, const LandmarkDetector::CLNF &model){
     // A rough heuristic for box around the face width
     int thickness = (int)std::ceil(1.2* ((double)img.cols) / 640.0);
     cv::Vec6d gparam = model.params_global;
@@ -78,7 +78,7 @@ void Printer::print_Orientation(cv::Mat img, LandmarkDetector::CLNF &model){
     cv::arrowedLine(img, cv::Point(gparam[4],gparam[5]),cv::Point(gparam[4]+ln(0),gparam[5]+ln(1)), colore,thickness);
 }
 
-cv::Mat Printer::getEyeImage(const cv::Mat img, LandmarkDetector::CLNF &model, int pos, int step, bool clacElse, float &quality){
+cv::Mat Printer::getEyeImage(const cv::Mat img,const LandmarkDetector::CLNF &model, int pos, int step, bool clacElse, float &quality){
     double X,Y,Width,Height;
     getCLNFBox(model, pos, step, X,Y,Width,Height);
 
@@ -92,7 +92,7 @@ cv::Mat Printer::getEyeImage(const cv::Mat img, LandmarkDetector::CLNF &model, i
     return img_Eye;
 }
 
-void Printer::getCLNFBox(LandmarkDetector::CLNF &model, int pos, int step, double &X, double &Y, double &W, double &H){
+void Printer::getCLNFBox(const LandmarkDetector::CLNF &model, int pos, int step, double &X, double &Y, double &W, double &H){
     cv::Mat_<double> shape2D = model.detected_landmarks;
 
     int n = shape2D.rows/2;
@@ -114,7 +114,7 @@ void Printer::getCLNFBox(LandmarkDetector::CLNF &model, int pos, int step, doubl
     H = H-Y;
 }
 
-void Printer::printSmallImage(cv::Mat img, LandmarkDetector::CLNF &model, QPainter &painterR, QPainter &painterL, bool print, std::string titel, bool drawLandmarks, int sImageW, int sImageH, int pos){
+void Printer::printSmallImage(cv::Mat img, const LandmarkDetector::CLNF &model, QPainter &painterR, QPainter &painterL, bool print, std::string titel, bool drawLandmarks, int sImageW, int sImageH, int pos){
     float quR, quL; // Qualität des Berechnung
     if(drawLandmarks){
         for(size_t i = 0; i < model.hierarchical_models.size(); ++i){

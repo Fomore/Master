@@ -23,7 +23,7 @@ private:
 
     void writeSolutionToFile(QString name, int model, double fx, double fy, double cx, double cy);
 
-    void CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used);
+    void CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used, double fx);
 
     cv::Vec6d calcFaceAngle(cv::Vec6d Params_Global);
     cv::Vec6d calcAbweichung(cv::Vec6d Params, cv::Point3d Target);
@@ -54,7 +54,7 @@ private:
 
     bool mAutoSize = false;
     bool mUseBox = false;
-    bool mLearn = false;
+    bool mUseImage = false;
     bool mCLAHE = true;
     bool mUseEye = true;
 
@@ -80,6 +80,8 @@ public:
     void setCLAHE(bool c);
     void setUseEye(bool e);
 
+    void setBoxScall(double s);
+    void setBoxMinSize(int w, int h);
 };
 
 #endif // FACEDETECTION_H

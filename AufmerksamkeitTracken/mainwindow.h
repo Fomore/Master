@@ -47,6 +47,12 @@ private slots:
 
     void on_actionAugen_Mitteln_triggered(bool checked);
 
+    void on_actionSet_fx_fy_triggered();
+
+    void on_actionScale_Box_triggered();
+
+    void on_actionSet_min_Box_Size_triggered();
+
 private:
     Ui::MainWindow *ui;
 //    Image mImage;
