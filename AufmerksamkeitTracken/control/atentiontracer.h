@@ -50,8 +50,8 @@ public:
     void print();
     void reset();
     void setImageSize(int Width, int Height);
-    void showSolution(QString name, const LandmarkDetector::CLNF &model, double fx, double fy, double cx, double cy,
-                      double colore, cv::Vec6d headPoseCam, cv::Vec6d headPoseImg, bool write);
+    void showSolution(QString name, const LandmarkDetector::CLNF &model,
+                      double fx, double fy, double cx, double cy, double colore, bool write);
     void setWriteToFile(bool write);
 };
 

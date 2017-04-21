@@ -202,12 +202,12 @@
     <addaction name="actionMax_Faces"/>
     <addaction name="actionCorrect_Image"/>
     <addaction name="actionShow_Eyes"/>
+    <addaction name="actionSave_Image"/>
+    <addaction name="actionWrite_Solution"/>
     <addaction name="separator"/>
     <addaction name="menuPositionsberechnung"/>
     <addaction name="menuAblauf_Einstellung"/>
     <addaction name="menuQuelle"/>
-    <addaction name="actionSave_Image"/>
-    <addaction name="actionWrite_Solution"/>
    </widget>
    <addaction name="menuFace_Detection"/>
    <addaction name="menuEinstellungen"/>

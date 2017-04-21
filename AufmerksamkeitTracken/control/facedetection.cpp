@@ -145,11 +145,7 @@ void FaceDetection::FaceTracking(){
                 double itens = (detection_certainty + 1)/(visualisation_boundary +1);
                 mPrinter.print_CLNF(disp_image,clnf_models[model],itens,fx,fy,cx,cy);
 
-                mAtentionTracer->showSolution("",clnf_models[model],fx,fy,cx,cy,
-                                              (double)model/num_faces_max,
-                                              LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy),
-                                              clnf_models[model].params_global,
-                                              true);
+                mAtentionTracer->showSolution("",clnf_models[model],fx,fy,cx,cy, (double)model/num_faces_max, true);
             }
         }
         painterL->end();
@@ -296,10 +292,7 @@ void FaceDetection::FaceTrackingNewVersion(){
 
                     // Estimate head pose and eye gaze
                     mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[model],fx,fy,cx,cy,
-                                                  (double)model/num_faces_max,
-                                                  LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy),
-                                                  clnf_models[model].params_global,
-                                                  isImageFrame);
+                                                  (double)model/num_faces_max, isImageFrame);
 
                     mPrinter.print_CLNF(disp_image,clnf_models[model],0.5,fx,fy,cx,cy);
 
@@ -389,11 +382,7 @@ void FaceDetection::FaceTrackingImage(){
             int used;
             CalcualteEyes(disp_image,Model_Init,used,1.0);
 
-            mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[Model_Init],fx,fy,cx,cy,
-                                          (double)Model_Init/num_faces_max,
-                                          LandmarkDetector::GetCorrectedPoseCamera(clnf_models[Model_Init], fx, fy, cx, cy),
-                                          clnf_models[Model_Init].params_global,
-                                          true);
+            mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[Model_Init],fx,fy,cx,cy, (double)Model_Init/num_faces_max, true);
 
             name += "_"+std::to_string(used);
             name.erase(std::remove(name.begin(), name.end(), ' '), name.end());

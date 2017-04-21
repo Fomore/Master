@@ -77,9 +77,10 @@ void AtentionTracer::writeSolutionToFile(QString name, const LandmarkDetector::C
     myfile.close();
 }
 
-void AtentionTracer::showSolution(QString name, const LandmarkDetector::CLNF &model, double fx, double fy, double cx, double cy, double colore, cv::Vec6d headPoseCam, cv::Vec6d headPoseImg, bool write)
+void AtentionTracer::showSolution(QString name, const LandmarkDetector::CLNF &model, double fx, double fy, double cx, double cy,
+                                  double colore, bool write)
 {
-    newPosition(colore,headPoseCam,headPoseImg);
+    newPosition(colore,LandmarkDetector::GetCorrectedPoseCamera(model, fx, fy, cx, cy),model.params_global);
     if(mWriteToFile && write){
         writeSolutionToFile(name,model, fx,fy,cx,cy);
     }
