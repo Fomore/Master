@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <algorithm>
 #include <math.h>
+#include <string>
 
 #include <Face_utils.h>
 #include <FaceAnalyser.h>
@@ -133,7 +134,7 @@ void FaceDetection::FaceTracking(){
             // Only draw if the reliability is reasonable, the value is slightly ad-hoc
             if(detection_certainty < visualisation_boundary){
 
-                mPrinter.printSmallImage(frame_col,clnf_models[model],*painterR,*painterL, false,"",
+                mPrinter.printSmallImage(frame_col,clnf_models[model],*painterR,*painterL,"Frame_"+std::to_string(FrameID),
                                 mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, model);
 
                 if(detection_certainty > 1)
@@ -144,9 +145,11 @@ void FaceDetection::FaceTracking(){
                 double itens = (detection_certainty + 1)/(visualisation_boundary +1);
                 mPrinter.print_CLNF(disp_image,clnf_models[model],itens,fx,fy,cx,cy);
 
-                mAtentionTracer->newPosition((double)model/num_faces_max,
-                                             LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy),
-                                             clnf_models[model].params_global);
+                mAtentionTracer->showSolution("",clnf_models[model],fx,fy,cx,cy,
+                                              (double)model/num_faces_max,
+                                              LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy),
+                                              clnf_models[model].params_global,
+                                              true);
             }
         }
         painterL->end();
@@ -283,18 +286,20 @@ void FaceDetection::FaceTrackingNewVersion(){
                     CalcualteEyes(disp_image,model,used,mImageSections[model].getImageScall());
                     std::string name;
 
-                    if(mFrameEvents->isImageFrame(FrameID,name,mFrameEvents->getName(model))){
+                    bool isImageFrame = mFrameEvents->isImageFrame(FrameID,name,mFrameEvents->getName(model));
+                    if(isImageFrame){
                         std::cout<<mKamera->getFrameNr()<<": "<<model<<" "<<name<<mImageSections[model].getRect()<<std::endl;
-                        mAtentionTracer->writeSolutionToFile(QString::fromStdString(name),clnf_models[model],fx,fy,cx,cy);
                     }
 
-                    mPrinter.printSmallImage(frame_colore,clnf_models[model],*painterR,*painterL, false,"",
+                    mPrinter.printSmallImage(frame_colore,clnf_models[model],*painterR,*painterL, name,
                                     mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, model);
 
                     // Estimate head pose and eye gaze
-                    mAtentionTracer->newPosition((double)model/num_faces_max,
-                                                 LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy),
-                                                 clnf_models[model].params_global);
+                    mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[model],fx,fy,cx,cy,
+                                                  (double)model/num_faces_max,
+                                                  LandmarkDetector::GetCorrectedPoseCamera(clnf_models[model], fx, fy, cx, cy),
+                                                  clnf_models[model].params_global,
+                                                  isImageFrame);
 
                     mPrinter.print_CLNF(disp_image,clnf_models[model],0.5,fx,fy,cx,cy);
 
@@ -384,19 +389,19 @@ void FaceDetection::FaceTrackingImage(){
             int used;
             CalcualteEyes(disp_image,Model_Init,used,1.0);
 
-            mAtentionTracer->writeSolutionToFile(QString::fromStdString(name),clnf_models[Model_Init],fx,fy,cx,cy);
+            mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[Model_Init],fx,fy,cx,cy,
+                                          (double)Model_Init/num_faces_max,
+                                          LandmarkDetector::GetCorrectedPoseCamera(clnf_models[Model_Init], fx, fy, cx, cy),
+                                          clnf_models[Model_Init].params_global,
+                                          true);
 
             name += "_"+std::to_string(used);
             name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
 
-            mPrinter.printSmallImage(disp_image.clone(),clnf_models[Model_Init],*painterR,*painterL, false,"",
+            mPrinter.printSmallImage(disp_image.clone(),clnf_models[Model_Init],*painterR,*painterL, name,
                             mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, Model_Init);
 
             mPrinter.print_CLNF(disp_image,clnf_models[Model_Init],0.5,fx,fy,cx,cy);
-
-            mAtentionTracer->newPosition((double)Model_Init/num_faces_max,
-                                         LandmarkDetector::GetCorrectedPoseCamera(clnf_models[Model_Init], fx, fy, cx, cy),
-                                         clnf_models[Model_Init].params_global);
 
             //std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
             active_models[Model_Init] = false;
@@ -448,7 +453,7 @@ void FaceDetection::ShowFromeFile()
         pixmapR->fill(Qt::transparent);
         QPainter *painterR=new QPainter(pixmapR);
 
-        mPrinter.printSmallImage(frame,box,i,*painterL, false, name,
+        mPrinter.printSmallImage(frame,box,i,*painterL, name,
                         mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max);
 
         frameID = mFrameEvents->getFramePos(frm);
@@ -459,7 +464,7 @@ void FaceDetection::ShowFromeFile()
                 cv::circle(frame, cv::Point2d(land[j][0],land[j][1]),std::min(5,std::max(1,(box.width+box.height)/70)),cv::Scalar(0,255,0),-1);
             }
         }
-        mPrinter.printSmallImage(frame,box,i,*painterR, true, name,
+        mPrinter.printSmallImage(frame,box,i,*painterR, name,
                         mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max);
 
         cv::rectangle(frame,box,cv::Scalar(0,255,0),3);
@@ -739,6 +744,16 @@ void FaceDetection::setUseEye(bool e)
 void FaceDetection::setShowEyes(bool show)
 {
     mPrinter.setShowEye(show);
+}
+
+void FaceDetection::setSaveIamge(bool save)
+{
+    mPrinter.setSaveImage(save);
+}
+
+void FaceDetection::setWriteSolution(bool write)
+{
+    mAtentionTracer->setWriteToFile(write);
 }
 
 bool FaceDetection::getFrame(cv::Mat &img, size_t FrameID)

@@ -13,14 +13,6 @@ Printer::Printer()
 {
 }
 
-void Printer::saveImage(std::string titel, cv::Mat img)
-{
-    std::vector<int> compression_params;
-    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
-    compression_params.push_back(9);
-    cv::imwrite(titel,img, compression_params);
-}
-
 void Printer::getEyeImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY, double sX, double sY, double sMaxX, double sMaxY){
     double fr_X = std::min(Width*sX, sMaxX);
     double fr_Y = std::min(Height*sY,sMaxY);
@@ -111,7 +103,7 @@ void Printer::getCLNFBox(const LandmarkDetector::CLNF &model, int pos, int step,
 }
 
 void Printer::printSmallImage(cv::Mat img, const LandmarkDetector::CLNF &model, QPainter &painterR, QPainter &painterL,
-                              bool print, std::string titel, int sImageW, int sImageH, int pos){
+                              std::string titel, int sImageW, int sImageH, int pos){
     cv::Mat R;
     cv::Mat L;
     if(mDrawEyeLandmarks){
@@ -142,15 +134,15 @@ void Printer::printSmallImage(cv::Mat img, const LandmarkDetector::CLNF &model, 
         printMatToQPainter(R,painterR,sImageW,sImageH,pos);
     }
 
-    if(print){
-        saveImage(titel+".png",getEyeImage(img,model,37,12));
+    if(mSaveImage){
+        saveImage(titel,getEyeImage(img,model,37,12));
     }
 }
 
-void Printer::printSmallImage(cv::Mat img, cv::Rect rec, int id, QPainter &paint, bool save, std::string titel, int sImageW, int sImageH)
+void Printer::printSmallImage(cv::Mat img, cv::Rect rec, int id, QPainter &paint, std::string titel, int sImageW, int sImageH)
 {
-    if(save){
-        saveImage(titel+".png",img(rec));
+    if(mSaveImage){
+        saveImage(titel,img(rec));
     }
     printMatToQPainter(img(rec),paint,sImageW,sImageH,id);
 }
@@ -160,10 +152,23 @@ void Printer::setShowEye(bool show)
     mDrawEyeLandmarks = show;
 }
 
+void Printer::setSaveImage(bool save)
+{
+    mSaveImage = save;
+}
+
 void Printer::printMatToQPainter(cv::Mat Img, QPainter &Paint, int Width, int Height, int Position)
 {
     QImage img = Image::MatToQImage(Img);
     QImage img2 = img.scaled(Width,Height,Qt::KeepAspectRatio);
     QPixmap pix = QPixmap::fromImage(img2);
     Paint.drawPixmap(0, Height*Position, pix);
+}
+
+void Printer::saveImage(std::string titel, cv::Mat img)
+{
+    std::vector<int> compression_params;
+    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(9);
+    cv::imwrite(titel+".png",img, compression_params);
 }

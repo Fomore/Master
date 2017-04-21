@@ -12,6 +12,8 @@ class AtentionTracer : public Target
 private:
     Ui::MainWindow* mTheWindow;
 
+    bool mWriteToFile = true;
+
     std::vector<double> mColores;
     //Positives linkshändiges Koordinatensystem
     std::vector<cv::Vec6d> mCamPose;
@@ -39,14 +41,18 @@ private:
     cv::Vec6d calcAbweichung(cv::Vec6d Params, cv::Point3d Target);
     cv::Vec6d calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target);
     cv::Vec6d calcAbweichung(cv::Vec3d Start, cv::Point3f Orientierung, cv::Vec3d Target);
+
+    void newPosition(double colore, cv::Vec6d headPoseCam, cv::Vec6d headPoseImg);
+    void writeSolutionToFile(QString name, const LandmarkDetector::CLNF &model, double fx, double fy, double cx, double cy);
 public:
     AtentionTracer(Ui::MainWindow *parent = 0,Camera *cam = 0);
     ~AtentionTracer();
-    void newPosition(double colore, cv::Vec6d headPoseCam, cv::Vec6d headPoseImg);
     void print();
     void reset();
     void setImageSize(int Width, int Height);
-    void writeSolutionToFile(QString name, const LandmarkDetector::CLNF &model, double fx, double fy, double cx, double cy);
+    void showSolution(QString name, const LandmarkDetector::CLNF &model, double fx, double fy, double cx, double cy,
+                      double colore, cv::Vec6d headPoseCam, cv::Vec6d headPoseImg, bool write);
+    void setWriteToFile(bool write);
 };
 
 #endif // ATENTIONTRACER_H

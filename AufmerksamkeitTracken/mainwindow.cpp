@@ -134,3 +134,13 @@ void MainWindow::on_actionShow_Eyes_triggered(bool checked)
 {
     mFaceDetection->setShowEyes(checked);
 }
+
+void MainWindow::on_actionSave_Image_triggered(bool checked)
+{
+    mFaceDetection->setSaveIamge(checked);
+}
+
+void MainWindow::on_actionWrite_Solution_triggered(bool checked)
+{
+    mFaceDetection->setWriteSolution(checked);
+}

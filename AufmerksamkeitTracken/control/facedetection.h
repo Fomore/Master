@@ -74,6 +74,9 @@ public:
     void setUseEye(bool e);
     void setShowEyes(bool show);
 
+    void setSaveIamge(bool save);
+    void setWriteSolution(bool write);
+
     void setBoxScall(double s);
     void setBoxMinSize(int w, int h);
 };

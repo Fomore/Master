@@ -77,6 +77,19 @@ void AtentionTracer::writeSolutionToFile(QString name, const LandmarkDetector::C
     myfile.close();
 }
 
+void AtentionTracer::showSolution(QString name, const LandmarkDetector::CLNF &model, double fx, double fy, double cx, double cy, double colore, cv::Vec6d headPoseCam, cv::Vec6d headPoseImg, bool write)
+{
+    newPosition(colore,headPoseCam,headPoseImg);
+    if(mWriteToFile && write){
+        writeSolutionToFile(name,model, fx,fy,cx,cy);
+    }
+}
+
+void AtentionTracer::setWriteToFile(bool write)
+{
+    mWriteToFile = write;
+}
+
 cv::Vec6d AtentionTracer::calcAbweichung(cv::Vec6d Params,cv::Point3d Target)
 {
     cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(Params[3],Params[4],Params[5]));

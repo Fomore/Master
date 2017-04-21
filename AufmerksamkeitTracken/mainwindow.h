@@ -55,6 +55,10 @@ private slots:
 
     void on_actionShow_Eyes_triggered(bool checked);
 
+    void on_actionSave_Image_triggered(bool checked);
+
+    void on_actionWrite_Solution_triggered(bool checked);
+
 private:
     Ui::MainWindow *ui;
 //    Image mImage;
