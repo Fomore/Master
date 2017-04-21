@@ -13,8 +13,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     mFrameEvents = new FrameEvents();
 
-    mKamera->setPath("/home/falko/Uni/Master/Film/Test_Positionen_3.mp4");
-    mFrameEvents->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_3_Label.xml");
+    mKamera->setPath("/home/falko/Uni/Master/Film/Test_Positionen_2.mp4");
+    mFrameEvents->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_2_Label.xml");
 
     mFaceDetection = new FaceDetection(ui,mFrameEvents,mKamera);
 }
@@ -128,4 +128,9 @@ void MainWindow::on_actionSet_min_Box_Size_triggered()
     int h = QInputDialog::getInt(this,"Box Height","Mindeshöhe der Box",100,1);
 
     mFaceDetection->setBoxMinSize(w,h);
+}
+
+void MainWindow::on_actionShow_Eyes_triggered(bool checked)
+{
+    mFaceDetection->setShowEyes(checked);
 }

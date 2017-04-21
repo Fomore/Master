@@ -3,10 +3,8 @@
 #include <iostream>
 #include <math.h>
 #include <fstream>
-Target::Target(Camera *cam)
+Target::Target()
 {
-    mKamera = cam;
-
     // Punkt Zentrum 0
     mPoint[0][0] = 0.0;
     mPoint[0][1] = -176;

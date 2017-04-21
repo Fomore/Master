@@ -15,10 +15,9 @@ FaceDetection::FaceDetection(Ui::MainWindow *mWindow, FrameEvents *frameEV, Came
 {
     mTheWindow = mWindow;
 
-    mAtentionTracer = new AtentionTracer(mWindow);
+    mAtentionTracer = new AtentionTracer(mWindow,cam);
     mFrameEvents = frameEV;
     mKamera = cam;
-    mTarget = new Target(cam);
 
     Model_Init = 0;
     imgCount = 0;
@@ -44,7 +43,7 @@ void FaceDetection::FaceTracking(){
     mKamera->get_camera_params(fx,fy,cx,cy,x,y);
     mAtentionTracer->setImageSize(x,y);
 
-    for(int FrameID = 0;getFrame(frame_col);FrameID++){
+    for(int FrameID = 0;getFrame(frame_col,FrameID);FrameID++){
         // Reading the images
 
         cv::Mat_<uchar> grayscale_image;
@@ -134,7 +133,7 @@ void FaceDetection::FaceTracking(){
             // Only draw if the reliability is reasonable, the value is slightly ad-hoc
             if(detection_certainty < visualisation_boundary){
 
-                mPrinter.printSmallImage(frame_col,clnf_models[model],*painterR,*painterL, false,"", false,
+                mPrinter.printSmallImage(frame_col,clnf_models[model],*painterR,*painterL, false,"",
                                 mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, model);
 
                 if(detection_certainty > 1)
@@ -196,6 +195,8 @@ void FaceDetection::FaceTrackingNewVersion(){
     int64 t1,t0 = cv::getTickCount();
     double fps = 10;
 
+    size_t countFrame = 0, countFound = 0, countColore = 0;
+
     cv::Mat frame_colore;
 
     for(size_t FrameID = 0;getFrame(frame_colore, FrameID);FrameID++){
@@ -212,6 +213,8 @@ void FaceDetection::FaceTrackingNewVersion(){
         int num_active_models = 0;
 
         for(int model = 0; model < num_faces_max; model++){
+            countFrame++;
+
             mImageSections[model].newRect(mKamera->correct_Rect(mFrameEvents->getRectWithName(FrameID,model)));
             int x,y,w,h;
             mImageSections[model].getSection(x,y,w,h);
@@ -282,10 +285,10 @@ void FaceDetection::FaceTrackingNewVersion(){
 
                     if(mFrameEvents->isImageFrame(FrameID,name,mFrameEvents->getName(model))){
                         std::cout<<mKamera->getFrameNr()<<": "<<model<<" "<<name<<mImageSections[model].getRect()<<std::endl;
-                        writeSolutionToFile(QString::fromStdString(name),model,fx,fy,cx,cy);
+                        mAtentionTracer->writeSolutionToFile(QString::fromStdString(name),clnf_models[model],fx,fy,cx,cy);
                     }
 
-                    mPrinter.printSmallImage(frame_colore,clnf_models[model],*painterR,*painterL, false,"", false,
+                    mPrinter.printSmallImage(frame_colore,clnf_models[model],*painterR,*painterL, false,"",
                                     mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, model);
 
                     // Estimate head pose and eye gaze
@@ -296,6 +299,7 @@ void FaceDetection::FaceTrackingNewVersion(){
                     mPrinter.print_CLNF(disp_image,clnf_models[model],0.5,fx,fy,cx,cy);
 
                     num_active_models++;
+                    countFound++;
                 }
                 cv::rectangle(disp_image,cv::Rect(x,y,w,h),cv::Scalar((1-itens)*255.0,itens*255,itens*255),2);
             }else{
@@ -380,12 +384,12 @@ void FaceDetection::FaceTrackingImage(){
             int used;
             CalcualteEyes(disp_image,Model_Init,used,1.0);
 
-            writeSolutionToFile(QString::fromStdString(name),Model_Init,fx,fy,cx,cy);
+            mAtentionTracer->writeSolutionToFile(QString::fromStdString(name),clnf_models[Model_Init],fx,fy,cx,cy);
 
             name += "_"+std::to_string(used);
             name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
 
-            mPrinter.printSmallImage(disp_image.clone(),clnf_models[Model_Init],*painterR,*painterL, false,"", false,
+            mPrinter.printSmallImage(disp_image.clone(),clnf_models[Model_Init],*painterR,*painterL, false,"",
                             mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, Model_Init);
 
             mPrinter.print_CLNF(disp_image,clnf_models[Model_Init],0.5,fx,fy,cx,cy);
@@ -393,7 +397,6 @@ void FaceDetection::FaceTrackingImage(){
             mAtentionTracer->newPosition((double)Model_Init/num_faces_max,
                                          LandmarkDetector::GetCorrectedPoseCamera(clnf_models[Model_Init], fx, fy, cx, cy),
                                          clnf_models[Model_Init].params_global);
-            mAtentionTracer->print();
 
             //std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
             active_models[Model_Init] = false;
@@ -405,6 +408,7 @@ void FaceDetection::FaceTrackingImage(){
 
             //mPrinter.saveImage(name+"_Calc.png",disp_image(rec));
         }
+        mAtentionTracer->print();
 
         painterL->end();
         painterR->end();
@@ -465,89 +469,6 @@ void FaceDetection::ShowFromeFile()
         if(cv::waitKey(30) >= 0)
             return;
     }
-}
-
-void FaceDetection::writeSolutionToFile(QString name, int model, double fx, double fy, double cx, double cy)
-{
-    // Gaze tracking, absolute gaze direction
-    cv::Point3f gazeDirection0(0, 0, -1);
-    cv::Point3f gazeDirection1(0, 0, -1);
-    FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection0, fx, fy, cx, cy, true);
-    FaceAnalysis::EstimateGaze(clnf_models[model], gazeDirection1, fx, fy, cx, cy, false);
-
-    // Work out the pose of the head from the tracked model
-    cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(clnf_models[model], fx, fy, cx, cy); //Distanz in Millimeter
-
-    cv::Point2d worldAngle, rotatAngle;
-    cv::Point3d worlPoint, target;
-    mTarget->getOrienation(name,worldAngle,worlPoint, rotatAngle, target);
-
-    std::ofstream myfile;
-    myfile.open ("./data/BerechnungWinkel_Video.txt", std::ios::in | std::ios::app);
-    myfile <<worlPoint<<target<<clnf_models[model].params_global<<"|"
-          <<pose_estimate<<"|"<<calcAbweichung(pose_estimate,target)
-         <<calcAbweichung(cv::Vec3d(pose_estimate[0],pose_estimate[1],pose_estimate[2]),gazeDirection0,target)
-        <<calcAbweichung(cv::Vec3d(pose_estimate[0],pose_estimate[1],pose_estimate[2]),gazeDirection1,target)<<std::endl;
-    myfile.close();
-}
-
-cv::Vec6d FaceDetection::calcFaceAngle(cv::Vec6d Params_Global)
-{
-    double fx = 1540;
-    double fy = 1540;
-    double cx = 1334;
-    double cy = 760;
-
-    double Z = 1540 / Params_Global[0];
-    double X = (Params_Global[4] - cx) / fx * Z;
-    double Y = (Params_Global[5] - cy) / fy * Z;
-
-    cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(Params_Global[1],Params_Global[2],Params_Global[3]));
-
-    cv::Vec3d ori = R*cv::Vec3d(0,0,-1);
-    //std::cout<<"Neu 1: "<<X<<" "<<Y<<" "<<Z<<" | "<<cv::Vec3d(X,Y,Z)-ori*(Z/ori[2])<<std::endl;
-
-    double z_x = cv::sqrt(X * X + Z * Z);
-    double eul_x = atan2(Y, z_x);
-    double z_y = cv::sqrt(Y * Y + Z * Z);
-    double eul_y = -atan2(X, z_y);
-
-    cv::Matx33d camera_rotation = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(eul_x, eul_y, 0));
-    cv::Matx33d corrected_rotation = camera_rotation.t() * R;
-
-    ori = corrected_rotation*cv::Vec3d(0,0,-1);
-    //std::cout<<"Neu 2: "<<X<<" "<<Y<<" "<<Z<<" | "<<cv::Vec3d(X,Y,Z)-ori*(Z/ori[2])<<std::endl;
-
-    // Verbesserung durch LandmarkDetectorFunc::GetCorrectedPoseWorld()
-    cv::Vec3d euler_corrected = LandmarkDetector::RotationMatrix2Euler(corrected_rotation);
-
-    return cv::Vec6d(X, Y, Z, euler_corrected[0], euler_corrected[1], euler_corrected[2]);
-}
-
-cv::Vec6d FaceDetection::calcAbweichung(cv::Vec6d Params,cv::Point3d Target)
-{
-    cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(Params[3],Params[4],Params[5]));
-    cv::Vec3d Pos(Params[0],Params[1],Params[2]);
-
-    cv::Vec3d TargetRot = mKamera->rotateToCamera(Target);
-
-    cv::Vec3d ori = R*cv::Vec3d(0,0,-1);
-
-    return calcAbweichung(Pos,ori,TargetRot);
-}
-
-cv::Vec6d FaceDetection::calcAbweichung(cv::Vec3d Start, cv::Point3f Orientierung, cv::Vec3d Target){
-    return calcAbweichung(Start,cv::Vec3d(Orientierung.x,Orientierung.y,Orientierung.z),Target);
-}
-
-cv::Vec6d FaceDetection::calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target)
-{
-    double q = (Target[2]-Start[2])/Orientierung[2];
-    cv::Vec3d solution = Start+Orientierung*q-Target;
-    return cv::Vec6d(solution[0],solution[1],solution[2],
-            atan2(solution[0],Start[2]-Target[2]),
-            atan2(solution[1],Start[2]-Target[2]),
-            atan2(solution[2],Start[2]-Target[2]));
 }
 
 // Dieser Teil ist aus OpenFace/FaceLandmarkVidMulti.cpp übernommen
@@ -815,25 +736,17 @@ void FaceDetection::setUseEye(bool e)
     mUseEye = e;
 }
 
-bool FaceDetection::getFrame(cv::Mat &img)
+void FaceDetection::setShowEyes(bool show)
 {
-    if(mUseBox){
-        size_t frame = mKamera->getFrameNr();
-        if(mFrameEvents->getNextFrame(frame)){
-            mKamera->setFrame(frame);
-            return mKamera->getFrame(img);
-        }else{
-            return false;
-        }
-    }else{
-        return mKamera->getFrame(img);
-    }
+    mPrinter.setShowEye(show);
 }
 
 bool FaceDetection::getFrame(cv::Mat &img, size_t FrameID)
 {
     size_t frameNr;
-    if(mFrameEvents->getFrame(frameNr,FrameID)){
+    if(!mUseBox){
+        return mKamera->getFrame(img);
+    }else if(mFrameEvents->getFrame(frameNr,FrameID)){ //FrameID -> FarmeNummer
         if(mKamera->getFrameNr() +1 == frameNr){
             return mKamera->getFrame(img);
         }else{

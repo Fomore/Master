@@ -4,8 +4,10 @@
 #include <opencv2/opencv.hpp>
 
 #include "ui_mainwindow.h"
+#include "model/target.h"
+#include "LandmarkCoreIncludes.h"
 
-class AtentionTracer
+class AtentionTracer : public Target
 {
 private:
     Ui::MainWindow* mTheWindow;
@@ -33,13 +35,18 @@ private:
     void printWorld();
     void printAttention();
     void printCirclePoints(cv::Mat &img, cv::Vec3d center, cv::Vec3b color, cv::Vec3d position, cv::Vec3d orientation);
+
+    cv::Vec6d calcAbweichung(cv::Vec6d Params, cv::Point3d Target);
+    cv::Vec6d calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target);
+    cv::Vec6d calcAbweichung(cv::Vec3d Start, cv::Point3f Orientierung, cv::Vec3d Target);
 public:
-    AtentionTracer(Ui::MainWindow *parent = 0);
+    AtentionTracer(Ui::MainWindow *parent = 0,Camera *cam = 0);
     ~AtentionTracer();
     void newPosition(double colore, cv::Vec6d headPoseCam, cv::Vec6d headPoseImg);
     void print();
     void reset();
     void setImageSize(int Width, int Height);
+    void writeSolutionToFile(QString name, const LandmarkDetector::CLNF &model, double fx, double fy, double cx, double cy);
 };
 
 #endif // ATENTIONTRACER_H

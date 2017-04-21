@@ -1,13 +1,14 @@
 #include "atentiontracer.h"
 
 #include <iostream>
-//#include "FaceAnalyser.h"
-#include "LandmarkCoreIncludes.h"
+#include "FaceAnalyser.h"
+#include "GazeEstimation.h"
 #include "model/image.h"
 
-AtentionTracer::AtentionTracer(Ui::MainWindow *parent)
+AtentionTracer::AtentionTracer(Ui::MainWindow *parent, Camera *cam)
 {
     mTheWindow = parent;
+    mKamera = cam;
 
     mWorldSize = cv::Size(312,208);
     mAtentSize = cv::Size(312,208);
@@ -52,6 +53,56 @@ void AtentionTracer::setImageSize(int Width, int Height){
     mImageSize.height = Height;
 }
 
+void AtentionTracer::writeSolutionToFile(QString name, const LandmarkDetector::CLNF &model, double fx, double fy, double cx, double cy)
+{
+    // Gaze tracking, absolute gaze direction
+    cv::Point3f gazeDirection0(0, 0, -1);
+    cv::Point3f gazeDirection1(0, 0, -1);
+    FaceAnalysis::EstimateGaze(model, gazeDirection0, fx, fy, cx, cy, true);
+    FaceAnalysis::EstimateGaze(model, gazeDirection1, fx, fy, cx, cy, false);
+
+    // Work out the pose of the head from the tracked model
+    cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(model, fx, fy, cx, cy); //Distanz in Millimeter
+
+    cv::Point2d worldAngle, rotatAngle;
+    cv::Point3d worlPoint, target;
+    getOrienation(name,worldAngle,worlPoint, rotatAngle, target);
+
+    std::ofstream myfile;
+    myfile.open ("./data/BerechnungWinkel_Video.txt", std::ios::in | std::ios::app);
+    myfile <<worlPoint<<target<<model.params_global<<"|"
+          <<pose_estimate<<"|"<<calcAbweichung(pose_estimate,target)
+         <<calcAbweichung(cv::Vec3d(pose_estimate[0],pose_estimate[1],pose_estimate[2]),gazeDirection0,target)
+        <<calcAbweichung(cv::Vec3d(pose_estimate[0],pose_estimate[1],pose_estimate[2]),gazeDirection1,target)<<std::endl;
+    myfile.close();
+}
+
+cv::Vec6d AtentionTracer::calcAbweichung(cv::Vec6d Params,cv::Point3d Target)
+{
+    cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(Params[3],Params[4],Params[5]));
+    cv::Vec3d Pos(Params[0],Params[1],Params[2]);
+
+    cv::Vec3d TargetRot = mKamera->rotateToCamera(Target);
+
+    cv::Vec3d ori = R*cv::Vec3d(0,0,-1);
+
+    return calcAbweichung(Pos,ori,TargetRot);
+}
+
+cv::Vec6d AtentionTracer::calcAbweichung(cv::Vec3d Start, cv::Point3f Orientierung, cv::Vec3d Target){
+    return calcAbweichung(Start,cv::Vec3d(Orientierung.x,Orientierung.y,Orientierung.z),Target);
+}
+
+cv::Vec6d AtentionTracer::calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target)
+{
+    double q = (Target[2]*10.0-Start[2])/Orientierung[2];
+    cv::Vec3d solution = Start+Orientierung*q-Target*10.0;
+    return cv::Vec6d(solution[0],solution[1],solution[2],
+            atan2(solution[0],Start[2]-Target[2]),
+            atan2(solution[1],Start[2]-Target[2]),
+            atan2(solution[2],Start[2]-Target[2]));
+}
+
 void AtentionTracer::print(){
     printImageOrientation();
     printWorld();
@@ -62,7 +113,7 @@ void AtentionTracer::print(){
 void AtentionTracer::printImageOrientation(){
     cv::Mat img(mImageSize, CV_8UC3, cv::Scalar(255,255,255));
     int thickness = (int)std::ceil(3.0* (double)mImageSize.width/ 640.0);
-    for(int i = 0; i < mImgPose.size(); i++){
+    for(size_t i = 0; i < mImgPose.size(); i++){
         cv::Scalar color(255.0*(1.0-mColores[i]),255.0*mColores[i],0);
         cv::Vec6d pos = mImgPose[i];
         cv::arrowedLine(img, cv::Point(cvRound(pos[4]),cvRound(pos[5])), calcArrowEndImage(pos), color,thickness);
@@ -77,7 +128,7 @@ void AtentionTracer::printImageOrientation(){
 
 void AtentionTracer::printWorld(){
     cv::Mat img(mWorldSize, CV_8UC3, cv::Scalar(0,0,0));
-    for(int i = 0; i < mCamPose.size(); i++){
+    for(size_t i = 0; i < mCamPose.size(); i++){
         cv::Scalar color(255.0*(1.0-mColores[i]),255.0*mColores[i],255.0*(1.0-mColores[i]));
         cv::Vec6d pos = mCamPose[i];
         cv::Point p1 = calcPose2Image(cv::Vec3d(pos[0],pos[1],pos[2]), mWorldPose);
@@ -96,7 +147,7 @@ void AtentionTracer::printWorld(){
 
 void AtentionTracer::printAttention(){
     cv::Mat img(mAtentSize, CV_8UC3, cv::Scalar(0,0,0));
-    for(int i = 0; i < mCamPose.size(); i++){
+    for(size_t i = 0; i < mCamPose.size(); i++){
         cv::Scalar color(255.0*(1.0-mColores[i]),255.0*mColores[i],255.0*(1.0-mColores[i]));
         cv::Vec6d pos = mCamPose[i];
         cv::Vec3d position(pos[0],pos[1],pos[2]);

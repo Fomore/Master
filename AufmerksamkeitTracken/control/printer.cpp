@@ -41,7 +41,7 @@ void Printer::getEyeImageSize(double &X, double &Y, double &Width, double &Heigh
 }
 
 void Printer::print_CLNF(cv::Mat img,const LandmarkDetector::CLNF &model, double itens, double fx, double fy, double cx, double cy){
-    LandmarkDetector::Draw(img, model);
+    //LandmarkDetector::Draw(img, model);
 
     // A rough heuristic for box around the face width
     int thickness = (int)std::ceil(2.0* ((double)img.cols) / 640.0);
@@ -78,17 +78,13 @@ void Printer::print_Orientation(cv::Mat img, const LandmarkDetector::CLNF &model
     cv::arrowedLine(img, cv::Point(gparam[4],gparam[5]),cv::Point(gparam[4]+ln(0),gparam[5]+ln(1)), colore,thickness);
 }
 
-cv::Mat Printer::getEyeImage(const cv::Mat img,const LandmarkDetector::CLNF &model, int pos, int step, bool clacElse, float &quality){
+cv::Mat Printer::getEyeImage(const cv::Mat img,const LandmarkDetector::CLNF &model, int pos, int step){
     double X,Y,Width,Height;
     getCLNFBox(model, pos, step, X,Y,Width,Height);
 
     getEyeImageSize(X,Y,Width,Height,img.cols, img.rows,0.35,0.4,30,30);
 
     cv::Mat img_Eye = img(cv::Rect(X,Y,Width,Height));
-    if(Width > 8 && Height > 5 && step == 6 && clacElse){
-        cv::RotatedRect ellipse = ELSE::run(img_Eye, quality);
-        cv::ellipse(img_Eye, ellipse, cv::Scalar(0,255,0,255), 1,1 );
-    }
     return img_Eye;
 }
 
@@ -101,7 +97,7 @@ void Printer::getCLNFBox(const LandmarkDetector::CLNF &model, int pos, int step,
     Y = cvRound(shape2D.at<double>(pos + n));
     W = cvRound(shape2D.at<double>(pos));
     H = cvRound(shape2D.at<double>(pos + n));
-    for(int i = pos+1; i < pos+step; ++i)// Beginnt bei 0 das Output-Format
+    for(int i = pos-1; i < min(pos-1+step,n); ++i)// Beginnt bei 0 das Output-Format
     {
         double x = (shape2D.at<double>(i));
         double y = (shape2D.at<double>(i + n));
@@ -114,9 +110,11 @@ void Printer::getCLNFBox(const LandmarkDetector::CLNF &model, int pos, int step,
     H = H-Y;
 }
 
-void Printer::printSmallImage(cv::Mat img, const LandmarkDetector::CLNF &model, QPainter &painterR, QPainter &painterL, bool print, std::string titel, bool drawLandmarks, int sImageW, int sImageH, int pos){
-    float quR, quL; // Qualität des Berechnung
-    if(drawLandmarks){
+void Printer::printSmallImage(cv::Mat img, const LandmarkDetector::CLNF &model, QPainter &painterR, QPainter &painterL,
+                              bool print, std::string titel, int sImageW, int sImageH, int pos){
+    cv::Mat R;
+    cv::Mat L;
+    if(mDrawEyeLandmarks){
         for(size_t i = 0; i < model.hierarchical_models.size(); ++i){
             if(model.hierarchical_models[i].pdm.NumberOfPoints() != model.hierarchical_mapping[i].size()
                     && model.hierarchical_models[i].detected_landmarks.rows == 56){
@@ -124,32 +122,28 @@ void Printer::printSmallImage(cv::Mat img, const LandmarkDetector::CLNF &model, 
                 LandmarkDetector::Draw(img, model.hierarchical_models[i].detected_landmarks, model.patch_experts.visibilities[0][idx]);
             }
         }
+        L = getEyeImage(img,model,37,6); //Left
+        R = getEyeImage(img,model,43,6); //Right
+    }else{
+        double X,Y,Width,Height;
+        getCLNFBox(model, 1, 68, X,Y,Width,Height);
+        double f = min((double)sImageH/Height, (double)sImageW/Width);
+        cv::resize(img(cv::Rect(X,Y,Width,Height)),R,cv::Size(0,0),f,f);
+
+        LandmarkDetector::Draw(img,model);
+
+        cv::resize(img(cv::Rect(X,Y,Width,Height)),L,cv::Size(0,0),f,f);
     }
 
-    cv::Mat R = getEyeImage(img,model,36,6, true,quR); //Left
-    cv::Mat L = getEyeImage(img,model,42,6, true,quL); //Right
-
-    if((L.cols > 16 && L.rows > 10) || (R.cols > 16 && R.rows > 10)){
-        if((R.cols < 8 || R.rows < 5)){
-            R = getEyeImage(img,model,0,27, false, quR);
-        }else{
-            L = getEyeImage(img,model,0,27, false, quL);
-        }
-    }
-    if(print){
-        saveImage(titel+".png",getEyeImage(img,model,36,12, false,quL));
-    }
     if(L.data){
-        QImage img = Image::MatToQImage(L);
-        QImage img2 = img.scaled(sImageW,sImageH,Qt::KeepAspectRatio);
-        QPixmap pix = QPixmap::fromImage(img2);
-        painterL.drawPixmap(0, sImageH*pos, pix);
+        printMatToQPainter(L,painterL,sImageW,sImageH,pos);
     }
     if(R.data){
-        QImage img = Image::MatToQImage(R);
-        QImage img2 = img.scaled(sImageW,sImageH,Qt::KeepAspectRatio);
-        QPixmap pix = QPixmap::fromImage(img2);
-        painterR.drawPixmap(0, sImageH*pos, pix);
+        printMatToQPainter(R,painterR,sImageW,sImageH,pos);
+    }
+
+    if(print){
+        saveImage(titel+".png",getEyeImage(img,model,37,12));
     }
 }
 
@@ -158,9 +152,18 @@ void Printer::printSmallImage(cv::Mat img, cv::Rect rec, int id, QPainter &paint
     if(save){
         saveImage(titel+".png",img(rec));
     }
+    printMatToQPainter(img(rec),paint,sImageW,sImageH,id);
+}
 
-    QImage img1 = Image::MatToQImage(img(rec));
-    QImage img2 = img1.scaled(sImageW,sImageH,Qt::KeepAspectRatio);
+void Printer::setShowEye(bool show)
+{
+    mDrawEyeLandmarks = show;
+}
+
+void Printer::printMatToQPainter(cv::Mat Img, QPainter &Paint, int Width, int Height, int Position)
+{
+    QImage img = Image::MatToQImage(Img);
+    QImage img2 = img.scaled(Width,Height,Qt::KeepAspectRatio);
     QPixmap pix = QPixmap::fromImage(img2);
-    paint.drawPixmap(0, sImageH*id, pix);
+    Paint.drawPixmap(0, Height*Position, pix);
 }

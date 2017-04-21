@@ -201,6 +201,7 @@
     <addaction name="actionSelect_Camera"/>
     <addaction name="actionMax_Faces"/>
     <addaction name="actionCorrect_Image"/>
+    <addaction name="actionShow_Eyes"/>
     <addaction name="separator"/>
     <addaction name="menuPositionsberechnung"/>
     <addaction name="menuAblauf_Einstellung"/>
@@ -333,6 +334,14 @@
   <action name="actionSet_min_Box_Size">
    <property name="text">
     <string>Set min Box-Size</string>
+   </property>
+  </action>
+  <action name="actionShow_Eyes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Eyes</string>
    </property>
   </action>
  </widget>

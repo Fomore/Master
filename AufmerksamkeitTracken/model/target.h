@@ -8,7 +8,7 @@
 
 class Target
 {
-private:
+protected:
     //Koordinaten im Weltkoordinatensystem
     double mPoint[9][3];
     double mPoint2[3][3];
@@ -19,7 +19,7 @@ private:
     void getWorldPosition(QStringList list, double &x, double &y, double &z);
     Camera* mKamera;
 public:
-    Target(Camera *cam);
+    Target();
     cv::Point2d calcAngle(double X, double Y, double Z);
     cv::Point2d calcAngle(cv::Point3d Point);
     void getPoint(QString Name, cv::Point3d &Point);

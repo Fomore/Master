@@ -53,6 +53,8 @@ private slots:
 
     void on_actionSet_min_Box_Size_triggered();
 
+    void on_actionShow_Eyes_triggered(bool checked);
+
 private:
     Ui::MainWindow *ui;
 //    Image mImage;

@@ -21,14 +21,7 @@ private:
     void print_FPS_Model(int fps, int model);
     void showImage(const cv::Mat image, const QPixmap &pixmapL, const QPixmap &pixmapR);
 
-    void writeSolutionToFile(QString name, int model, double fx, double fy, double cx, double cy);
-
     void CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used, double fx);
-
-    cv::Vec6d calcFaceAngle(cv::Vec6d Params_Global);
-    cv::Vec6d calcAbweichung(cv::Vec6d Params, cv::Point3d Target);
-    cv::Vec6d calcAbweichung(cv::Vec3d Start, cv::Point3f Orientierung, cv::Vec3d Target);
-    cv::Vec6d calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target);
 
     Image mImage;
     int Model_Init;
@@ -59,7 +52,6 @@ private:
     bool mCLAHE = true;
     bool mUseEye = true;
 
-    bool getFrame(cv::Mat &img);
     bool getFrame(cv::Mat &img, size_t FrameID);
     bool getFrame(cv::Mat &Img, size_t &Frame, cv::Rect &Rec, std::string &Name, double fx, double fy, double cx, double cy, int x, int y);
 
@@ -80,6 +72,7 @@ public:
     void setLearn(bool l);
     void setCLAHE(bool c);
     void setUseEye(bool e);
+    void setShowEyes(bool show);
 
     void setBoxScall(double s);
     void setBoxMinSize(int w, int h);
