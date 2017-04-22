@@ -15,8 +15,8 @@ public:
     Printer();
     void saveImage(std::string titel, cv::Mat img);
     void getEyeImageSize(double &X, double &Y, double &Width, double &Height, double maxX, double maxY, double sX, double sY, double sMaxX, double sMaxY);
-    void print_CLNF(cv::Mat img, const LandmarkDetector::CLNF &model, double itens, double fx, double fy, double cx, double cy);
-    void print_Orientation(cv::Mat img,const LandmarkDetector::CLNF &model);
+    void print_CLNF(cv::Mat img, const LandmarkDetector::CLNF &model, double itens, double fx, double fy, double cx, double cy, double colore);
+    void print_Orientation(cv::Mat img, const LandmarkDetector::CLNF &model, double colore);
     cv::Mat getEyeImage(const cv::Mat img, const LandmarkDetector::CLNF &model, int pos, int step);
     void getCLNFBox(const LandmarkDetector::CLNF &model, int pos, int step, double &X, double &Y, double &W, double &H);
     void printSmallImage(cv::Mat img, const LandmarkDetector::CLNF &model, QPainter &painterR, QPainter &painterL, std::string titel,

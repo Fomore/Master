@@ -130,6 +130,7 @@ void FaceDetection::FaceTracking(){
             double detection_certainty = clnf_models[model].detection_certainty; // Qualität der detection: -1 perfekt und 1 falsch
 
             double visualisation_boundary = -0.1;
+            double colore = (double)model/num_faces_max;
 
             // Only draw if the reliability is reasonable, the value is slightly ad-hoc
             if(detection_certainty < visualisation_boundary){
@@ -143,9 +144,9 @@ void FaceDetection::FaceTracking(){
                     detection_certainty = -1;
 
                 double itens = (detection_certainty + 1)/(visualisation_boundary +1);
-                mPrinter.print_CLNF(disp_image,clnf_models[model],itens,fx,fy,cx,cy);
+                mPrinter.print_CLNF(disp_image,clnf_models[model],itens,fx,fy,cx,cy,colore);
 
-                mAtentionTracer->showSolution("",clnf_models[model],fx,fy,cx,cy, (double)model/num_faces_max, true);
+                mAtentionTracer->showSolution("",clnf_models[model],fx,fy,cx,cy, colore, true);
             }
         }
         painterL->end();
@@ -182,6 +183,7 @@ void FaceDetection::FaceTrackingNewVersion(){
     double fx,fy,cx,cy;
     int x,y;
     mKamera->get_camera_params(fx,fy,cx,cy,x,y);
+    mAtentionTracer->setImageSize(x,y);
 
     mImageSections.clear();
     for (int i = 0; i < num_faces_max; ++i){
@@ -269,6 +271,8 @@ void FaceDetection::FaceTrackingNewVersion(){
 
                 mImageSections[model].toImage(clnf_models[model]);
 
+                double colore = (double)model/num_faces_max;
+
                 // Only draw if the reliability is reasonable, the value is slightly ad-hoc
                 double itens = 0;
                 if(detection_certainty < visualisation_boundary){
@@ -291,15 +295,15 @@ void FaceDetection::FaceTrackingNewVersion(){
                                     mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, model);
 
                     // Estimate head pose and eye gaze
-                    mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[model],fx,fy,cx,cy,
-                                                  (double)model/num_faces_max, isImageFrame);
+                    mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[model],fx,fy,cx,cy, colore, isImageFrame);
 
-                    mPrinter.print_CLNF(disp_image,clnf_models[model],0.5,fx,fy,cx,cy);
+                    mPrinter.print_CLNF(disp_image,clnf_models[model],0.5,fx,fy,cx,cy, colore);
 
                     num_active_models++;
                     countFound++;
                 }
-                cv::rectangle(disp_image,cv::Rect(x,y,w,h),cv::Scalar((1-itens)*255.0,itens*255,itens*255),2);
+                cv::rectangle(disp_image,cv::Rect(x,y,w,h),
+                              cv::Scalar(255.0*(1.0-colore),255.0*colore,255.0*(1.0-colore)),2);
             }else{
                 clnf_models[model].failures_in_a_row++;
             }
@@ -334,6 +338,7 @@ void FaceDetection::FaceTrackingImage(){
 
     size_t frm=0;
     while(getFrame(frame,frm,rec,name,fx,fy,cx,cy,x,y)){
+        mAtentionTracer->setImageSize(x,y);
         name = "img/Head_"+name;
 
         cv::Mat disp_image = frame.clone();
@@ -390,7 +395,9 @@ void FaceDetection::FaceTrackingImage(){
             mPrinter.printSmallImage(disp_image.clone(),clnf_models[Model_Init],*painterR,*painterL, name,
                             mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, Model_Init);
 
-            mPrinter.print_CLNF(disp_image,clnf_models[Model_Init],0.5,fx,fy,cx,cy);
+
+            double colore = (double)Model_Init/num_faces_max;
+            mPrinter.print_CLNF(disp_image,clnf_models[Model_Init],0.5,fx,fy,cx,cy,colore);
 
             //std::cout<<"Gesicht: "<<clnf_models[0].GetBoundingBox()<<std::endl;
             active_models[Model_Init] = false;

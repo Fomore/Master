@@ -101,9 +101,9 @@ void AtentionTracer::print(){
 
 void AtentionTracer::printImageOrientation(){
     cv::Mat img(mImageSize, CV_8UC3, cv::Scalar(255,255,255));
-    int thickness = (int)std::ceil(3.0* (double)mImageSize.width/ 640.0);
+    int thickness = max(1,(int)std::ceil(3.0* (double)mImageSize.width/ 640.0));
     for(size_t i = 0; i < mHeadPoses.size(); i++){
-        cv::Scalar color(255.0*(1.0-mColores[i]),255.0*mColores[i],0);
+        cv::Scalar color(255.0*(1.0-mColores[i]),255.0*mColores[i],255.0*(1.0-mColores[i]));
         cv::Vec6d pos = mHeadPoses[i];
         cv::arrowedLine(img, cv::Point(cvRound(pos[4]),cvRound(pos[5])), calcArrowEndImage(pos), color,thickness);
     }
@@ -159,7 +159,7 @@ void AtentionTracer::printAttention(){
 
 cv::Point AtentionTracer::calcArrowEndImage(cv::Vec6d headPose){
     cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(headPose[1],headPose[2],headPose[3]));
-    cv::Vec3d p = R*cv::Vec3d(0,0,-mImageSize.width/5.0*headPose[0]);
+    cv::Vec3d p = R*cv::Vec3d(0,0,-mImageSize.width/2.0*headPose[0]);
     return cv::Point(cvRound(p[0]+headPose[4]),cvRound(p[1]+headPose[5]));
 }
 

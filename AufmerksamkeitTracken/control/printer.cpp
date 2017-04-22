@@ -32,7 +32,7 @@ void Printer::getEyeImageSize(double &X, double &Y, double &Width, double &Heigh
     Height= cvRound(Height);
 }
 
-void Printer::print_CLNF(cv::Mat img,const LandmarkDetector::CLNF &model, double itens, double fx, double fy, double cx, double cy){
+void Printer::print_CLNF(cv::Mat img,const LandmarkDetector::CLNF &model, double itens, double fx, double fy, double cx, double cy, double colore){
     //LandmarkDetector::Draw(img, model);
 
     // A rough heuristic for box around the face width
@@ -56,18 +56,18 @@ void Printer::print_CLNF(cv::Mat img,const LandmarkDetector::CLNF &model, double
     LandmarkDetector::DrawBox(img, pose_estimate, cv::Scalar((1-itens)*255.0,0, itens*255), thickness, fx, fy, cx, cy);
 
     // Stellt die Gesichtsorientierung dar
-    print_Orientation(img,model);
+    print_Orientation(img,model, colore);
 }
 
 //Hier wird die Kopforientierung dargestellt
-void Printer::print_Orientation(cv::Mat img, const LandmarkDetector::CLNF &model){
+void Printer::print_Orientation(cv::Mat img, const LandmarkDetector::CLNF &model, double colore){
     // A rough heuristic for box around the face width
     int thickness = (int)std::ceil(1.2* ((double)img.cols) / 640.0);
     cv::Vec6d gparam = model.params_global;
     cv::Matx33d rot = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(gparam[1],gparam[2],gparam[3]));
     cv::Vec3d ln = rot*cv::Vec3d(0,0,(-(double)img.cols)/15.0);
-    cv::Scalar colore(255, 255, 0);
-    cv::arrowedLine(img, cv::Point(gparam[4],gparam[5]),cv::Point(gparam[4]+ln(0),gparam[5]+ln(1)), colore,thickness);
+    cv::Scalar Colore(255.0*(1.0-colore),255.0*colore,255.0*(1.0-colore));
+    cv::arrowedLine(img, cv::Point(gparam[4],gparam[5]),cv::Point(gparam[4]+ln(0),gparam[5]+ln(1)), Colore,thickness);
 }
 
 cv::Mat Printer::getEyeImage(const cv::Mat img,const LandmarkDetector::CLNF &model, int pos, int step){
