@@ -10,7 +10,7 @@ class ImageSection
     cv::Rect Rec_new;
     cv::Size mImageSize;
     cv::Size mMinSize;
-    double mScall = 1.3;
+    double mScall = 1.2;
     double fx = 1.0;
     bool mAutoSize = true;
 public:
