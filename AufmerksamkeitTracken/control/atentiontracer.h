@@ -19,6 +19,9 @@ private:
     std::vector<cv::Vec6d> mHeadWorld;
     std::vector<cv::Vec6d> mHeadPoses;
 
+    std::vector<cv::Point3f> mGazeDirections0;
+    std::vector<cv::Point3f> mGazeDirections1;
+
     cv::Size mImageSize;
     cv::Size mWorldSize;
     cv::Size mAtentSize;
@@ -29,6 +32,7 @@ private:
     cv::Vec6d mAttentionCam;
 
     cv::Point calcArrowEndImage(cv::Vec6d headPose);
+    cv::Point from3DTo2D(double X, double Y, double OriX, double OriY, int size, double scall);
     cv::Point calcPose2Image(cv::Vec3d point, cv::Vec6d pose);
 
     cv::Vec3d unitVector(cv::Vec3d vec);
@@ -42,8 +46,8 @@ private:
     cv::Vec6d calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target);
     cv::Vec6d calcAbweichung(cv::Vec3d Start, cv::Point3f Orientierung, cv::Vec3d Target);
 
-    void newPosition(double colore, cv::Vec6d HeadPoseWorld, cv::Vec6d HeadPose);
-    void writeSolutionToFile(QString name, const LandmarkDetector::CLNF &model, double fx, double fy, double cx, double cy);
+    void newPosition(double colore, cv::Vec6d HeadPoseWorld, cv::Vec6d HeadPose, cv::Point3f GazeDirection0, cv::Point3f GazeDirection1);
+    void writeSolutionToFile(QString name, cv::Vec6d Model, cv::Vec6d HeadPoseWorld, cv::Point3f GazeDirection0, cv::Point3f GazeDirection1);
 public:
     AtentionTracer(Ui::MainWindow *parent = 0,Camera *cam = 0);
     ~AtentionTracer();

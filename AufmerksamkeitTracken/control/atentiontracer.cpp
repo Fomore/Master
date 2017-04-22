@@ -26,44 +26,47 @@ void AtentionTracer::reset(){
     mColores.clear();
     mHeadWorld.clear();
     mHeadPoses.clear();
+    mGazeDirections0.clear();
+    mGazeDirections1.clear();
 }
 
 void AtentionTracer::showSolution(QString name, const LandmarkDetector::CLNF &model, double fx, double fy, double cx, double cy, double colore, bool write)
-{
-    newPosition(colore,LandmarkDetector::GetCorrectedPoseCamera(model, fx, fy, cx, cy),model.params_global);
-    if(mWriteToFile && write){
-        writeSolutionToFile(name,model, fx,fy,cx,cy);
-    }
-}
-
-// colore zwischen [0,1]
-void AtentionTracer::newPosition(double colore, cv::Vec6d HeadPoseWorld, cv::Vec6d HeadPose){
-    mColores.push_back(colore);
-    mHeadWorld.push_back(HeadPoseWorld);
-    mHeadPoses.push_back(HeadPose);
-}
-
-void AtentionTracer::writeSolutionToFile(QString name, const LandmarkDetector::CLNF &model, double fx, double fy, double cx, double cy)
 {
     // Gaze tracking, absolute gaze direction
     cv::Point3f gazeDirection0(0, 0, -1);
     cv::Point3f gazeDirection1(0, 0, -1);
     FaceAnalysis::EstimateGaze(model, gazeDirection0, fx, fy, cx, cy, true);
     FaceAnalysis::EstimateGaze(model, gazeDirection1, fx, fy, cx, cy, false);
+    cv::Vec6d headPoseWorld = LandmarkDetector::GetCorrectedPoseCamera(model, fx, fy, cx, cy);//Distanz in Millimeter
 
-    // Work out the pose of the head from the tracked model
-    cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(model, fx, fy, cx, cy); //Distanz in Millimeter
+    newPosition(colore,headPoseWorld,model.params_global,gazeDirection0,gazeDirection1);
 
+    if(mWriteToFile && write){
+        writeSolutionToFile(name,model.params_global,headPoseWorld,gazeDirection0,gazeDirection1);
+    }
+}
+
+// colore zwischen [0,1]
+void AtentionTracer::newPosition(double colore, cv::Vec6d HeadPoseWorld, cv::Vec6d HeadPose,cv::Point3f GazeDirection0, cv::Point3f GazeDirection1){
+    mColores.push_back(colore);
+    mHeadWorld.push_back(HeadPoseWorld);
+    mHeadPoses.push_back(HeadPose);
+    mGazeDirections0.push_back(GazeDirection0);
+    mGazeDirections1.push_back(GazeDirection1);
+}
+
+void AtentionTracer::writeSolutionToFile(QString name, cv::Vec6d Model, cv::Vec6d HeadPoseWorld, cv::Point3f GazeDirection0, cv::Point3f GazeDirection1)
+{
     cv::Point2d worldAngle, rotatAngle;
     cv::Point3d worlPoint, target;
     getOrienation(name,worldAngle,worlPoint, rotatAngle, target);
 
     std::ofstream myfile;
     myfile.open ("./data/BerechnungWinkel_Video.txt", std::ios::in | std::ios::app);
-    myfile <<worlPoint*10.0<<target*10.0<<model.params_global<<"|"
-          <<pose_estimate<<"|"<<calcAbweichung(pose_estimate,target)
-         <<calcAbweichung(cv::Vec3d(pose_estimate[0],pose_estimate[1],pose_estimate[2]),gazeDirection0,target)
-        <<calcAbweichung(cv::Vec3d(pose_estimate[0],pose_estimate[1],pose_estimate[2]),gazeDirection1,target)<<std::endl;
+    myfile <<worlPoint*10.0<<target*10.0<<Model<<"|"
+          <<HeadPoseWorld<<"|"<<calcAbweichung(HeadPoseWorld,target)
+         <<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection0,target)
+        <<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection1,target)<<std::endl;
     myfile.close();
 }
 
@@ -106,6 +109,13 @@ void AtentionTracer::printImageOrientation(){
         cv::Scalar color(255.0*(1.0-mColores[i]),255.0*mColores[i],255.0*(1.0-mColores[i]));
         cv::Vec6d pos = mHeadPoses[i];
         cv::arrowedLine(img, cv::Point(cvRound(pos[4]),cvRound(pos[5])), calcArrowEndImage(pos), color,thickness);
+
+        cv::arrowedLine(img, cv::Point(cvRound(pos[4]),cvRound(pos[5])),
+                from3DTo2D(pos[4],pos[5],mGazeDirections0[i].x,mGazeDirections0[i].y,mImageSize.width,pos[0]),
+                cv::Scalar(110.0, 220.0, 0.0),thickness);
+        cv::arrowedLine(img, cv::Point(cvRound(pos[4]),cvRound(pos[5])),
+                from3DTo2D(pos[4],pos[5],mGazeDirections1[i].x,mGazeDirections1[i].y,mImageSize.width,pos[0]),
+                cv::Scalar(110.0, 220.0, 0.0),thickness);
     }
 
     if(!img.empty()){
@@ -159,8 +169,14 @@ void AtentionTracer::printAttention(){
 
 cv::Point AtentionTracer::calcArrowEndImage(cv::Vec6d headPose){
     cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(headPose[1],headPose[2],headPose[3]));
-    cv::Vec3d p = R*cv::Vec3d(0,0,-mImageSize.width/2.0*headPose[0]);
-    return cv::Point(cvRound(p[0]+headPose[4]),cvRound(p[1]+headPose[5]));
+    cv::Vec3d p = R*cv::Vec3d(0,0,-1);
+    return from3DTo2D(headPose[4],headPose[5],p[0],p[1],mImageSize.width,headPose[0]);
+}
+
+cv::Point AtentionTracer::from3DTo2D(double X, double Y, double OriX, double OriY, int size, double scall)
+{
+    double s = max(size/10.0,min(50.0,size/5.0*scall));
+    return cv::Point(cvRound(X+OriX*s),cvRound(Y+OriY*s));
 }
 
 cv::Point AtentionTracer::calcPose2Image(cv::Vec3d point, cv::Vec6d pose){
