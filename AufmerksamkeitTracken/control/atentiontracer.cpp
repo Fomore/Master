@@ -13,7 +13,11 @@ AtentionTracer::AtentionTracer(Ui::MainWindow *parent, Camera *cam)
     mWorldSize = cv::Size(312,208);
     mAtentSize = cv::Size(312,208);
 
-    mWorldPoseCam = cv::Vec6d(0,200,1200,1,-0.5,0);
+    mWorldPoseCam = cv::Vec3d(0,5500,5500);
+    mWorldCamOri = cv::Matx33d(0,0,-1,
+                               -1,0,0,
+                               0,1,0);
+
     mAttentionCam = cv::Vec6d(0,0,1400,0,0,0);
 }
 
@@ -127,12 +131,13 @@ void AtentionTracer::printImageOrientation(){
 
 void AtentionTracer::printWorld(){
     cv::Mat img(mWorldSize, CV_8UC3, cv::Scalar(0,0,0));
+    cv::circle(img,calcPose2Image(cv::Vec3d(0,0,0),mWorldPoseCam),3,cv::Scalar(0,0,255),-1);
     for(size_t i = 0; i < mHeadWorld.size(); i++){
         cv::Scalar color(255.0*(1.0-mColores[i]),255.0*mColores[i],255.0*(1.0-mColores[i]));
         cv::Vec6d pos = mHeadWorld[i];
         cv::Point p1 = calcPose2Image(cv::Vec3d(pos[0],pos[1],pos[2]), mWorldPoseCam);
         cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pos[3],pos[4],pos[5]));
-        cv::Vec3d pose2(cv::Vec3d(pos[0],pos[1],pos[2])+(R*cv::Vec3d(0,0,-30)));
+        cv::Vec3d pose2(cv::Vec3d(pos[0],pos[1],pos[2])+(R*cv::Vec3d(0,0,-1000)));
         cv::Point p2 = calcPose2Image(pose2, mWorldPoseCam);
         cv::arrowedLine(img, p1,p2, color);
     }
@@ -175,13 +180,19 @@ cv::Point AtentionTracer::calcArrowEndImage(cv::Vec6d headPose){
 
 cv::Point AtentionTracer::from3DTo2D(double X, double Y, double OriX, double OriY, int size, double scall)
 {
-    double s = max(size/10.0,min(50.0,size/5.0*scall));
+    double s = getScall(size,scall);
     return cv::Point(cvRound(X+OriX*s),cvRound(Y+OriY*s));
+}
+
+cv::Point AtentionTracer::calcPose2Image(cv::Vec3d point, cv::Vec3d pose){
+    cv::Vec3d p = mWorldCamOri*(pose-point);
+    double fx = mWorldSize.width/2.0;
+    return cv::Point(fx*p[0]/p[2]+fx, fx*p[1]/p[2]+mWorldSize.height/2.0);
 }
 
 cv::Point AtentionTracer::calcPose2Image(cv::Vec3d point, cv::Vec6d pose){
     cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pose[3],pose[4],pose[5]));
-    cv::Vec3d p = R*(point-cv::Vec3d(pose[0],pose[1],pose[2]));
+    cv::Vec3d p = R*(cv::Vec3d(pose[0],pose[1],pose[2])-point);
     return cv::Point(mWorldSize.width*p[0]/p[2]+mWorldSize.width/2.0,
             mWorldSize.width*p[1]/p[2]+mWorldSize.height/2.0);
 }
@@ -216,6 +227,11 @@ cv::Vec3d AtentionTracer::unitVector(cv::Vec3d vec){
     cv::Vec3d ret(vec[0]/n, vec[1]/n, vec[2]/n);
     std::cout<<vec<<"->"<<ret<<std::endl;
     return ret;
+}
+
+double AtentionTracer::getScall(int size, double scall)
+{
+    return max(size/10.0,min(50.0,size/5.0*scall));
 }
 
 void AtentionTracer::setWriteToFile(bool write)

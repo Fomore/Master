@@ -27,15 +27,19 @@ private:
     cv::Size mAtentSize;
 
     // Position und Orientierung der World-Kamera
-    cv::Vec6d mWorldPoseCam;
+    cv::Vec3d mWorldPoseCam;
+    cv::Matx33d mWorldCamOri;
     // Position und Orientierung der Attention-Kamera
     cv::Vec6d mAttentionCam;
 
     cv::Point calcArrowEndImage(cv::Vec6d headPose);
     cv::Point from3DTo2D(double X, double Y, double OriX, double OriY, int size, double scall);
+    cv::Point calcPose2Image(cv::Vec3d point, cv::Vec3d pose);
     cv::Point calcPose2Image(cv::Vec3d point, cv::Vec6d pose);
 
     cv::Vec3d unitVector(cv::Vec3d vec);
+
+    double getScall(int size, double scall);
 
     void printImageOrientation();
     void printWorld();
