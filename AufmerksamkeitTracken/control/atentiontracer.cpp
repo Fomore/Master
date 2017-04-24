@@ -4,6 +4,7 @@
 #include "FaceAnalyser.h"
 #include "GazeEstimation.h"
 #include "model/image.h"
+#include <cmath>
 
 AtentionTracer::AtentionTracer(Ui::MainWindow *parent, Camera *cam)
 {
@@ -74,7 +75,7 @@ void AtentionTracer::writeSolutionToFile(QString name, cv::Vec6d Model, cv::Vec6
     myfile.close();
 }
 
-cv::Vec6d AtentionTracer::calcAbweichung(cv::Vec6d Params,cv::Point3d Target)
+double AtentionTracer::calcAbweichung(cv::Vec6d Params,cv::Point3d Target)
 {
     cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(Params[3],Params[4],Params[5]));
     cv::Vec3d Pos(Params[0],Params[1],Params[2]);
@@ -84,19 +85,23 @@ cv::Vec6d AtentionTracer::calcAbweichung(cv::Vec6d Params,cv::Point3d Target)
     return calcAbweichung(Pos,ori,Target);
 }
 
-cv::Vec6d AtentionTracer::calcAbweichung(cv::Vec3d Start, cv::Point3f Orientierung, cv::Vec3d Target){
+double AtentionTracer::calcAbweichung(cv::Vec3d Start, cv::Point3f Orientierung, cv::Vec3d Target){
     return calcAbweichung(Start,cv::Vec3d(Orientierung.x,Orientierung.y,Orientierung.z),Target);
 }
 
-cv::Vec6d AtentionTracer::calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target)
+double AtentionTracer::calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target)
 {
-    cv::Vec3d TargetRot = mKamera->rotateToCamera(Target);
-    double q = (TargetRot[2]-Start[2])/Orientierung[2];
-    cv::Vec3d solution = Start+Orientierung*q-TargetRot;
-    return cv::Vec6d(solution[0],solution[1],solution[2],
-            atan2(solution[0],Start[2]-TargetRot[2]),
-            atan2(solution[1],Start[2]-TargetRot[2]),
-            atan2(solution[2],Start[2]-TargetRot[2]));
+    cv::Vec3d normale = mKamera->getRotationMatrix() * cv::Vec3d(0,0,1);
+    cv::Vec3d contact;
+    if(linePlaneIntersection(contact,Orientierung,Start,normale,cv::Vec3d(0,0,0))){
+        cv::Vec3d TargetRot = mKamera->rotateToCamera(Target)*0.01;
+        contact *= 0.01;
+        double di = sqrt(contact[0]*contact[0]+contact[1]*contact[1]+contact[2]*contact[2])
+                *sqrt(TargetRot[0]*TargetRot[0]+TargetRot[1]*TargetRot[1]+TargetRot[2]*TargetRot[2]);
+        return acos(TargetRot.dot(contact) / di);
+    }else{
+        return -1.0;
+    }
 }
 
 void AtentionTracer::print(){
@@ -176,7 +181,6 @@ void AtentionTracer::printAttention(){
             cv::circle(img,calcPose2Image(contact,mAttentionCamPose,mAttentiondCamOri,fx,fx,cy),cvRound(fx/50),color,-1);
         }
     }
-
     if(!img.empty()){
         QPixmap pix = QPixmap::fromImage(Image::MatToQImage(img));
         mTheWindow->ImageBottomRight_label->setPixmap(pix);

@@ -43,9 +43,9 @@ private:
     void printTargets(cv::Mat &img, const cv::Vec3d &Pose, const cv::Matx33d Ori, double fx, double cx, double cy);
     void printGrid(cv::Mat &img, cv::Point3d Point1, cv::Point3d Point2, double Step, const cv::Vec3d &Cam, const cv::Matx33d &R, double fx, double cx, double cy);
 
-    cv::Vec6d calcAbweichung(cv::Vec6d Params, cv::Point3d Target);
-    cv::Vec6d calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target);
-    cv::Vec6d calcAbweichung(cv::Vec3d Start, cv::Point3f Orientierung, cv::Vec3d Target);
+    double calcAbweichung(cv::Vec6d Params, cv::Point3d Target);
+    double calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target);
+    double calcAbweichung(cv::Vec3d Start, cv::Point3f Orientierung, cv::Vec3d Target);
 
     void newPosition(double colore, cv::Vec6d HeadPoseWorld, cv::Vec6d HeadPose, cv::Point3f GazeDirection0, cv::Point3f GazeDirection1);
     void writeSolutionToFile(QString name, cv::Vec6d Model, cv::Vec6d HeadPoseWorld, cv::Point3f GazeDirection0, cv::Point3f GazeDirection1);
