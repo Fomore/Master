@@ -34,7 +34,7 @@ private:
 
     cv::Point calcArrowEndImage(cv::Vec6d headPose);
     cv::Point from3DTo2D(double X, double Y, double OriX, double OriY, int size, double scall);
-    cv::Point calcPose2Image(cv::Vec3d point, cv::Vec3d pose);
+    cv::Point calcPose2Image(cv::Vec3d point, const cv::Vec3d &pose, const cv::Matx33d &R, double fx, double cx, double cy);
     cv::Point calcPose2Image(cv::Vec3d point, cv::Vec6d pose);
 
     cv::Vec3d unitVector(cv::Vec3d vec);
@@ -44,6 +44,8 @@ private:
     void printImageOrientation();
     void printWorld();
     void printAttention();
+    void printTargets(cv::Mat &img);
+    void printGrid(cv::Mat &img, cv::Point3d Point1, cv::Point3d Point2, double Step, const cv::Vec3d &Cam, const cv::Matx33d &R, double fx, double cx, double cy);
     void calcCirclePoints(cv::Mat &img, cv::Vec3d center, cv::Vec3b color, cv::Vec3d position, cv::Vec3d orientation);
 
     cv::Vec6d calcAbweichung(cv::Vec6d Params, cv::Point3d Target);

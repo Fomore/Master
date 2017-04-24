@@ -131,14 +131,18 @@ void AtentionTracer::printImageOrientation(){
 
 void AtentionTracer::printWorld(){
     cv::Mat img(mWorldSize, CV_8UC3, cv::Scalar(0,0,0));
-    cv::circle(img,calcPose2Image(cv::Vec3d(0,0,0),mWorldPoseCam),3,cv::Scalar(0,0,255),-1);
+    double fx = mWorldSize.width/2.0;
+    double cy = mWorldSize.height/2.0;
+    printGrid(img,cv::Point3d(-3000,0,0),cv::Point3d(3000,0,11000),1000.0,mWorldPoseCam,mWorldCamOri,fx,fx,cy);
+    cv::circle(img,calcPose2Image(cv::Vec3d(0,0,0),mWorldPoseCam,mWorldCamOri,fx,fx,cy),cvRound(fx/50),cv::Scalar(0,0,255),-1);
     for(size_t i = 0; i < mHeadWorld.size(); i++){
         cv::Scalar color(255.0*(1.0-mColores[i]),255.0*mColores[i],255.0*(1.0-mColores[i]));
         cv::Vec6d pos = mHeadWorld[i];
-        cv::Point p1 = calcPose2Image(cv::Vec3d(pos[0],pos[1],pos[2]), mWorldPoseCam);
+
+        cv::Point p1 = calcPose2Image(cv::Vec3d(pos[0],pos[1],pos[2]), mWorldPoseCam, mWorldCamOri, fx,fx,cy);
         cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pos[3],pos[4],pos[5]));
         cv::Vec3d pose2(cv::Vec3d(pos[0],pos[1],pos[2])+(R*cv::Vec3d(0,0,-1000)));
-        cv::Point p2 = calcPose2Image(pose2, mWorldPoseCam);
+        cv::Point p2 = calcPose2Image(pose2, mWorldPoseCam, mWorldCamOri, fx,fx,cy);
         cv::arrowedLine(img, p1,p2, color);
     }
 
@@ -172,6 +176,26 @@ void AtentionTracer::printAttention(){
     }
 }
 
+void AtentionTracer::printTargets(cv::Mat &img)
+{
+    //double mPoint[9][3];
+    for(int i = 0; i < 9 ; i++){
+
+    }
+}
+
+void AtentionTracer::printGrid(cv::Mat &img, cv::Point3d Point1, cv::Point3d Point2, double Step,const cv::Vec3d &Cam,
+                               const cv::Matx33d &R, double fx, double cx, double cy)
+{
+    for(double x = Point1.x; x <= Point2.x; x+= Step){
+        for(double y = Point1.y; y <= Point2.y; y += Step){
+            for(double z = Point1.z; z <= Point2.z; z += Step){
+                cv::circle(img,calcPose2Image(cv::Vec3d(x,y,z),Cam,R,fx,cx,cy),cvRound(fx/200),cv::Scalar(255,255,255),-1);
+            }
+        }
+    }
+}
+
 cv::Point AtentionTracer::calcArrowEndImage(cv::Vec6d headPose){
     cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(headPose[1],headPose[2],headPose[3]));
     cv::Vec3d p = R*cv::Vec3d(0,0,-1);
@@ -184,10 +208,9 @@ cv::Point AtentionTracer::from3DTo2D(double X, double Y, double OriX, double Ori
     return cv::Point(cvRound(X+OriX*s),cvRound(Y+OriY*s));
 }
 
-cv::Point AtentionTracer::calcPose2Image(cv::Vec3d point, cv::Vec3d pose){
-    cv::Vec3d p = mWorldCamOri*(pose-point);
-    double fx = mWorldSize.width/2.0;
-    return cv::Point(fx*p[0]/p[2]+fx, fx*p[1]/p[2]+mWorldSize.height/2.0);
+cv::Point AtentionTracer::calcPose2Image(cv::Vec3d point,const cv::Vec3d &pose, const cv::Matx33d &R, double fx, double cx, double cy){
+    cv::Vec3d p = R*(pose-point);
+    return cv::Point(fx*p[0]/p[2]+cx, fx*p[1]/p[2]+cy);
 }
 
 cv::Point AtentionTracer::calcPose2Image(cv::Vec3d point, cv::Vec6d pose){
