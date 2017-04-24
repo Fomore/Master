@@ -10,15 +10,15 @@ AtentionTracer::AtentionTracer(Ui::MainWindow *parent, Camera *cam)
     mTheWindow = parent;
     mKamera = cam;
 
-    mWorldSize = cv::Size(312,208);
-    mAtentSize = cv::Size(312,208);
-
     mWorldPoseCam = cv::Vec3d(0,5500,5500);
     mWorldCamOri = cv::Matx33d(0,0,-1,
                                -1,0,0,
                                0,1,0);
 
-    mAttentionCam = cv::Vec6d(0,0,1400,0,0,0);
+    mAttentionCamPose = cv::Vec3d(0,0,-5500);
+    mAttentiondCamOri = cv::Matx33d(1,0,0,
+                                    0,1,0,
+                                    0,0,1);
 }
 
 AtentionTracer::~AtentionTracer()
@@ -67,7 +67,7 @@ void AtentionTracer::writeSolutionToFile(QString name, cv::Vec6d Model, cv::Vec6
 
     std::ofstream myfile;
     myfile.open ("./data/BerechnungWinkel_Video.txt", std::ios::in | std::ios::app);
-    myfile <<worlPoint*10.0<<target*10.0<<Model<<"|"
+    myfile <<worlPoint<<target<<Model<<"|"
           <<HeadPoseWorld<<"|"<<calcAbweichung(HeadPoseWorld,target)
          <<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection0,target)
         <<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection1,target)<<std::endl;
@@ -91,8 +91,8 @@ cv::Vec6d AtentionTracer::calcAbweichung(cv::Vec3d Start, cv::Point3f Orientieru
 cv::Vec6d AtentionTracer::calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target)
 {
     cv::Vec3d TargetRot = mKamera->rotateToCamera(Target);
-    double q = (TargetRot[2]*10.0-Start[2])/Orientierung[2];
-    cv::Vec3d solution = Start+Orientierung*q-TargetRot*10.0;
+    double q = (TargetRot[2]-Start[2])/Orientierung[2];
+    cv::Vec3d solution = Start+Orientierung*q-TargetRot;
     return cv::Vec6d(solution[0],solution[1],solution[2],
             atan2(solution[0],Start[2]-TargetRot[2]),
             atan2(solution[1],Start[2]-TargetRot[2]),
@@ -130,11 +130,12 @@ void AtentionTracer::printImageOrientation(){
 }
 
 void AtentionTracer::printWorld(){
+    cv::Size mWorldSize(mTheWindow->ImageBottomCenter_label->width(),mTheWindow->ImageBottomCenter_label->height());
     cv::Mat img(mWorldSize, CV_8UC3, cv::Scalar(0,0,0));
     double fx = mWorldSize.width/2.0;
     double cy = mWorldSize.height/2.0;
-    printGrid(img,cv::Point3d(-3000,0,0),cv::Point3d(3000,0,11000),1000.0,mWorldPoseCam,mWorldCamOri,fx,fx,cy);
     cv::circle(img,calcPose2Image(cv::Vec3d(0,0,0),mWorldPoseCam,mWorldCamOri,fx,fx,cy),cvRound(fx/50),cv::Scalar(0,0,255),-1);
+    printGrid(img,cv::Point3d(-3000,0,0),cv::Point3d(3000,0,11000),1000.0,mWorldPoseCam,mWorldCamOri,fx,fx,cy);
     for(size_t i = 0; i < mHeadWorld.size(); i++){
         cv::Scalar color(255.0*(1.0-mColores[i]),255.0*mColores[i],255.0*(1.0-mColores[i]));
         cv::Vec6d pos = mHeadWorld[i];
@@ -147,40 +148,46 @@ void AtentionTracer::printWorld(){
     }
 
     if(!img.empty()){
-    QImage img2 = Image::MatToQImage(img).scaled(mTheWindow->ImageBottomCenter_label->size(),Qt::KeepAspectRatio);
-    QPixmap pix = QPixmap::fromImage(img2);
-    mTheWindow->ImageBottomCenter_label->setPixmap(pix);
+        QPixmap pix = QPixmap::fromImage(Image::MatToQImage(img));
+        mTheWindow->ImageBottomCenter_label->setPixmap(pix);
     }
 }
 
 void AtentionTracer::printAttention(){
+    cv::Size mAtentSize(mTheWindow->ImageBottomRight_label->width(),mTheWindow->ImageBottomRight_label->height());
     cv::Mat img(mAtentSize, CV_8UC3, cv::Scalar(0,0,0));
+    double fx = mAtentSize.width/2.0;
+    double cy = mAtentSize.height/2.0;
+    printGrid(img,cv::Point3d(-5000,-4000,0),cv::Point3d(5000,4000,0),1000.0,mAttentionCamPose,mAttentiondCamOri,fx,fx,cy);
+    printTargets(img,mAttentionCamPose,mAttentiondCamOri,fx,fx,cy);
+    cv::circle(img,calcPose2Image(cv::Vec3d(0,0,0),mAttentionCamPose,mAttentiondCamOri,fx,fx,cy),cvRound(fx/50),cv::Scalar(0,0,255),-1);
+    cv::Vec3d normale = mKamera->getRotationMatrix() * cv::Vec3d(0,0,1);
     for(size_t i = 0; i < mHeadWorld.size(); i++){
         cv::Scalar color(255.0*(1.0-mColores[i]),255.0*mColores[i],255.0*(1.0-mColores[i]));
         cv::Vec6d pos = mHeadWorld[i];
         cv::Vec3d position(pos[0],pos[1],pos[2]);
         cv::Vec3d orientation(pos[3],pos[4],pos[5]);
-        cv::Point p1 = calcPose2Image(position,mAttentionCam);
+
         cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(orientation);
-        cv::Point p2 = calcPose2Image(position+(R*cv::Vec3d(0,0,-50)),mAttentionCam);
-        cv::arrowedLine(img, p1,p2, color);
-        calcCirclePoints(img,cv::Vec3d(0,0,0),
-                          cv::Vec3d(255.0*(1.0-mColores[i]),255.0*mColores[i],255.0*(1.0-mColores[i])),
-                          position, R*cv::Vec3d(0,0,-1));
+        cv::Vec3d ray = R*cv::Vec3d(0,0,-1);
+
+        cv::Vec3d contact;
+        if(linePlaneIntersection(contact,ray,position,normale,cv::Vec3d(0,0,0))){
+            cv::circle(img,calcPose2Image(contact,mAttentionCamPose,mAttentiondCamOri,fx,fx,cy),cvRound(fx/50),color,-1);
+        }
     }
 
     if(!img.empty()){
-    QImage img2 = Image::MatToQImage(img).scaled(mTheWindow->ImageBottomRight_label->size(),Qt::KeepAspectRatio);
-    QPixmap pix = QPixmap::fromImage(img2);
-    mTheWindow->ImageBottomRight_label->setPixmap(pix);
+        QPixmap pix = QPixmap::fromImage(Image::MatToQImage(img));
+        mTheWindow->ImageBottomRight_label->setPixmap(pix);
     }
 }
 
-void AtentionTracer::printTargets(cv::Mat &img)
+void AtentionTracer::printTargets(cv::Mat &img, const cv::Vec3d &Pose, const cv::Matx33d Ori, double fx, double cx, double cy)
 {
-    //double mPoint[9][3];
     for(int i = 0; i < 9 ; i++){
-
+        cv::circle(img,calcPose2Image(mKamera->rotateToCamera(cv::Vec3d(mPoint[i][0],mPoint[i][1],mPoint[i][2]))*10.0,Pose,Ori,fx,cx,cy),
+                   cvRound(fx/50),cv::Scalar(255,i*31,i*31),-1);
     }
 }
 
@@ -209,47 +216,35 @@ cv::Point AtentionTracer::from3DTo2D(double X, double Y, double OriX, double Ori
 }
 
 cv::Point AtentionTracer::calcPose2Image(cv::Vec3d point,const cv::Vec3d &pose, const cv::Matx33d &R, double fx, double cx, double cy){
-    cv::Vec3d p = R*(pose-point);
+    cv::Vec3d p = R*(point-pose);
     return cv::Point(fx*p[0]/p[2]+cx, fx*p[1]/p[2]+cy);
 }
 
-cv::Point AtentionTracer::calcPose2Image(cv::Vec3d point, cv::Vec6d pose){
-    cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(pose[3],pose[4],pose[5]));
-    cv::Vec3d p = R*(cv::Vec3d(pose[0],pose[1],pose[2])-point);
-    return cv::Point(mWorldSize.width*p[0]/p[2]+mWorldSize.width/2.0,
-            mWorldSize.width*p[1]/p[2]+mWorldSize.height/2.0);
-}
+/*
+ * Diese Funktion stammt aus:
+ * http://stackoverflow.com/questions/7168484/3d-line-segment-and-plane-intersection
+ *
+contact = the contact point on the plane, this is what i want calculated
+ray = B - A, simply the line from A to B
+rayOrigin = A, the origin of the line segement
+normal = normal of the plane (normal of a triangle)
+coord = a point on the plane (vertice of a triangle)
+ */
+bool AtentionTracer::linePlaneIntersection(cv::Vec3d& contact, cv::Vec3d ray, cv::Vec3d rayOrigin,
+                           cv::Vec3d normal, cv::Vec3d coord) {
+    // get d value
+    float d = normal.dot(coord);
 
-void AtentionTracer::calcCirclePoints(cv::Mat &img, cv::Vec3d center, cv::Vec3b color, cv::Vec3d position, cv::Vec3d orientation){
-    cv::Point point= calcPose2Image(center, mAttentionCam);
-    img.at<cv::Vec3b>(point) = cv::Vec3b(255,255,255);
-
-    cv::Vec3d dif = position-center;
-    double loc = dif[0]*orientation[0]+dif[1]*orientation[1]+dif[2]*orientation[2];
-    double oc = dif[0]*dif[0]+dif[1]*dif[1]+dif[2]*dif[2];
-
-    for(int i = 0; i < 260; i+=10){
-        double sq = loc*loc-oc+i*i;
-        if(sq >=0){
-            cv::circle(img, point, cvRound(mAtentSize.width*i/sqrt(oc)), cv::Scalar(255,255,255));
-            cv::circle(img, point, cvRound(mAtentSize.width*(i-10)/sqrt(oc)), cv::Scalar(255,255,255));
-            double d1 = -loc+sqrt(sq);
-            double d2 = -loc-sqrt(sq);
-            cv::Point point1= calcPose2Image(position+d1*orientation, mAttentionCam);
-            cv::Point point2= calcPose2Image(position+d2*orientation, mAttentionCam);
-            img.at<cv::Vec3b>(point1) = color;
-            img.at<cv::Vec3b>(point2) = color;
-            std::cout<<"Treffer ["<<i-10<<", "<<i<<"]"<<position<<std::endl;
-            break;
-        }
+    if (normal.dot(ray) == 0) {
+        return false; // No intersection, the line is parallel to the plane
     }
-}
 
-cv::Vec3d AtentionTracer::unitVector(cv::Vec3d vec){
-    double n = sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2]);
-    cv::Vec3d ret(vec[0]/n, vec[1]/n, vec[2]/n);
-    std::cout<<vec<<"->"<<ret<<std::endl;
-    return ret;
+    // Compute the X value for the directed line ray intersecting the plane
+    float x = (d - normal.dot(rayOrigin)) / normal.dot(ray);
+
+    // output contact point
+    contact = rayOrigin + ray*x; //Make sure your ray vector is normalized
+    return true;
 }
 
 double AtentionTracer::getScall(int size, double scall)

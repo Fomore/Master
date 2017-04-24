@@ -14,15 +14,17 @@ Camera::Camera(int id)
     mRotMatrix = cv::Matx33d(0.9935781437735043, 0.03578996458724681, -0.107338486343161,
                              -0.07024195232757807, 0.9388226550648573, -0.337161816447506,
                              0.08870479326850131, 0.3425362765778467, 0.9353076279381973);
-    mTranslation = cv::Vec3d(0, 206, 31);
+    mTranslation = cv::Vec3d(0, 206, -31);
     //fx=1058.35 fy=1064.92
 
+    /*
     // Außenaufnahme
     mRotMatrix = cv::Matx33d(0.9991731060535562, 0.01466352322878778, -0.03792209416432796,
                              -0.02132243566782049, 0.9831316519883933, -0.1816521637519485,
                              0.03461875035989887, 0.1823105480905914, 0.9826313684075159);
     mTranslation = cv::Vec3d(0, 148+40, 0);
     //fx=1046.86 fy=974.971
+    */
 
     //correctTest(cv::Scalar(255, 0, 0,255),"A");
 }
@@ -252,7 +254,7 @@ cv::Vec3d Camera::rotateToWorld(cv::Vec3d in)
 
 cv::Vec3d Camera::rotateToCamera(cv::Vec3d in)
 {
-    return mRotMatrix * (in + mTranslation);
+    return mRotMatrix * (in - mTranslation);
 }
 
 cv::Matx33d Camera::getRotationMatrix()
