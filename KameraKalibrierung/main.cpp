@@ -130,34 +130,26 @@ void correct_Image(cv::Mat cameraMatrix, cv::Mat distCoeffs){
     }
 }
 
-void loadFromFile(std::vector<cv::Point3f> &WorldPoints, std::vector<cv::Point2f> &ImagePoints, cv::Mat &img){
-    std::cout<<"Load Data"<<std::endl;
-    std::ifstream file("/home/falko/Uni/Master/Dateien/Positions_Data3.txt");
-    std::cout<<"Data: "<<file.is_open()<<std::endl;
+void loadFromFile(std::vector<cv::Point3f> &WorldPoints, std::vector<cv::Point2f> &ImagePoints, cv::Point3f CamPos, double Scall,
+                  cv::Mat &img, std::string path){
+    std::cout<<"Load Data:"<<path<<std::endl;
+    std::ifstream file(path);
     std::string str;
     size_t count = 0;
     while (std::getline(file, str)){
         std::vector<std::string> v;
         boost::split(v, str, boost::is_any_of(" ") );
 
-        int x,y;
-        if(count >= 125){
-            x = atoi(v[2].c_str());
-            y = atoi(v[3].c_str());
+            int x = atoi(v[2].c_str());
+            int y = atoi(v[3].c_str());
             cv::circle(img,cv::Point2i(x,y),4,
                        cv::Scalar(count%125*2,count%125*2,255-count%125*2,255));
-        }else{
-            x = atoi(v[2].c_str());
-            y = atoi(v[3].c_str());
-            cv::circle(img,cv::Point2i(x,y),4,
-                       cv::Scalar(count%125*2,count%125*2,255-count%125*2,255));
-        }
 
         //cv::putText(img,std::to_string(count),cv::Point2i(x,y),cv::FONT_HERSHEY_PLAIN, 2, cv::Scalar(0,0,255,255));
 
         ImagePoints.push_back(cv::Point2f(x,y));
-        WorldPoints.push_back(cv::Point3f((atoi(v[1].c_str())-4)*100,atoi(v[0].c_str())*100,0));
-        //WorldPoints.push_back(cv::Point3f((4-atoi(v[1].c_str()))*100,atoi(v[0].c_str())*100,0));
+        //WorldPoints.push_back(cv::Point3f((4-atoi(v[1].c_str()))*Scall+CamPos.x, 0+CamPos.y, atoi(v[0].c_str())*Scall+CamPos.z));
+        WorldPoints.push_back(cv::Point3f((atoi(v[1].c_str())-4)*Scall+CamPos.x, 0+CamPos.y, atoi(v[0].c_str())*Scall+CamPos.z));
 
         count++;
     }
@@ -168,19 +160,22 @@ void loadFromFile(std::vector<cv::Point3f> &WorldPoints, std::vector<cv::Point2f
     std::cout<<"Load ende"<<std::endl;
 }
 
-cv::Matx33d SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> ImagePoints, cv::Point3d CamPos, double cx, double cy,
+cv::Matx33d SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> ImagePoints, double cx, double cy,
          cv::Mat Image){
     double in[ImagePoints.size()][6];
+    std::cout<<"Punkte"<<std::endl;
     for(size_t i = 0; i < ImagePoints.size(); i++){
         double x = ImagePoints[i].x-cx;
         double y = ImagePoints[i].y-cy;
 
-        in[i][0] = (x*(WorldPoints[i].x+CamPos.x));
-        in[i][1] = (x*(WorldPoints[i].z+CamPos.y));
-        in[i][2] = (x*(WorldPoints[i].y+CamPos.z));
-        in[i][3] = (-y*(WorldPoints[i].x+CamPos.x));
-        in[i][4] = (-y*(WorldPoints[i].z+CamPos.y));
-        in[i][5] = (-y*(WorldPoints[i].y+CamPos.z));
+        std::cout<<WorldPoints[i]<<std::endl;
+
+        in[i][0] = x*WorldPoints[i].x;
+        in[i][1] = x*WorldPoints[i].y;
+        in[i][2] = x*WorldPoints[i].z;
+        in[i][3] =-y*WorldPoints[i].x;
+        in[i][4] =-y*WorldPoints[i].y;
+        in[i][5] =-y*WorldPoints[i].z;
     }
     //cv::SVD matrix(cv::Mat(8, WorldPoints.size(), CV_64F, in));
     cv::Mat A(WorldPoints.size(),6, CV_64F, in);
@@ -222,10 +217,10 @@ cv::Matx33d SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> I
     cv::SVDecomp(R, Rw, Ru, Rvt, cv::SVD::FULL_UV);
     cv::Matx33d R2 = cv::Matx33d(Ru)*cv::Matx33d(Rvt);
 
-    bool posTerm = R2.val[0]*(WorldPoints[0].x+CamPos.x) + R2.val[1]*(WorldPoints[0].z+CamPos.y)+R2.val[2]*(WorldPoints[0].y+CamPos.z) >= 0;
-    bool posX = ImagePoints[0].x >= 0;
+    bool posTerm = R2.val[0]*WorldPoints[0].x + R2.val[1]*WorldPoints[0].y+R2.val[2]*WorldPoints[0].z >= 0;
+    bool posX = ImagePoints[0].x-cx >= 0;
 
-    if(posTerm == posX){
+    if(posTerm != posX){
         R.at<double>(1,0) = -line.at<double>(0,0)/l1;
         R.at<double>(1,1) = -line.at<double>(0,1)/l1;
         R.at<double>(1,2) = -line.at<double>(0,2)/l1;
@@ -237,19 +232,20 @@ cv::Matx33d SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> I
         R.at<double>(2,0) = R.at<double>(0,1)*R.at<double>(1,2)-R.at<double>(0,2)*R.at<double>(1,1);
         R.at<double>(2,1) = R.at<double>(0,2)*R.at<double>(1,0)-R.at<double>(0,0)*R.at<double>(1,2);
         R.at<double>(2,2) = R.at<double>(0,0)*R.at<double>(1,1)-R.at<double>(0,1)*R.at<double>(1,0);
-    }
-    cv::SVDecomp(R, Rw, Ru, Rvt, cv::SVD::FULL_UV);
-    cv::Matx33d R3 = cv::Matx33d(Ru)*cv::Matx33d(Rvt);
 
-    double fx = (ImagePoints[0].x-cx)*(R3.val[6]*(WorldPoints[0].x+CamPos.x) + R3.val[7]*(WorldPoints[0].z+CamPos.y)+R3.val[8]*(WorldPoints[0].y+CamPos.x))/
-            (R3.val[0]*(WorldPoints[0].x+CamPos.x) + R3.val[1]*(WorldPoints[0].z+CamPos.y)+R3.val[2]*(WorldPoints[0].y+CamPos.x));
+        cv::SVDecomp(R, Rw, Ru, Rvt, cv::SVD::FULL_UV);
+        R2 = cv::Matx33d(Ru)*cv::Matx33d(Rvt);
+    }
+
+    double fx = (ImagePoints[0].x-cx)*(R2.val[6]*WorldPoints[0].x + R2.val[7]*WorldPoints[0].y + R2.val[8]*WorldPoints[0].z)/
+            (R2.val[0]*WorldPoints[0].x + R2.val[1]*WorldPoints[0].y + R2.val[2]*WorldPoints[0].z);
     double fy = fx/(l2/l1);
 
-    std::cout<<"Orthogonal: "<<R3<<std::endl<<fx<<" "<<fy<<std::endl;
+    std::cout<<"Orthogonal: "<<R2<<std::endl<<fx<<" "<<fy<<std::endl;
 
     for(size_t i = 0; i < WorldPoints.size(); i++){
         cv::circle(Image,ImagePoints[i],4,cv::Scalar(255,0,0,255));
-        cv::Vec3d pos = R3*cv::Vec3d(WorldPoints[i].x+CamPos.x, WorldPoints[i].z+CamPos.y, WorldPoints[i].y+CamPos.z);
+        cv::Vec3d pos = R2*cv::Vec3d(WorldPoints[i].x, WorldPoints[i].y, WorldPoints[i].z);
         cv::Point2d point(pos[0]/pos[2]*fx+cx,pos[1]/pos[2]*fy+cy);
         //std::cout<<pos<<point<<std::endl;
         cv::circle(Image,point,4,cv::Scalar(0,0,255,255),-1);
@@ -262,14 +258,14 @@ cv::Matx33d SVD(std::vector<cv::Point3f> WorldPoints, std::vector<cv::Point2f> I
 
     std::ofstream myfile;
     myfile.open ("Matrix.txt", std::ios::in | std::ios::app);
-    myfile <<R3<<fx<<fy<<std::endl;
+    myfile <<R2<<fx<<" "<<fy<<std::endl;
     myfile.close();
     std::cout<<"Ende"<<std::endl;
 
-    return R3;
+    return R2;
 }
 
-void print3D(std::vector<cv::Point3f> WorldPoints, cv::Matx33d Rotation, cv::Point3d CamPos){
+void print3D(std::vector<cv::Point3f> WorldPoints, cv::Matx33d Rotation){
     // Create a window
     cv::viz::Viz3d myWindow("Coordinate Frame");
     cv::viz::Viz3d myWindowRef("Coordinate Frame 2");
@@ -288,7 +284,7 @@ void print3D(std::vector<cv::Point3f> WorldPoints, cv::Matx33d Rotation, cv::Poi
     myWindowRef.setViewerPose(cam_pose);
 
     for(size_t i = 0; i < WorldPoints.size(); i++){
-        cv::Vec3d Pos = cv::Vec3d(WorldPoints[i].x+CamPos.x, WorldPoints[i].z+CamPos.y, WorldPoints[i].y+CamPos.z);
+        cv::Vec3d Pos = cv::Vec3d(WorldPoints[i].x, WorldPoints[i].y, WorldPoints[i].z);
         cv::Vec3d Position = Rotation*Pos;
 
         std::cout<<Pos<<Position<<std::endl;
@@ -314,17 +310,19 @@ void print3D(std::vector<cv::Point3f> WorldPoints, cv::Matx33d Rotation, cv::Poi
 int main()
 {
     cv::Mat Testbild = cv::imread("/home/falko/Bilder/Bildschirmfoto von Test_Positionen_1.mp4.png", -1);
+    cv::Point3f translation(0, 206, 31);
+
     //cv::Mat Testbild = cv::imread("/home/falko/Bilder/Bildschirmfoto von 20170408_124949A.mp4.png", -1);
+    //cv::Point3f translation(0, 148+40, 0);
 
     std::vector<cv::Point3f> WorldPoints;
     std::vector<cv::Point2f> ImagePoints;
-    loadFromFile(WorldPoints, ImagePoints,Testbild);
+    //loadFromFile(WorldPoints, ImagePoints,translation,100,Testbild,"/home/falko/Uni/Master/Dateien/Positions_Data5.txt");
+    loadFromFile(WorldPoints, ImagePoints,translation,100,Testbild,"/home/falko/Uni/Master/Dateien/Positions_Data.txt");
 
-    //cv::Point3d translation(0, 148+40, 0);
-    cv::Point3d translation(0, 206, 31);
-    cv::Matx33d rotation = SVD(WorldPoints,ImagePoints,translation, 1344, 756, Testbild.clone());
+    cv::Matx33d rotation = SVD(WorldPoints,ImagePoints, 1344, 756, Testbild.clone());
 
-    print3D(WorldPoints,rotation,translation);
+    print3D(WorldPoints,rotation);
 
     std::vector<std::vector<cv::Point3f>> World;
     World.push_back(WorldPoints);
