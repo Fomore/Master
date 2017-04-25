@@ -198,13 +198,21 @@
      <addaction name="actionScale_Box"/>
      <addaction name="actionSet_min_Box_Size"/>
     </widget>
+    <widget class="QMenu" name="menuDarstellung">
+     <property name="title">
+      <string>Darstellung</string>
+     </property>
+     <addaction name="actionWrite_Solution"/>
+     <addaction name="actionSave_Image"/>
+     <addaction name="actionShow_Eyes"/>
+     <addaction name="actionShow_Atention"/>
+     <addaction name="actionShow_Landmarks"/>
+    </widget>
     <addaction name="actionSelect_Camera"/>
     <addaction name="actionMax_Faces"/>
     <addaction name="actionCorrect_Image"/>
-    <addaction name="actionShow_Eyes"/>
-    <addaction name="actionSave_Image"/>
-    <addaction name="actionWrite_Solution"/>
     <addaction name="separator"/>
+    <addaction name="menuDarstellung"/>
     <addaction name="menuPositionsberechnung"/>
     <addaction name="menuAblauf_Einstellung"/>
     <addaction name="menuQuelle"/>
@@ -366,6 +374,28 @@
    </property>
    <property name="text">
     <string>Write Solution</string>
+   </property>
+  </action>
+  <action name="actionShow_Atention">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Atention</string>
+   </property>
+  </action>
+  <action name="actionShow_Landmarks">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Landmarks</string>
    </property>
   </action>
  </widget>

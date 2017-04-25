@@ -7,7 +7,7 @@ Target::Target()
 {
     // Punkt Zentrum 0
     mPoint[0][0] = 0.0;
-    mPoint[0][1] = 176;
+    mPoint[0][1] = 170;
     mPoint[0][2] = -41;
 
     //Links

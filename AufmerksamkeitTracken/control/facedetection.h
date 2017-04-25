@@ -76,6 +76,8 @@ public:
 
     void setSaveIamge(bool save);
     void setWriteSolution(bool write);
+    void setShowAtention(bool show);
+    void setShowLandmarks(bool land);
 
     void setBoxScall(double s);
     void setBoxMinSize(int w, int h);

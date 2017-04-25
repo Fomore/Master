@@ -18,7 +18,7 @@ AtentionTracer::AtentionTracer(Ui::MainWindow *parent, Camera *cam)
 
     mAttentionCamPose = cv::Vec3d(0,0,-5500);
     mAttentiondCamOri = cv::Matx33d(1,0,0,
-                                    0,1,0,
+                                    0,-1,0,
                                     0,0,1);
 }
 
@@ -44,7 +44,9 @@ void AtentionTracer::showSolution(QString name, const LandmarkDetector::CLNF &mo
     FaceAnalysis::EstimateGaze(model, gazeDirection1, fx, fy, cx, cy, false);
     cv::Vec6d headPoseWorld = LandmarkDetector::GetCorrectedPoseCamera(model, fx, fy, cx, cy);//Distanz in Millimeter
 
-    newPosition(colore,headPoseWorld,model.params_global,gazeDirection0,gazeDirection1);
+    if(mShowAtention){
+        newPosition(colore,headPoseWorld,model.params_global,gazeDirection0,gazeDirection1);
+    }
 
     if(mWriteToFile && write){
         writeSolutionToFile(name,model.params_global,headPoseWorld,gazeDirection0,gazeDirection1);
@@ -70,8 +72,8 @@ void AtentionTracer::writeSolutionToFile(QString name, cv::Vec6d Model, cv::Vec6
     myfile.open ("./data/BerechnungWinkel_Video.txt", std::ios::in | std::ios::app);
     myfile <<worlPoint<<target<<Model<<"|"
           <<HeadPoseWorld<<"|"<<calcAbweichung(HeadPoseWorld,target)
-         <<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection0,target)
-        <<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection1,target)<<std::endl;
+         <<" "<<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection0,target)
+        <<" "<<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection1,target)<<std::endl;
     myfile.close();
 }
 
@@ -105,9 +107,11 @@ double AtentionTracer::calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, c
 }
 
 void AtentionTracer::print(){
-    printImageOrientation();
-    printWorld();
-    printAttention();
+    if(mShowAtention){
+        printImageOrientation();
+        printWorld();
+        printAttention();
+    }
     reset();
 }
 
@@ -191,7 +195,7 @@ void AtentionTracer::printTargets(cv::Mat &img, const cv::Vec3d &Pose, const cv:
 {
     for(int i = 0; i < 9 ; i++){
         cv::circle(img,calcPose2Image(mKamera->rotateToCamera(cv::Vec3d(mPoint[i][0],mPoint[i][1],mPoint[i][2]))*10.0,Pose,Ori,fx,cx,cy),
-                   cvRound(fx/50),cv::Scalar(255,i*31,i*31),-1);
+                   cvRound(fx/50),cv::Scalar(255,0,0),-1);
     }
 }
 
@@ -259,6 +263,11 @@ double AtentionTracer::getScall(int size, double scall)
 void AtentionTracer::setWriteToFile(bool write)
 {
     mWriteToFile = write;
+}
+
+void AtentionTracer::setShowAtention(bool show)
+{
+    mShowAtention = show;
 }
 
 void AtentionTracer::setImageSize(int Width, int Height){

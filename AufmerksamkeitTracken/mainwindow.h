@@ -59,6 +59,10 @@ private slots:
 
     void on_actionWrite_Solution_triggered(bool checked);
 
+    void on_actionShow_Atention_triggered(bool checked);
+
+    void on_actionShow_Landmarks_triggered(bool checked);
+
 private:
     Ui::MainWindow *ui;
 //    Image mImage;

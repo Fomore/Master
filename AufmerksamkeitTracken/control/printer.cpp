@@ -107,11 +107,13 @@ void Printer::printSmallImage(cv::Mat img, const LandmarkDetector::CLNF &model, 
     cv::Mat R;
     cv::Mat L;
     if(mDrawEyeLandmarks){
-        for(size_t i = 0; i < model.hierarchical_models.size(); ++i){
-            if(model.hierarchical_models[i].pdm.NumberOfPoints() != model.hierarchical_mapping[i].size()
-                    && model.hierarchical_models[i].detected_landmarks.rows == 56){
-                int idx = model.patch_experts.GetViewIdx(model.params_global, 0);
-                LandmarkDetector::Draw(img, model.hierarchical_models[i].detected_landmarks, model.patch_experts.visibilities[0][idx]);
+        if(mDrawLandmarks){
+            for(size_t i = 0; i < model.hierarchical_models.size(); ++i){
+                if(model.hierarchical_models[i].pdm.NumberOfPoints() != model.hierarchical_mapping[i].size()
+                        && model.hierarchical_models[i].detected_landmarks.rows == 56){
+                    int idx = model.patch_experts.GetViewIdx(model.params_global, 0);
+                    LandmarkDetector::Draw(img, model.hierarchical_models[i].detected_landmarks, model.patch_experts.visibilities[0][idx]);
+                }
             }
         }
         L = getEyeImage(img,model,37,6); //Left
@@ -122,7 +124,11 @@ void Printer::printSmallImage(cv::Mat img, const LandmarkDetector::CLNF &model, 
         double f = min((double)sImageH/Height, (double)sImageW/Width);
         cv::resize(img(cv::Rect(X,Y,Width,Height)),R,cv::Size(0,0),f,f);
 
+        if(mDrawLandmarks){
         LandmarkDetector::Draw(img,model);
+        }else{
+            print_Orientation(img,model,1);
+        }
 
         cv::resize(img(cv::Rect(X,Y,Width,Height)),L,cv::Size(0,0),f,f);
     }
@@ -155,6 +161,11 @@ void Printer::setShowEye(bool show)
 void Printer::setSaveImage(bool save)
 {
     mSaveImage = save;
+}
+
+void Printer::setDrawLandmarks(bool landmark)
+{
+    mDrawLandmarks = landmark;
 }
 
 void Printer::printMatToQPainter(cv::Mat Img, QPainter &Paint, int Width, int Height, int Position)

@@ -13,8 +13,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     mFrameEvents = new FrameEvents();
 
-    mKamera->setPath("/home/falko/Uni/Master/Film/Test_Positionen_2.mp4");
-    mFrameEvents->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_2_Label.xml");
+    mKamera->setPath("/home/falko/Uni/Master/Film/Test_Positionen_3.mp4");
+    mFrameEvents->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_3_Label.xml");
 
     mFaceDetection = new FaceDetection(ui,mFrameEvents,mKamera);
 }
@@ -143,4 +143,14 @@ void MainWindow::on_actionSave_Image_triggered(bool checked)
 void MainWindow::on_actionWrite_Solution_triggered(bool checked)
 {
     mFaceDetection->setWriteSolution(checked);
+}
+
+void MainWindow::on_actionShow_Atention_triggered(bool checked)
+{
+    mFaceDetection->setShowAtention(checked);
+}
+
+void MainWindow::on_actionShow_Landmarks_triggered(bool checked)
+{
+    mFaceDetection->setShowLandmarks(checked);
 }

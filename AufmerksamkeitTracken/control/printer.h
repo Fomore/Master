@@ -10,6 +10,7 @@ class Printer
 private:
     void printMatToQPainter(cv::Mat Img, QPainter &Paint, int Width, int Height, int Position);
     bool mDrawEyeLandmarks = false;
+    bool mDrawLandmarks = true;
     bool mSaveImage = false;
 public:
     Printer();
@@ -24,6 +25,7 @@ public:
     void printSmallImage(cv::Mat img, cv::Rect rec, int id, QPainter &paint, std::string titel, int sImageW, int sImageH);
     void setShowEye(bool show);
     void setSaveImage(bool save);
+    void setDrawLandmarks(bool landmark);
 };
 
 #endif // PRINTER_H

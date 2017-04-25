@@ -196,7 +196,7 @@ void FaceDetection::FaceTrackingNewVersion(){
     int64 t1,t0 = cv::getTickCount();
     double fps = 10;
 
-    size_t countFrame = 0, countFound = 0, countColore = 0;
+    size_t countFrame = 0, countFound = 0;
 
     cv::Mat frame_colore;
 
@@ -325,6 +325,7 @@ void FaceDetection::FaceTrackingNewVersion(){
 
         if(cv::waitKey(30) >= 0) break;
     }
+    std::cout<<"Treffer: "<<countFound<<"/"<<countFrame<<std::endl;
 }
 
 void FaceDetection::FaceTrackingImage(){
@@ -750,6 +751,16 @@ void FaceDetection::setSaveIamge(bool save)
 void FaceDetection::setWriteSolution(bool write)
 {
     mAtentionTracer->setWriteToFile(write);
+}
+
+void FaceDetection::setShowAtention(bool show)
+{
+    mAtentionTracer->setShowAtention(show);
+}
+
+void FaceDetection::setShowLandmarks(bool land)
+{
+    mPrinter.setDrawLandmarks(land);
 }
 
 bool FaceDetection::getFrame(cv::Mat &img, size_t FrameID)

@@ -13,6 +13,7 @@ private:
     Ui::MainWindow* mTheWindow;
 
     bool mWriteToFile = true;
+    bool mShowAtention = true;
 
     std::vector<double> mColores;
     //Positives linkshändiges Koordinatensystem
@@ -59,6 +60,7 @@ public:
     void showSolution(QString name, const LandmarkDetector::CLNF &model,
                       double fx, double fy, double cx, double cy, double colore, bool write);
     void setWriteToFile(bool write);
+    void setShowAtention(bool show);
 };
 
 #endif // ATENTIONTRACER_H
