@@ -329,6 +329,26 @@ void print3D(std::vector<cv::Point3f> WorldPoints, cv::Matx33d Rotation){
     }
 }
 
+void loadFromFile(std::vector<std::vector<cv::Point2f> > &Landmarks, std::string path){
+    std::ifstream file(path);
+    std::string str;
+    while (std::getline(file, str)){
+        std::vector<cv::Point2f> points;
+        std::vector<std::string> v;
+        boost::split(v, str, boost::is_any_of("]["));
+        for(size_t i = 1; i < v.size(); i += 2){
+            std::vector<std::string> pos;
+            boost::split(pos, v[i], boost::is_any_of(", "));
+            if(pos.size() == 3){
+                points.push_back(cv::Point2f(std::stof(pos[0]), std::stof(pos[2])));
+            }
+        }
+        if(points.size() == 25){
+            Landmarks.push_back(points);
+        }
+    }
+}
+
 int main()
 {
     /*
@@ -388,13 +408,14 @@ int main()
     */
 
     cv::Size s(2688,1520);
-    videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_4.mp4");
     videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_1.mp4");
-    videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_2.mp4");
-    videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_3.mp4");
-
+    //videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_2.mp4");
+    //videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_3.mp4");
+    //videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_4.mp4");
 
     std::ofstream myfile;
+    loadFromFile(m,"FoundLandmarkSchach_Action_Box.txt");
+    /*
     myfile.open ("./FoundLandmarkSchach.txt", std::ios::in | std::ios::app);
 
     for(size_t i = 0; i < videos.size(); i++){ // Könnte parallel werden
@@ -441,12 +462,13 @@ int main()
             std::cout<<"Datei nicht gefunden"<<std::endl;
         }
     }
-    myfile.close();
+    myfile.close();    
+    */
 
     std::cout << "Berechnung hat "<< m.size()<<" Bilder ergeben"<<std::endl;
     std::vector<std::vector<cv::Point2f> > m2;
     if(m.size() > 100){
-        m2 = get_perfect_Points(m,s,400);
+        m2 = get_perfect_Points(m,s,300);
     }else{
         m2 = m;
     }
