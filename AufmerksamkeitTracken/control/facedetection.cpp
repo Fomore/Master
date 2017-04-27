@@ -287,6 +287,7 @@ void FaceDetection::FaceTrackingNewVersion(){
                     std::string name;
 
                     bool isImageFrame = mFrameEvents->isImageFrame(FrameID,name,mFrameEvents->getName(model));
+                    name = "img/Head_"+name;
                     if(isImageFrame){
                         std::cout<<mKamera->getFrameNr()<<": "<<model<<" "<<name<<mImageSections[model].getRect()<<std::endl;
                     }

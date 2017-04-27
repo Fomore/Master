@@ -106,6 +106,7 @@ cv::Point2d Target::calcAngle(cv::Point3d Point)
 
 void Target::getPoint(QString Name, cv::Point3d &Point)
 {
+    std::cout<<"GetPoint: "<<Name.toStdString()<<std::endl;
     size_t id = 0;
     if(Name.size() >= 2){
         QChar O = Name.at(0);
@@ -118,7 +119,8 @@ void Target::getPoint(QString Name, cv::Point3d &Point)
         }else{
             int a = (int)Name.at(0).toLatin1()-48;
             int b = (int)Name.at(1).toLatin1()-48;
-            if(a == b ){
+
+            if(a == b && a < 3){
                 if(a == 0){
                     id = 10;
                 }else if(a == 1){
@@ -126,9 +128,10 @@ void Target::getPoint(QString Name, cv::Point3d &Point)
                 }else if(a == 2){
                     id = 12;
                 }
-            }else if(b >= 0 && b <= 7){
+            }else if((a == 3 || a == 9) && b >= 0 && b <= 7){
                 Point.x = (4-b)*1000;
-                Point.y = (a-1)*1000;
+                Point.z = (a-1)*1000;
+                return;
             }
         }
     }
@@ -157,7 +160,7 @@ void Target::getOrienation(QString name, cv::Point2d &WAngle, cv::Point3d &WPosi
 
     getWorldPosition(list,WPosition.x, WPosition.y, WPosition.z);
 
-    getPoint(list[1],Target);
+    getPoint(list[2],Target);
 
     WAngle = calcAngle(WPosition.x-Target.x,WPosition.y-Target.y,WPosition.z-Target.z);
 
@@ -165,4 +168,6 @@ void Target::getOrienation(QString name, cv::Point2d &WAngle, cv::Point3d &WPosi
     cv::Vec3d pnt = mKamera->rotateToCamera(WPosition);
 
     RAngle = calcAngle(pnt[0]-pos[0],pnt[1]-pos[1],pnt[2]-pos[2]);
+    //img/Head_Img_35 3 - 7_Falko[0, 1700, -410]
+    std::cout<<name.toStdString()<<Target<<std::endl;
 }
