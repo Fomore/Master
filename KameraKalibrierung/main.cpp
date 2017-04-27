@@ -101,9 +101,26 @@ void DisplayImage(string titel, cv::Mat &img){
     cv::imshow(titel, img);
 }
 
-void correct_Image(cv::Mat cameraMatrix, cv::Mat distCoeffs){
-    //    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_1.mp4");
-    cv::VideoCapture video("/home/falko/Uni/Master/KalibirierungDaten/Webcam_640_0.mp4");
+void correct_Image(cv::Matx33d K, cv::Vec4d D, std::string path){
+    cv::VideoCapture video(path);
+    if(video.isOpened()){
+        cv::Mat frame_col;
+        cv::namedWindow("Image Raw",1);
+        cv::namedWindow("Image Correct",1);
+        while (video.read(frame_col)) {
+            cv::Mat view;
+
+            cv::fisheye::undistortImage(frame_col, view, K, D,K);
+
+            DisplayImage("Image Raw", frame_col);
+            DisplayImage("Image Correct",view);
+
+            if(cv::waitKey(30) >= 0) break;
+        }
+    }
+}
+void correct_Image(cv::Mat cameraMatrix, cv::Mat distCoeffs, std::string path){
+    cv::VideoCapture video(path);
     if(video.isOpened()){
         cv::namedWindow("Image Raw",1);
         cv::namedWindow("Image Correct",1);
@@ -119,7 +136,7 @@ void correct_Image(cv::Mat cameraMatrix, cv::Mat distCoeffs){
         while (video.read(frame_col)) {
             cv::Mat view = frame_col.clone();
 
-            cv::undistort(frame_col, view, cameraMatrix, distCoeffs);//Korrektur mit beschneiden
+            cv::undistort(frame_col, view, cameraMatrix, distCoeffs);
             //cv::remap(frame, frame, map1, map2, cv::INTER_LINEAR);//Korrektur mit skallierung
 
             DisplayImage("Image Raw", frame_col);
@@ -137,19 +154,24 @@ void loadFromFile(std::vector<cv::Point3f> &WorldPoints, std::vector<cv::Point2f
     std::string str;
     size_t count = 0;
     while (std::getline(file, str)){
+        if(count >= 124){
+            break;
+        }
         std::vector<std::string> v;
         boost::split(v, str, boost::is_any_of(" ") );
 
-            int x = atoi(v[2].c_str());
-            int y = atoi(v[3].c_str());
-            cv::circle(img,cv::Point2i(x,y),4,
-                       cv::Scalar(count%125*2,count%125*2,255-count%125*2,255));
+        int xI = atoi(v[2].c_str());
+        int yI = atoi(v[3].c_str());
 
-        //cv::putText(img,std::to_string(count),cv::Point2i(x,y),cv::FONT_HERSHEY_PLAIN, 2, cv::Scalar(0,0,255,255));
+        int xW = atoi(v[1].c_str());
+        int zW = atoi(v[0].c_str());
 
-        ImagePoints.push_back(cv::Point2f(x,y));
+        //cv::circle(img,cv::Point2i(xI,yI),4,cv::Scalar(xW*36,23*zW,xW*zW*3));
+        cv::putText(img,std::to_string(xW)+"|"+std::to_string(zW)+":"+std::to_string(count),cv::Point2i(xI,yI),cv::FONT_HERSHEY_PLAIN, 2, cv::Scalar(0,0,255,255));
+
+        ImagePoints.push_back(cv::Point2f(xI,yI));
         //WorldPoints.push_back(cv::Point3f((4-atoi(v[1].c_str()))*Scall+CamPos.x, 0+CamPos.y, atoi(v[0].c_str())*Scall+CamPos.z));
-        WorldPoints.push_back(cv::Point3f((atoi(v[1].c_str())-4)*Scall+CamPos.x, 0+CamPos.y, atoi(v[0].c_str())*Scall+CamPos.z));
+        WorldPoints.push_back(cv::Point3f((xW-4)*Scall+CamPos.x, 0+CamPos.y, zW*Scall+CamPos.z));
 
         count++;
     }
@@ -309,6 +331,11 @@ void print3D(std::vector<cv::Point3f> WorldPoints, cv::Matx33d Rotation){
 
 int main()
 {
+    /*
+    vector<int> compression_params;
+    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(9);
+
     cv::Mat Testbild = cv::imread("/home/falko/Bilder/Bildschirmfoto von Test_Positionen_1.mp4.png", -1);
     cv::Point3f translation(0, 206, 31);
 
@@ -320,75 +347,24 @@ int main()
     //loadFromFile(WorldPoints, ImagePoints,translation,100,Testbild,"/home/falko/Uni/Master/Dateien/Positions_Data5.txt");
     loadFromFile(WorldPoints, ImagePoints,translation,100,Testbild,"/home/falko/Uni/Master/Dateien/Positions_Data.txt");
 
+    cv::imwrite("Position.png",Testbild,compression_params);
+
     cv::Matx33d rotation = SVD(WorldPoints,ImagePoints, 1344, 756, Testbild.clone());
 
     print3D(WorldPoints,rotation);
 
-    std::vector<std::vector<cv::Point3f>> World;
-    World.push_back(WorldPoints);
-    std::vector<std::vector<cv::Point2f>> Image;
-    Image.push_back(ImagePoints);
+    */
 
-    cv::Mat cameraMatrix ;
-    cv::Mat distCoeffs;
-    std::vector<cv::Mat> rvecs,tvecs;
-    cv::Size imageSize(2688,1520);
-    cv::calibrateCamera(World, Image, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs);
-    std::cout<<"cameraMatrix: "<<cameraMatrix<<std::endl<<"distCoeffs "<<distCoeffs<<std::endl;
-    for(size_t i = 0; i < rvecs.size(); i++){
-        std::cout<<rvecs[i]<<std::endl;
-    }
-    for(size_t i = 0; i < tvecs.size(); i++){
-        std::cout<<tvecs[i]<<std::endl;
-    }
-    cv::Mat R;
-    cv::Mat_<double> T(3,1);
-    T.at<double>(0,0) = tvecs[0].at<double>(0,0);
-    T.at<double>(1,0) = tvecs[0].at<double>(1,0);
-    T.at<double>(2,0) = tvecs[0].at<double>(2,0);
-    cv::Rodrigues(rvecs[0],R);
-
-    cv::Mat_<double> R2(3,3);
-    R2.at<double>(0,0) = 1;
-    R2.at<double>(0,1) = 0;
-    R2.at<double>(0,2) = 0;
-    R2.at<double>(1,0) = 0;
-    R2.at<double>(1,1) = 0;
-    R2.at<double>(1,2) = 1;
-    R2.at<double>(2,0) = 0;
-    R2.at<double>(2,1) = 1;
-    R2.at<double>(2,2) = 0;
-
-    std::cout<<R<<std::endl<<R2<<std::endl<<R*R2<<std::endl<<R2*R<<std::endl;
-    R2.at<double>(1,2) = -1;
-    R2.at<double>(2,1) = 1;
-    std::cout<<R*R2<<std::endl<<R2*R<<std::endl;
-    R2.at<double>(1,2) = 1;
-    R2.at<double>(2,1) = -1;
-    std::cout<<R*R2<<std::endl<<R2*R<<std::endl;
-
-    std::vector<cv::Point3f> PointTestIn;
-    std::vector<cv::Point2f> PointTestOut;
-
-    for(int i = -3; i <= 3; i++){
-        for(int j = 2; j < 11; j++){
-            PointTestIn.push_back(cv::Point3f(i*100.0, j*100.0, 0.0));
-        }
-    }
-    cv::projectPoints(PointTestIn,rvecs[0],tvecs[0],cameraMatrix,distCoeffs,PointTestOut);
-
-    for(size_t i = 0; i < PointTestOut.size(); i++){
-        //std::cout<<PointTestIn[i]<<PointTestOut[i]<<std::endl;
-        cv::putText(Testbild, std::to_string(i), PointTestOut[i], cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,255,0,255));
-        cv::circle(Testbild,PointTestOut[i],4,cv::Scalar(0,255,0,255),-1);
-    }
-
-    vector<int> compression_params;
-    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
-    compression_params.push_back(9);
-    cv::imwrite("Position_0.png",Testbild,compression_params);
+    //-----------------------------------------
 
     /*
+    cv::Matx33d K1(855.6169740620294, 0, 1343.5,
+                  0, 855.6169740620294, 759.5,
+                  0, 0, 1);
+    cv::Vec4d D1(0, 0, 0, 0);
+
+    correct_Image(K1,D1);
+    */
 
     int h = 5;
     int w = 5;
@@ -400,107 +376,86 @@ int main()
 
     std::vector<std::vector<cv::Point2f> > m;
 
-    bool set = true;
-    cv::Size s(0,0);
-
-    double avg_Quality = 0.0;
-    double avg_Count = 0;
-    double Quali_max = 0;
-    int del=0;
-
-//    std::vector<cv::VideoCapture> videos;
     std::vector<std::string> videos;
-
-//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Webcam_640_0.mp4"));
+    /*
+    cv::Size s(640,480);
     videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Webcam_640_0.mp4");
-//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Webcam_640_1.mp4"));
-//    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Webcam_640_2.mp4"));
-    /*
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_4.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_1.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_2.mp4"));
-    videos.push_back(cv::VideoCapture("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_3.mp4"));
-*/
-    /*
+    videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Webcam_640_1.mp4");
+    videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Webcam_640_2.mp4");
+    videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Webcam_640_3.mp4");
+    videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Webcam_640_4.mp4");
+    videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Webcam_640_5.mp4");
+    */
+
+    cv::Size s(2688,1520);
+    videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_4.mp4");
+    videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_1.mp4");
+    videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_2.mp4");
+    videos.push_back("/home/falko/Uni/Master/KalibirierungDaten/Action_Box_3.mp4");
+
+
+    std::ofstream myfile;
+    myfile.open ("./FoundLandmarkSchach.txt", std::ios::in | std::ios::app);
+
     for(size_t i = 0; i < videos.size(); i++){ // Könnte parallel werden
         std::cout<<"Lade Video "<<i<<std::endl;
         cv::VideoCapture video(videos[i]);
         if(video.isOpened()){
-            std::vector<cv::Mat> img;
-            img.clear();
-            cv::Mat frame_col;
-            while (video.read(frame_col)) {
-                img.push_back(cv::Mat(frame_col));
-                if(set){
-                    set = false;
-                    s.width = frame_col.cols;
-                    s.height= frame_col.rows;
+            cv::Mat frame_col[4];
+            size_t frameCount = 0;
+            size_t frameFound = 0;
+            double videoFPS = video.get(CV_CAP_PROP_FPS);
+            double maxVideoFrame = video.get(cv::CAP_PROP_FRAME_COUNT);
+            size_t step = (size_t)min(videoFPS*10.0,maxVideoFrame/100.0);
+            while (video.read(frame_col[frameCount%4])) {
+                frameCount++;
+                if(frameCount % step == 0){
+                    std::cout<<"Berechnung:"<<frameCount<<"/"<<(size_t)maxVideoFrame<<" "<<cvRound((double)frameCount/maxVideoFrame*100)<<std::endl;
+                }
+                if(frameCount%4 == 0 || frameCount >= (size_t)maxVideoFrame){
+                    std::vector<cv::Point2f> corners[4];
+                    bool patternfound[4];
+                    tbb::parallel_for(0, 4, [&](int i){
+                    //for(int i = 0; i < 4; i++){
+                        if(!frame_col[i].empty()){
+                            corners[i].clear();
+                            patternfound[i] = cv::findChessboardCorners(frame_col[i], patternsize, corners[i],
+                                                                        CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS | CV_CALIB_CB_FAST_CHECK);
+                        }
+                    });
+                    for(int i = 0; i< 4; i++){
+                        if(patternfound[i]){
+                            frameFound++;
+                            m.push_back(corners[i]);
+                            for(size_t pos = 0; pos < corners[i].size(); pos++){
+                                myfile <<corners[i][pos];
+                            }
+                            myfile<<std::endl;
+                        }
+                        frame_col[i].release();
+                    }
                 }
             }
-            tbb::parallel_for(0, (int)img.size(), [&](int i){
-//            for(size_t i = 0; i < img.size(); i++){
-                cv::Mat gray;
-                cvtColor(img[i], gray, CV_BGR2GRAY);
-                equalizeHist(gray, gray);
-
-                std::vector<cv::Point2f> corners;
-                corners.clear();
-                bool patternfound = cv::findChessboardCorners(gray, patternsize, corners,
-                                                              CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS | CV_CALIB_CB_FAST_CHECK);
-                if(patternfound){
-                    bool run = true;
-                    int search_size = std::max(3.0,sqrt(pow(corners.at(0).x - corners.at(h*w-1).x,2)
-                                                        +pow(corners.at(0).y - corners.at(h*w-1).y,2))/(sqrt(h*h+w*w)*5));
-                    for(size_t j = 0; j < corners.size(); j++){
-                        int X = corners.at(j).x-search_size;
-                        int Y = corners.at(j).y-search_size;
-
-                        cv::Mat img_cur = gray(cv::Rect(X,Y,search_size*2,search_size*2));
-                        cv::Mat img_out;
-
-                        cornerHarris(img_cur, img_out, 3, 3, 0.04, cv::BORDER_DEFAULT);
-                        double minVal, maxVal;
-                        cv::Point minLoc, maxLoc;
-
-                        cv::minMaxLoc(img_out, &minVal, &maxVal, &minLoc, &maxLoc );
-
-                        avg_Quality += maxVal;
-                        avg_Count++;
-                        Quali_max = std::max(Quali_max,maxVal);
-
-                        if(maxVal < 0.00002){// Schwellenwert wie unscharf eine Ecke sein darf, bei 1280-> 0.0006, Webcam: 0.00004
-                            run = false;
-                        }
-                    }
-                    if(run){
-                        cornerSubPix(gray, corners, cv::Size(5,5), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.04));
-                        m.push_back(corners);
-                    }else{
-                        del++;
-                    }
-                }
-            });
-            std::cout<<"Gefunden: "<<m.size()<<" / "<<del<<std::endl;
+            std::cout<<"Gefunden: "<<frameFound<<" / "<<(size_t)maxVideoFrame<<std::endl;
         }else{
             std::cout<<"Datei nicht gefunden"<<std::endl;
         }
     }
+    myfile.close();
 
-    std::cout << "Berechnung hat "<< m.size()<<"/"<<avg_Count<< " Bilder ergeben Qualität "<<avg_Quality/avg_Count<<" max "<<Quali_max<<" entfernt:"<<del<< std::endl;
+    std::cout << "Berechnung hat "<< m.size()<<" Bilder ergeben"<<std::endl;
     std::vector<std::vector<cv::Point2f> > m2;
     if(m.size() > 100){
-        std::cout<<"If"<<std::endl;
-        m2 = get_perfect_Points(m,s,300);
+        m2 = get_perfect_Points(m,s,400);
     }else{
         m2 = m;
     }
-    std::cout<<"Nach perfect"<<std::endl;
+
     std::vector<std::vector<cv::Point3f> > p;
     for(size_t i = 0; i < m2.size(); i++){
         p.push_back(realPoints);
     }
 
-//    std::vector<cv::Mat> rvecs,tvecs;
     std::cout << "Berechnung läuft auf "<< m2.size()<< " Bildern" << std::endl;
     if(m2.size() > 1){
         cv::Mat imgCal = cv::Mat::zeros(s.height,s.width, CV_8UC3 );
@@ -519,21 +474,48 @@ int main()
 
             cv::fillPoly( imgCal, ppt, npt, 1, cv::Scalar( 255-(i*colStep), 0, 255-((m2.size()-1-i)*colStep)), lineType );
         }
-        cv::namedWindow("Kalibrierung",1);
-        DisplayImage("Kalibrierung",imgCal);
 
-//        cv::Mat cameraMatrix ;
-//        cv::Mat distCoeffs;
+        std::cout<<"Darstellung der Landmarks"<<s<<std::endl;
+        vector<int> compression_params;
+        compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+        compression_params.push_back(9);
+        cv::imwrite("Kalibrierung.png",imgCal);
 
+        std::cout<<"Kalibrierung: p="<<p.size()<<" ,m2="<<m2.size()<<" "<<s<<std::endl;
+
+        cv::Mat cameraMatrix ;
+        cv::Mat distCoeffs;
+        std::vector<cv::Mat> rvecs,tvecs;
         cv::calibrateCamera(p, m2, s, cameraMatrix, distCoeffs, rvecs, tvecs);
-        std::cout <<"Neue Kalibrierung:" << std::endl << cameraMatrix << std::endl << distCoeffs << std::endl;
+        std::cout <<"Kalibrierung Normal:" << std::endl << cameraMatrix << std::endl << distCoeffs << std::endl;
 
-        correct_Image(cameraMatrix,distCoeffs);
+        cv::Matx33d K;
+        cv::Vec4d D;
+        std::vector<cv::Vec3d> rvec;
+        std::vector<cv::Vec3d> tvec;
+        cv::fisheye::calibrate(p, m2, s, K, D, rvec, tvec);
+        std::cout <<"Kalibrierung Fischauge:" << std::endl << K << std::endl << D << std::endl;
+        /*
+        [855.6169740620294, 0, 1343.5;
+         0, 855.6169740620294, 759.5;
+         0, 0, 1]
+        [0, 0, 0, 0]
+*/
+        myfile.open ("./Normal_Werte.txt", std::ios::in | std::ios::app);
+        myfile <<cameraMatrix<<std::endl<<distCoeffs<<std::endl;
+        myfile.close();
+
+        myfile.open ("./Fischauge_Werte.txt", std::ios::in | std::ios::app);
+        myfile <<K<<std::endl<<D<<std::endl;
+        myfile.close();
+
+        correct_Image(cameraMatrix,distCoeffs,videos[0]);
+        correct_Image(K,D,videos[0]);
 
     }else{
         std::cout<<"Keine Kalibrierungsbilder gefunden"<<std::endl;
     }
-    */
+
     return 0;
 }
 
