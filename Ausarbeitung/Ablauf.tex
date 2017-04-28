@@ -1,0 +1,54 @@
+\subsection{Ablauf der Implementierung}
+Für die Bestimmung der Kopfposition und Orientierung wir ein mehrstufiges Verfahren verwendet.\\
+Am Anfang müssen alle Gesichter die im aktuellen Frame vorhanden sind detektiert werden. Dazu wird die MTCNN Face detection verwendet, mit diesem Verfahren auch kleinste Gesichter erkannt werden.\ref{detection_Gesicht}\\
+Für die weiteren Berechnungen muss bekannt sein welchen Bereich das Gesicht in Frame einnimmt und um welches es sich handelt. Der Bereich wird vom MTCNN als Box geliefert, als Personenzuordnung wird ein Matsching zum vorigen Frame verwendet.\\
+Damit auch eine Berechnung auf den kleineren Gesichtern stattfinden kann werden alle zu kleinen Bildbereiche hochskaliert. Dabei muss wegen Ungenauigkeiten die gefundene Box etwas vergrößert werden und sollte dann auf eine Mindestbreite gebracht werden.\ref{skalierung}\\
+Diese Bildbereiche werden nun mit OpenFace weiterverarbeitet um die Position der Landmarkes im Bild zu bestimmen. Dadurch kann das CNN sich auf jede einzelne Person einstellen um so bessere Ergebnisse zu erreichen. Außerdem könne alle gefundenen Personden gleichzeitig (parallel) bestimmt werden.\ref{bestimmung_Landmarks}\\
+Bei großen Bildern wird nun ElSe auf die Augenbereich angewendet um die Position der Pupille noch exakter zu ermitteln, damit die Blickrichtung genauer wird. Dazu muss allerdings die Differenz zwischen ElSe-Ergebnis und OpenFace-Ergebnis betrachtet werden um Fehler zu erkennen.\ref{verbesserung_ElSe}\\
+Nun wird auf Basis der Landmarks und der Kameraparameter die Position und Orientierung des jeweiligen Gesichtes bestimmt und können für weitere Anwendungen verwendet werden.\ref{bestimmung_Pos}
+\subsubsection{Detektion der Gesichter}
+\label{detection_Gesicht}
+To Do!
+\begin{itemize}
+\item Nicht-Gesichter
+\item Überscheineiden von Bereichen
+\item Füllen von Fehlenden Bereichen
+\item Qualität der 5 Landmarks
+\end{itemize}
+
+\subsubsection{Skalierung auf Mindestgröße}
+\label{skalierung}
+To Do!
+\begin{itemize}
+\item Mindestens 130 Pixel Breit
+\item ca. $30\%$ größere Boxen
+\item Grenzen bei der Mindestgröße
+\end{itemize}
+
+\subsubsection{Bestimmung der Landmarks}
+\label{bestimmung_Landmarks}
+To Do!
+\begin{itemize}
+\item Falsche Gesichter
+\item Lernen
+\item Bild \& Film Detection
+\item Verbesserung durch Farbkorrektur
+\end{itemize}
+
+\subsubsection{Verbesserung der Augen}
+\label{verbesserung_ElSe}
+To Do! ElSe
+\begin{itemize}
+\item Mindestens 10Pixel? großes Bild der Augen
+\item Ergebnis innerhalb der Augen
+\item ableiten von Iris und Pupille
+\item Mittlung der beiden Augen
+\end{itemize}
+
+\subsubsection{Bestimmung der Position \& Orientierung}
+\label{bestimmung_Pos}
+To Do!
+\begin{itemize}
+\item Kameraparameter und ihre Auswirkung
+\item Bestimmung der Position und Orientierung
+\end{itemize}
