@@ -6,14 +6,21 @@
 #include <string>
 #include <boost/algorithm/string.hpp>
 
+#include "opencv2/core/core.hpp"
+#include <algorithm>    // std::sort
+
 #include <opencv2/viz/vizcore.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
 using namespace std;
 
+struct myclass {
+    bool operator() (cv::Vec4d pt1, cv::Vec4d pt2) { return (pt1[3] > pt2[3]);}
+} myobject;
+
 std::vector<std::vector<cv::Point2f> > get_perfect_Points(std::vector<std::vector<cv::Point2f> > points, const cv::Size dim, int maxImages){
     std::cout<<"Perfect: "<<points.size()<<std::endl;
-    std::vector<cv::Point3d> your_point;
+    std::vector<cv::Vec4d> your_point;
     for(size_t i = 0; i < points.size(); i++){
         cv::Mat point = cv::Mat(points.at(i)).reshape(1).t();
         double mean_X = cv::mean(point.row(0))[0];
@@ -23,9 +30,8 @@ std::vector<std::vector<cv::Point2f> > get_perfect_Points(std::vector<std::vecto
             radius += sqrt((point.at<float>(0,y)-mean_X)*(point.at<float>(0,y)-mean_X)
                            +(point.at<float>(1,y)-mean_Y)*(point.at<float>(1,y)-mean_Y));
         }
-        your_point.push_back(cv::Point3d(mean_X,mean_Y,radius/25.0));
+        your_point.push_back(cv::Vec4d(i,mean_X,mean_Y,radius/25.0));
     }
-    cv::Mat your_mat = cv::Mat(your_point).reshape(1).t();
 
     double q = (double)dim.width/(double)dim.height;
     double b = sqrt((double)maxImages/q);
@@ -34,6 +40,31 @@ std::vector<std::vector<cv::Point2f> > get_perfect_Points(std::vector<std::vecto
     double X = dim.width/a;
     double Y = dim.height/b;
 
+    std::cout<<dim<<maxImages<<" "<<q<<" "<<a<<" "<<b<<" "<<X<<" "<<Y<<std::endl;
+
+    std::vector<int> valueUse;
+    for(double x = 0; x < dim.width; x+=X){
+        for(double y = 0; y < dim.height; y+=Y){
+            std::vector<cv::Vec4d> inBox;
+            double centerX = x+X/2-0;
+            double centerY = y+Y/2-0;
+            for(size_t i = 0; i < your_point.size(); i++){
+                double sX = your_point[i][1];
+                double sY = your_point[i][2];
+                if(x <= sX && x+X > sX && y <= sY && y+Y > sY){
+                    double abstand = sqrt(pow((sX-centerX)/(X/2),2)+pow((sY-centerY)/(Y/2),2));
+                    inBox.push_back(cv::Vec4d(your_point[i][0],0,0,your_point[i][3]*abstand));
+                }
+            }
+            std::sort(inBox.begin(), inBox.end(), myobject);
+            if(inBox.size() > 0){
+                valueUse.push_back(inBox[0][0]);
+            }
+        }
+    }
+
+    /*
+    cv::Mat your_mat = cv::Mat(your_point).reshape(1).t();
     std::vector<int> center[(int)a+1][(int)b+1];
     for(int i = 0; i < your_mat.cols; i++){
         int x = your_mat.at<double>(0,i)/X;
@@ -41,7 +72,6 @@ std::vector<std::vector<cv::Point2f> > get_perfect_Points(std::vector<std::vecto
         center[x][y].push_back(i);
     }
 
-    std::vector<int> valueUse;
     for(int x = 0; x<=(int)a; x++){
         for(int y= 0; y<=(int)b; y++){
             if(center[x][y].size() > 0){
@@ -78,6 +108,7 @@ std::vector<std::vector<cv::Point2f> > get_perfect_Points(std::vector<std::vecto
             }
         }
     }
+    */
     std::vector<std::vector<cv::Point2f> > ret;
     for(size_t i = 0; i < valueUse.size(); i++){
         int v = valueUse.at(i);
@@ -468,7 +499,7 @@ int main()
     std::cout << "Berechnung hat "<< m.size()<<" Bilder ergeben"<<std::endl;
     std::vector<std::vector<cv::Point2f> > m2;
     if(m.size() > 100){
-        m2 = get_perfect_Points(m,s,300);
+        m2 = get_perfect_Points(m,s,100);
     }else{
         m2 = m;
     }
@@ -504,15 +535,31 @@ int main()
         cv::imwrite("Kalibrierung.png",imgCal);
 
         std::cout<<"Kalibrierung: p="<<p.size()<<" ,m2="<<m2.size()<<" "<<s<<std::endl;
-
-        cv::Mat cameraMatrix ;
+        cv::Mat cameraMatrix;
         cv::Mat distCoeffs;
+
+        /*
+        cv::Mat cameraMatrix = (cv::Mat_<double>(3,3) << 5902.045908657249, 0, 1392.422361389036,
+                                0, 9302.585954221757, 755.308393814107,
+                                0, 0, 1);
+        cv::Mat distCoeffs = (cv::Mat_<double>(1,5) << -1.436574467043459, -16.08305063603428, -0.09026931779587678, -0.09716054046898266, 116.7607400673526);
+        correct_Image(cameraMatrix,distCoeffs,videos[0]);
+
+        cameraMatrix = (cv::Mat_<double>(3,3) << 23484.68952716974, 0, 1432.301532349772,
+                        0, 46520.62003047043, 634.7094229011586,
+                        0, 0, 1);
+        distCoeffs = (cv::Mat_<double>(1,5) << -33.55710222674541, 1382.269640048888, -0.03705503259542479, -0.1220673747995214, 13.79843555886922);
+        correct_Image(cameraMatrix,distCoeffs,videos[0]);
+        */
+
         std::vector<cv::Mat> rvecs,tvecs;
         cv::calibrateCamera(p, m2, s, cameraMatrix, distCoeffs, rvecs, tvecs);
         std::cout <<"Kalibrierung Normal:" << std::endl << cameraMatrix << std::endl << distCoeffs << std::endl;
 
-        cv::Matx33d K;
-        cv::Vec4d D;
+        cv::Matx33d K(855.6169740620294, 0, 1343.5,
+                      0, 855.6169740620294, 759.5,
+                      0, 0, 1);
+        cv::Vec4d D(0,0,0,0);
         std::vector<cv::Vec3d> rvec;
         std::vector<cv::Vec3d> tvec;
         cv::fisheye::calibrate(p, m2, s, K, D, rvec, tvec);
@@ -522,7 +569,53 @@ int main()
          0, 855.6169740620294, 759.5;
          0, 0, 1]
         [0, 0, 0, 0]
+
+Kalibrierung: p=222 ,m2=222 [2688 x 1520]
+Kalibrierung Normal:
+[23484.68952716974, 0, 1432.301532349772;
+ 0, 46520.62003047043, 634.7094229011586;
+ 0, 0, 1]
+[-33.55710222674541, 1382.269640048888, -0.03705503259542479, -0.1220673747995214, 13.79843555886922]
+Kalibrierung Fischauge:
+[855.6169740620294, 0, 1343.5;
+ 0, 855.6169740620294, 759.5;
+ 0, 0, 1]
+[0, 0, 0, 0]
+
+Kalibrierung: p=86 ,m2=86 [2688 x 1520]
+Kalibrierung Normal:
+[18875.41439870057, 0, 1347.373991065817;
+ 0, 15627.5650245461, 514.3135381344314;
+ 0, 0, 1]
+[-18.34640794481549, 486.0422801229506, 0.1054745069215684, -0.007395731593504892, 7.778660342489806]
+Kalibrierung Fischauge:
+[855.6169740620294, 0, 1343.5;
+ 0, 855.6169740620294, 759.5;
+ 0, 0, 1]
+[0, 0, 0, 0]
+
+Kalibrierung: p=86 ,m2=86 [2688 x 1520]
+Kalibrierung Normal:
+[10952.48429985424, 0, 1349.575382642882;
+ 0, 12539.56777864653, 738.9469733731988;
+ 0, 0, 1]
+[-8.54144116135622, 32.42760162368206, 0.01894028322101567, -0.1119655516725132, 2847.273863520829]
+
+
+Kalibrierung: p=45 ,m2=45 [2688 x 1520]
+Kalibrierung Normal:
+[21628.890492431, 0, 1341.50391448266;
+ 0, 14125.36794309959, 728.6779137177969;
+ 0, 0, 1]
+[-24.12976839968112, 998.3077435325816, -0.07243009522484987, -0.183032050409243, 8.946362614493809]
+Kalibrierung Fischauge:
+[855.6169740620294, 0, 1343.5;
+ 0, 855.6169740620294, 759.5;
+ 0, 0, 1]
+[0, 0, 0, 0]
+
 */
+
         myfile.open ("./Normal_Werte.txt", std::ios::in | std::ios::app);
         myfile <<cameraMatrix<<std::endl<<distCoeffs<<std::endl;
         myfile.close();
