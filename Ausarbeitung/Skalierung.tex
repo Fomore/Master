@@ -1,5 +1,19 @@
 \subsection{Skalieren von Bildern}
-\begin{itemize}
-\item Verschiedene Verfahren
-\item Ansprüche für Berechnung
-\end{itemize}
+Da die Berechnungen meist auf recht kleinen Bildausschnitten ausgeführt werden muss, müssen diese für die weiteren Rechenschritte Hochskaliert werden.\\
+Dabei ist es wichtig, dass die Gesichtsmerkmale möglichst gut rekonstruiert werden damit die entsprechenden Landmarks gefunden und bestimmt werden können.
+\subsubsection{Nearest-Neighbor}
+Verwende gleicher Farbwert wie das Nächstgelegene Pixel. Dadurch werden nur die ehemaligen Pixel größer und das Gesicht wirkt sehr Kantig.\\
+To Do! - Bsp Bilder
+\subsubsection{Linear}
+Dabei wird zwischen den umliegenden nächst gelegenen Pixel Interpoliert, wodurch weitere Farbwerte entstehen und das Ergebnis gleichmäßiger aber unscharf wirkt.
+To Do! - Bsp Bilder
+\subsubsection{Bicubic}
+Um den Farbwert zu ermitteln, werden die umliegenden $4\times 4$ Pixelwerte betrachtet um den Farbverlauf als eine Funktion 3. Grades zu bestimmen. Somit werden feinere Details besser dargestellt als beim Linearen verfahren, allerdings kann es durch den bestimmten Verlauf auch zum Überschwingen kommen, wodurch Fehlfarben entstehen können.\\
+To Do! - Bsp Bilder
+%%https://en.wikipedia.org/wiki/Bicubic_interpolation
+\subsubsection{Lanczos}
+Dieser Filter besteht aus einer Sinc-Funktion über einen Bereich, um so eine Bewertung der Benachbarten Pixelwerte zu erhalten. Somit kann ergibt sich der Neue Farbwert aus den bewerteten umliegenden Pixeln.\\
+To Do! - Bsp Bilder
+%%To Do! - Bsp Bilder
+
+%% http://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#resize

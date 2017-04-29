@@ -1,5 +1,14 @@
-\subsection{Berechnung}
+\subsection{Berechnung der Position}
+Zur Bestimmung der Position $P=(X_{avg};Y_{avg};Z_{avg})$ des Gesichtes im Kamera-Koordinaten wird die Größe, ein Skalierungsfaktor $S$, des Kopfes im Bild verwendet.\\
+Da bei der Abbildung von den Koordinaten ins Bild gilt $x=f\cdot \frac{X}{Z}, y=f\cdot \frac{Y}{Z}$ kann die Tiefe wie folgt abgeschätzt werden.\\
+Sei $P_1 = (X_1;Y_1;Z_1), P_2=(X_2;Y_2;Z_2)$ die Beschreibung der Größe $G$ eines Kopfes mit $a=\frac{\sqrt{(X_1-X_2)^2+(Y_1+Y_2)^2}}{\frac{Z_1-Z_2}{2}} =\frac{G}{Z_{avg}}$ und $\frac{S_G}{G}= S$.
+\begin{align*}
+a\cdot f &= f\cdot\frac{G}{Z_{avg}} = S_G\\
+Z_{avg} &= \frac{f}{S_G}\cdot G = \frac{f}{S}\\
+X_{avg} &= \frac{x \cdot Z_{avg}}{f}\\
+Y_{avg} &= \frac{y \cdot Z_{avg}}{f}\\
+\end{align*}
+Dies beschreibt allerdings nur eine Annäherung an die Tatsächliche Position, da mit einem Durchschnittlichen Kopfgröße gerechnet wird und je weiter der Kopf vom Zentrum entfernt ist dies mit beachtet werden muss.
 \begin{itemize}
-\item Kamera $\rightarrow$ Welt
-\item Bestimmung der Ziele
+\item Bestimmung der Ziele - genauer
 \end{itemize}
