@@ -1,33 +1,49 @@
-\documentclass{scrartcl}
+\documentclass{scrreprt}
 \usepackage[utf8]{inputenc}
 \usepackage[english,ngerman]{babel}
 \usepackage{lscape}
 \usepackage{eurosym}
 \usepackage{amsmath}
 \usepackage{graphicx} 
-\usepackage[left=0.5cm,right=3cm,top=2cm,bottom=2cm,includeheadfoot]{geometry} 
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm,includeheadfoot]{geometry} 
 \usepackage{enumerate}
 
 \usepackage{scrpage2}\pagestyle{scrheadings}
 \ohead{\today}
 \begin{document}
-\section{Einführung}
+\chapter{Einführung}
 \input{Problemstellung}
+\input{Ziele}
 \input{Hardware}
 \input{Software}
-\input{Ziele}
 
-\section{Theorie \& Grundlage}
-\input{OpenFace}
+\chapter{Theorie \& Grundlage}
+\input{CNN}
+\input{NMS}
 \input{Face_MTCNN}
-\input{ELSE}
 \input{Skalierung}
+\input{OpenFace}
+\input{ELSE}
 \input{Berechnung}
 
-\section{Implementierung}
+\chapter{Implementierung}
 \input{Ablauf}
+\input{detect_Face}
+\input{minsize}
+\input{bestimmung_Landmarks}
+\input{verbesserung_ElSe}
+\input{bestimmung_Pos}
 
-\section{Ergebnisse}
+\chapter{Ergebnisse}
 \input{Parameter}
 \input{Fehler}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Das Literaturverzeichnis      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\addcontentsline{toc}{chapter}{Literaturverzeichnis}
+% Dadurch werden die Zitate mit abgekürzten Namen der Autoren generiert.
+\bibliographystyle{alpha}
+\bibliography{Quellenverzeichnis}
 \end{document}

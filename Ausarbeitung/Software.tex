@@ -1,11 +1,15 @@
-\subsection{Software}
-Software-Elemente auf fremder Quelle die eingesetzt wurden.
-\subsubsection{OpenCV}
-Open Source Computer Vision, eine Bibliothek von Algorithmen zur Bildverarbeitung in Echtzeit unter der Lizenz von BSD (Berkeley
-Software Distribution)
-\subsubsection{ElSe}
-Ellipse Selection for Robust Pupil Detection in Real-World Environments, ein Algorithmus zur Bestimmung der Umrisse der Pupille im Bild eines Auges. Der Ursprüngliche ElSe-Algorithmus ist für Infrarotbilder ausgelegt, wurde für diese Anwendung aber zu Farbbilder modifiziert.
-\subsubsection{OpenFace}
-Ein Open-Source Echtzeitverfahren auf Basis von CLNF zur Bestimmung und Analyse von Gesichtsmerkmalen in Grau-Bilder und Videos. Dabei werden 68 Signifikante Punkte im Gesicht bestimmt und auf Basis jener Position und Orientierung ermittelt.
-\subsubsection{MTCNN Face Detection}
-Multi-task Cascaded Convolutional Networks, ein Algorithmus zur Detektion von Gesichtern und Bestimmung von 5 Gesichts-Landmarks. Dabei wird ein CNN auf verschiedene Skalierungen des Bildes angewendet um so zuverlässig ein Gesicht zu erkennen.
+\section{Software}
+Für die Umsetzung werden folgende Software-Elemente aus fremder Quelle eingesetzt.
+\subsection{ElSe}
+Ellipse Selection for Robust Pupil Detection in Real-World Environments, ein Algorithmus zur Bestimmung der Pupille im Bild. Der Ursprüngliche ElSe-Algorithmus ist für Graubilder mit Infrarotbeleuchtung ausgelegt, wurde für diese Anwendung aber zu Farbbilder modifiziert.\\
+Entwickelt von der Uni Tübingen. \cite{ElSe}
+\subsection{MTCNN Face Detection}
+Multi-task Cascaded Convolutional Networks, ein Algorithmus zur Detektion von Gesichtern und Bestimmung von 5 Gesichts-Landmarks in Farbbilder. Dabei werden drei CNN auf einer Bildpyramide angewendet um so zuverlässig Gesichter verschiedenster Größe zu erkennen.\\
+\cite{MTCCN}
+\subsection{OpenCV}
+Open Source Computer Vision, ist eine C/C++ Bibliothek von Algorithmen zur Bildverarbeitung in Echtzeit unter der BSD Lizenz (Berkeley
+Software Distribution)\\
+\cite{wiki_Wha_is_OPenCV}\cite{OpenCv_What_Is}
+\subsection{OpenFace}
+Ein Open-Source Echtzeitverfahren auf Basis von CLNF zur Bestimmung und Analyse von Gesichtsmerkmalen in Grau-Bildern und Videos. Dabei werden 68 signifikante Punkte im Gesicht bestimmt und auf Basis jener Position und Orientierung ermittelt.\\
+Entwickelt von der University of Cambridge \cite{OpenFace}

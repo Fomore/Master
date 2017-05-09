@@ -1,5 +1,21 @@
-\subsection{ELSE}
+\section{ELSE}
+Um die Blickrichtung möglichst exakt zu bestimmen, sind die Landmarks der Pupille ausschlaggebend. Zu diesem Zwick kann ElSe eingesetzt werden, da dies ein Verfahren zur Detektion von Pupillen in Bildern unter realen Bedingungen.
+\subsection{Funktion}
+Das Verfahren ist in der Lage aus Bildern die Umrisse einer Pupille zu ermitteln. Bei realen Aufnahmen sind Bildfehler unvermeidlich, es können Reflektionen (Brille, Kontaktlinse usw.) Make-Up oder körperliche Eigenschaften wie Augenfarbe auftreten und die Detektion erschweren.\\
+Als Ergebnis wird eine Ellipse geliefert als Umriss der Pupille.
+\subsection{Funktionsablauf}
+Als Input wird im Orginal ein Graubild verwendet, auf dem das Infrarot beleuchtete Auge zeigt. Für den Test wurden Bilder von $384\times 288$ Pixel Größe verwendet und ist auf denen Echtzeit fähig.
+\subsubsection{Kantendetektion}
+Da die Pupille als schwarzen Fleck sichtbar ist und die Iris einen helleren Farbton aufweist wird ein Kantendetektor verwendet, der alle Pixel markiert, bei denen eine starke Farbänderung auftritt. Bei ElSe wird ein Morphologischen Ansatz eingesetzt. Von Relevanz sind nur zusammenhängende Kantenpixel, alle anderen können ignoriert werden.
+\subsubsection{Bestimmen der Ellipse}
+Um jene Kantenpixel zu erhalten, die die Pupille beschreiben, wird versucht fortlaufende Kanten zu finden, die eine Ellipse bilden, jene die nicht diesen Anforderung entsprechen können recht schnell ignoriert werden. Anschließend können auch alle offenen Ellipsenverläufe verworfen werden und jene die am meisten, vom bestimmten Verlauf abweichen.\\
+Das beste Ergebnis aller so bestimmten, wird als Lösung verwendet.
+\subsubsection{Grobe Bestimmung}
+Sollte die Bestimmung der Ellipse scheitern, so wird das Zentrum des dunkelsten Kreises bestimmt, so ein Punkt kann immer gefunden werden, ist aber nicht zwingend die Pupille.
+\subsection{Ergebnisse}
+Im Vergleich zu en anderen Verfahren im Test, zeig sich das ElSe in den meisten Fällen als Sieger hervorgeht mit einer Verbesserung der Erkennungsrate um $14.53\%$.\\
+Ein Problem entsteht wenn der Farbunterschied zwischen Iris und Pupille recht gering ist, oder durch Reflektionen der Kantenverlauf gestört wird.
+\subsection{To Do}
 \begin{itemize}
-\item Funktion
-\item Verwendung
+	\item alternative Bestimmung genauer
 \end{itemize}

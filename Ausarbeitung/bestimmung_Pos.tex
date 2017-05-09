@@ -1,0 +1,6 @@
+\section{Bestimmung der Position \& Orientierung}
+\label{bestimmung_Pos}
+Für die Bestimmung der Position und Orientierung des Gesichtes wird wie in \ref{calc_Position} Beschreiben ausgeführt. Dies kann Wiederrum von OpenFace übernommen werden, dazu muss nur das Zentrum des Bildes und Brennweite $f_x,f_y$ bekannt sein. Außerdem werden noch erweiterte Verfahren angeboten, bei dem die Position im Bild besser mit einbezogen werden, um die Winkel der Kameraabbildung zu berücksichtigen.\\
+Der signifikanteste Parameter für die Position ist die Brennweite $f_x$, da mit ihm die Tiefe geschätzt wird und sollte entsprechend exakt bestimmt sein. Von Interesse ist vor allem der Punkt auf den der Blick bzw. das Gesicht ausgerichtet ist, dadurch muss neben der Position im Kamerakoordinatensystem auch die Orientierung bekannt sein.\\
+Da nur de Position des Kopfes und seine Orientierung bestimmt werden kann, ergibt sich das Problem, den konkreten Blickpunkt zu ermitteln, da ein ganzer Kegel, wenn eine Fehlertoleranz berücksichtigt wird, die als mögliche Lösungen in Frage kommen.\\
+Außerdem liegt der Blickpunkt meist außerhalb des Bereiches der Kamera und muss entsprechend von einer Anwendung interpretiert werden.

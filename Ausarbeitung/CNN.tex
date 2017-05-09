@@ -1,0 +1,23 @@
+\section{Gesichtserkennung}
+Die Gesichtserkennung ist Teil der Bildverarbeitung und wird ständig weiterentwickelt. Darunter fallen neben der Detektion des Gesichtes auch seine Analyse wie Orientierung oder das erkennen von Mimik und Übereinstimmungen. 
+\subsection{Künstliches neuronales Netz}
+Ein künstliches neuronales Netz besteht aus miteinander verknüpften künstlichen Neuronen. Jedes Neuron erhält Eingangswerte, diese erhalten eine individuelle Gewichtung, mittels einer Übertragungsfunktion zusammengefasst und durch eine Schwellenwertfunktion das Ergebnis bestimmt.\\
+Um die Parameter der Neuronen zu bestimmen, werden sie zufällig initialisiert un dann so angepasst,dass sie zu einer gegebenen Eingabe das Gewünschte Ergebnis anzeigt und der Fehler über dem gesamten Trainingsdatensatzes minimal ist.
+\subsection{Convolutional Neural Network (CNN)}
+Diese ist eine Weiterentwicklung der neuronalen Netzen und werden zur Klassifizierung verwendet unter anderem Im Bereich Bild- und Spracherkennung. Dies wird durch eine gewichtete Faltung erreicht und sind  state of the art bei vielen Anwendungen.\\
+So wird die Information aus den umliegenden Punkten eines Bereiches zusammengefasst und komprimiert an die nächste Schicht weitergegeben, um in der untersten Schicht alle vorhanden Informationen zusammenzuführen. 
+Der Faltungskern kann ja nach Anwendung beliebig gestaltet sein, so ist eine Glättung durch einen Gauß-Kernel oder Kantendetektion durch einen Kirsch-Operator möglich.\\
+Ein CNN kann in zwei Bereiche aufgeteilt werden, der Feature Extraktion in welcher durch verschiedene Kernel und Komprimierung die Eingabeinformationen zur Klassifizierung, dem zweiten Bereich, aufbereitet.
+Gelernt werden können die Kernel an sich und die jeweiligen Bewertungen.
+\subsection{Constrained Local Model (CLM)}
+Ist ein Verfahren um mehrere Punkte eines Objektes zu lokalisieren. Dabei wird eine Wahrscheinlichkeitskarte für jeden einzelnen erstellt, wo er sich aufhalten kann auf Basis eines Trainingsdatensatzes. Nun wird versucht für das Bild, auf welchem gerechnet werden soll, für jeden Punkt den maximalen Wert zu erreichen zwischen passendem Farbverlauf und Wahrscheinlichkeit.\\
+Dieser Art der Bestimmung von Punkten mit Positionsabhängigkeiten ist ziemlich zuverlässig und dennoch dynamisch genug um auch mit kleinen Veränderungen klar zu kommen.\\
+Dies ist Wichtig, bei der Detektion von verschiedenen Gesichtern in einem Video und zuverlässiger als Active Appearance Model (AAM). 
+\subsection{PDM \& GAVAM}
+Mit Point Distribution Model (PDM) können verformbare Objekte recht gut dargestellt werden. Dabei wird die durchschnittliche Form $\overline{X}$ bestimmt und eine Matrix $P$ von Eigenvektoren um die möglichen Deformierungen darzustellen.
+\begin{align*}
+X &= \overline{X}+P\cdot b
+\end{align*}
+Somit kann durch einen Skalierungsvektor $b$ alle möglichen Formen $X$ des Objektes dargestellt werden. Zur Vereinfachung reicht es die signifikantesten Eigenvektoren in $P$ auf zu nehmen und dennoch $X$ ausreichend genau zu beschreiben.\\
+Ist bekannt welche Art der Verformung durch den Eingenvektor dargestellt ist, z.B. eine bestimmte Orientierung, so kann anhand des Skallierungsvektors die Rotation des berechneten Objektes bestimmt werden, siehe Generalized Adaptive View-based Appearance Model (GAVAM). Eine Problematik bei dieser Art der Bestimmung der Rotation entsteht, wenn Neben der Verschiebung der Landmarks durch die Rotation, auch eine Deformierung stattgefunden hat und somit niemals eine eindeutige perfekte Lösung gefunden werden kann. Dies ist vor allem de Problematik wenn auf Gesichtern gerechnet werden soll, da immer eine Veränderung der Mundwinkel oder Augenlider vorhanden sind.\\
+\cite{wiki_PDM}\cite{pdf_PDM}\cite{pdf_GAVAM}
