@@ -5,7 +5,7 @@
 
 void calcDiffernez(std::string name,cv::Mat in , cv::Mat out){
     cv::Mat ret = cv::abs(in-out);
-    std::cout<<name<<": "<<cv::sum(cv::sum(ret))<<std::endl;
+    std::cout<<name<<": "<<cv::sum(ret)<<" "<<cv::sum(cv::sum(ret))<<std::endl;
 
     std::vector<int> compression_params;
     compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
