@@ -149,10 +149,21 @@ int main(int argc, char *argv[])
     clnf_model.face_detector_HAAR.load(det_params.face_detector_location);
     clnf_model.face_detector_location = det_params.face_detector_location;
 
+    vector<LandmarkDetector::FaceModelParameters> det_parameters;
+    // The modules that are being used for tracking
+    vector<LandmarkDetector::CLNF> clnf_models;
+
+    for (int i = 0; i < 4; ++i)
+    {
+        clnf_models.push_back(clnf_model);
+        det_parameters.push_back(det_params);
+    }
+
     cv::Mat ref =  cv::imread(mImagePaths.at(2), -1);
 
     double fx=260,fy=260,cx=125,cy=125;
 
+    /*
     std::cout<<"Anzahl: "<<mImagePaths.size()<<std::endl;
     myfile<<"Anzahl: "<<mImagePaths.size()<<std::endl;
 
@@ -214,9 +225,10 @@ int main(int argc, char *argv[])
             run = false;
         }
     }
+    */
     //-----------------------------------------
 
-    for(size_t typ = 0; typ < 4; typ ++){
+    for(size_t typ = 2; typ < 4; typ ++){
         if(typ == 0){
             std::cout<<"CV_INTER_NN"<<std::endl;
             myfile<<"CV_INTER_NN"<<std::endl;
@@ -231,57 +243,62 @@ int main(int argc, char *argv[])
             myfile<<"CV_INTER_LANCZOS4"<<std::endl;
         }
         for(double scall = 0.01; scall < 0.5; scall += 0.01){
-            std::cout<<"Berechnung auf "<<scall<<" "<<step<<std::endl;
-            myfile<<"Berechnung auf "<<scall<<" "<<step<<std::endl;
+            std::cout<<"Berechnung auf "<<scall<<" "<<0.01<<std::endl;
+            myfile<<"Berechnung auf "<<scall<<" "<<0.01<<std::endl;
             size_t count = 0, count_ges = 0;
             double avg_H = 0.0, avg_W = 0.0;
-            for(size_t i = 0; i < mImagePaths.size(); i++){
-                cv::Mat Img =  cv::imread(mImagePaths.at(i), -1);
-                if(Img.data){
-                    cv::Mat ret;
-                    cv::resize(Img, ret, cv::Size(0,0), scall,scall, CV_INTER_LINEAR);
+            for(size_t i = 0; i < mImagePaths.size(); i += 4){
+                tbb::parallel_for(0, 4, [&](int j){
+                //for(int j = 0; j < 4; j++){
+                    if(i+j < mImagePaths.size()){
+                        cv::Mat Img =  cv::imread(mImagePaths.at(i+j), -1);
+                        if(Img.data){
+                            cv::Mat ret;
+                            cv::resize(Img, ret, cv::Size(0,0), scall,scall, CV_INTER_LINEAR);
 
-                    bool success = false;
-                    cv::Mat_<uchar> grayscale_image;
-                    cv::Mat_<uchar> grayscale_image1;
-                    convert_to_grayscale(ret,grayscale_image1);
+                            bool success = false;
+                            cv::Mat_<uchar> grayscale_image;
+                            cv::Mat_<uchar> grayscale_image1;
+                            convert_to_grayscale(ret,grayscale_image1);
 
-                    if(typ == 0){
-                        cv::resize(grayscale_image1, grayscale_image, cv::Size(300,300), 0,0, CV_INTER_NN);
-                    }else if(typ == 1){
-                        cv::resize(grayscale_image1, grayscale_image, cv::Size(300,300), 0,0, CV_INTER_LINEAR);
-                    }else if(typ == 2){
-                        cv::resize(grayscale_image1, grayscale_image, cv::Size(300,300), 0,0, CV_INTER_CUBIC);
-                    }else{
-                        cv::resize(grayscale_image1, grayscale_image, cv::Size(300,300), 0,0, CV_INTER_LANCZOS4);
+                            if(typ == 0){
+                                cv::resize(grayscale_image1, grayscale_image, cv::Size(300,300), 0,0, CV_INTER_NN);
+                            }else if(typ == 1){
+                                cv::resize(grayscale_image1, grayscale_image, cv::Size(300,300), 0,0, CV_INTER_LINEAR);
+                            }else if(typ == 2){
+                                cv::resize(grayscale_image1, grayscale_image, cv::Size(300,300), 0,0, CV_INTER_CUBIC);
+                            }else{
+                                cv::resize(grayscale_image1, grayscale_image, cv::Size(300,300), 0,0, CV_INTER_LANCZOS4);
+                            }
+
+                            clnf_models[j].Reset();
+
+                            // Detect faces in an image
+                            vector<cv::Rect_<double> > face_detections;
+
+                            if(det_params.curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
+                                vector<double> confidences;
+                                LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_models[j].face_detector_HOG, confidences);
+                            }else{
+                                LandmarkDetector::DetectFaces(face_detections, grayscale_image, clnf_models[j].face_detector_HAAR);
+                            }
+
+                            for(size_t face=0; face < face_detections.size(); ++face){
+                                // if there are multiple detections go through them
+                                success = LandmarkDetector::DetectLandmarksInImage(grayscale_image, face_detections[face], clnf_models[j], det_parameters[j]);
+                            }
+
+                            count_ges++;
+                            if(success){
+                                count++;
+                                double x,y,w,h;
+                                getCLNFBox(clnf_models[j],x,y,w,h);
+                                avg_H += h;
+                                avg_W += w;
+                            }
+                        }
                     }
-
-                    clnf_model.Reset();
-
-                    // Detect faces in an image
-                    vector<cv::Rect_<double> > face_detections;
-
-                    if(det_params.curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
-                        vector<double> confidences;
-                        LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_model.face_detector_HOG, confidences);
-                    }else{
-                        LandmarkDetector::DetectFaces(face_detections, grayscale_image, clnf_model.face_detector_HAAR);
-                    }
-
-                    for(size_t face=0; face < face_detections.size(); ++face){
-                        // if there are multiple detections go through them
-                        success = LandmarkDetector::DetectLandmarksInImage(grayscale_image, face_detections[face], clnf_model, det_params);
-                    }
-
-                    count_ges++;
-                    if(success){
-                        count++;
-                        double x,y,w,h;
-                        getCLNFBox(clnf_model,x,y,w,h);
-                        avg_H += h;
-                        avg_W += w;
-                    }
-                }
+                });
             }
             std::cout<<scall<<" Gefunden: "<<count<<"/"<<count_ges<<" - "<<avg_H/((double)count)<<"/"<<avg_W/((double)count)<<std::endl;
             myfile<<scall<<" Gefunden: "<<count<<"/"<<count_ges<<" - "<<avg_H/((double)count)<<"/"<<avg_W/((double)count)<<std::endl;
