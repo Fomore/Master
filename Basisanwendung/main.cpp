@@ -1,39 +1,19 @@
 #include <QCoreApplication>
 
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
+
 #include <opencv2/opencv.hpp>
 #include <QStringList>
 #include "LandmarkCoreIncludes.h"
 
 void calcDiffernez(std::string name,cv::Mat in , cv::Mat out, std::vector<int> compression_params){
-    cv::Mat ret = cv::abs(in-out);
+    cv::Mat ret;
+    cv::absdiff(in,out,ret);
     std::cout<<name<<": "<<cv::sum(ret)<<" "<<cv::sum(cv::sum(ret))<<std::endl;
 
     cv::imwrite(name+"_differenz.png",ret, compression_params);
-}
-
-void resizeImage(std::string name, cv::Mat Img, cv::Mat ref, std::vector<int> compression_params){
-    cv::Mat ret_NN, ret_LI, ret_CU, ret_LA;
-    cv::resize(Img, ret_NN, cv::Size(512,512), 0,0, CV_INTER_NN);
-    cv::resize(Img, ret_LI, cv::Size(512,512), 0,0, CV_INTER_LINEAR);
-    cv::resize(Img, ret_CU, cv::Size(512,512), 0,0, CV_INTER_CUBIC);
-    cv::resize(Img, ret_LA, cv::Size(512,512), 0,0, CV_INTER_LANCZOS4);
-
-    cv::imshow(name,Img);
-    cv::imshow(name+"NN",ret_NN);
-    cv::imshow(name+"LINEAR",ret_LI);
-    cv::imshow(name+"CUBIC",ret_CU);
-    cv::imshow(name+"LANCZOS4",ret_LA);
-
-    calcDiffernez(name+"_NN",ret_NN,ref,compression_params);
-    calcDiffernez(name+"_LINEAR",ret_LI,ref,compression_params);
-    calcDiffernez(name+"_CUBIC",ret_CU,ref,compression_params);
-    calcDiffernez(name+"_LANCZOS4",ret_LA,ref,compression_params);
-
-    cv::imwrite(name+"_NN.png",ret_NN, compression_params);
-    cv::imwrite(name+"_LINEAR.png",ret_LI, compression_params);
-    cv::imwrite(name+"_CUBIC.png",ret_CU, compression_params);
-    cv::imwrite(name+"_LANCZOS4.png",ret_LA, compression_params);
-
 }
 
 void convert_to_grayscale(const cv::Mat& in, cv::Mat& out)
@@ -99,10 +79,151 @@ void getCLNFBox(const LandmarkDetector::CLNF &model, double &X, double &Y, doubl
     H = H-Y;
 }
 
+cv::Mat getMean(const vector<cv::Mat>& images)
+{
+    std::cout<<"Berechnung Mean: "<<images.size()<<std::endl;
+
+    if (images.empty()) return cv::Mat();
+
+    // Create a 0 initialized image to use as accumulator
+    cv::Mat m(images[0].rows, images[0].cols, CV_64FC3);
+
+    // Use a temp image to hold the conversion of each input image to CV_64FC3
+    // This will be allocated just the first time, since all your images have
+    // the same size.
+    for (size_t i = 0; i < images.size(); ++i)
+    {
+        cv::Mat temp;
+        // Convert the input images to CV_64FC3 ...
+        images[i].convertTo(temp, CV_64FC3);
+        m += temp;
+    }
+    m.convertTo(m, CV_8UC3, 1.0 / images.size());
+    return m;
+}
+
+void calcHistogramm(const vector<cv::Mat>& images, cv::Mat Ref){
+    int blau[257];
+    int green[257];
+    int red[257];
+    for(int i = 0; i < 257; i++){
+        blau[i] = 0;
+        green[i] = 0;
+        red[i] = 0;
+    }
+    std::cout<<"Histogramm "<< images.size() <<std::endl;
+
+    std::vector<int> compression_params;
+    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(9);
+    //tbb::parallel_for(0, (int)images.size(), [&](int i){
+    bool save = true;
+    for(size_t i = 0; i < images.size(); i++){
+        cv::Mat Img;
+        cv::absdiff(images[i],Ref,Img);
+        for(int x = 0; x < Img.cols; x++){
+            for(int y = 0; y < Img.rows; y++){
+                cv::Vec3b pix = Img.at<cv::Vec3b>(y,x);
+                blau[pix[0]]++;
+                red[pix[1]]++;
+                green[pix[2]]++;
+            }
+        }
+    }
+    for(int i = 0; i < 257; i++){
+        std::cout<<blau[i]<<" "<<red[i]<<" "<<green[i]<<std::endl;
+    }
+}
+
+void setNois8UC3(cv::Mat& Img, int Chace, int Step){
+    int shift = Step/2;
+    for(int x = 0; x < Img.cols; x++){
+        for(int y = 0; y < Img.rows; y++){
+            cv::Vec3b nois = Img.at<cv::Vec3b>(x,y);
+            for(int i = 0; i < 3; i++){
+                if(rand() %100 < Chace){
+                    nois[i] = max(0,min(nois[i]+rand() %Step - shift,255));
+                }
+            }
+            Img.at<cv::Vec3b>(x,y) = nois;
+        }
+    }
+}
+void setNois8UC1(cv::Mat& Img, int Chace, int Step){
+    int shift = Step/2;
+    for(int x = 0; x < Img.cols; x++){
+        for(int y = 0; y < Img.rows; y++){
+            if(rand() %100 < Chace){
+                Img.at<uchar>(x,y) = max(0,min(Img.at<uchar>(x,y)+rand() %Step - shift,255));
+            }
+        }
+    }
+}
+
+void calcNois(){
+    cv::VideoCapture video;
+    video.open("/home/falko/Uni/Master/Film/Rauschen.mp4");
+    cv::Mat Frame;
+    video.set(CV_CAP_PROP_POS_FRAMES,20.0);
+    double max = video.get(CV_CAP_PROP_FRAME_COUNT);
+
+    std::cout<<"Nois Bestimmung:"<<std::endl;
+    std::vector<int> compression_params;
+    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(9);
+
+    bool save = true;
+    vector<cv::Mat> images;
+    while (video.read(Frame) && video.get(CV_CAP_PROP_POS_FRAMES) < max - 50.0) {
+        if(Frame.data){
+            if(save){
+                cv::imwrite("Video_One.png",Frame, compression_params);
+                save = false;
+            }
+            images.push_back(Frame);
+        }
+    }
+
+    //cv::Mat MeanImage = getMean(images);
+    cv::Mat MeanImage = cv::imread("/home/falko/Uni/Master/Bilder/Video_avg.png", -1);
+
+    calcHistogramm(images, MeanImage);
+
+    cv::imwrite("Video_avg.png",MeanImage, compression_params);
+    std::cout<<"Ende"<<std::endl;
+}
+
 int main(int argc, char *argv[])
 {
+    std::vector<int> compression_params;
+    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(9);
+
+    srand (time(NULL));
+
+    cv::imwrite("1.png",cv::Mat(200,300,CV_8UC3,cv::Scalar(0,0,0)), compression_params);
+    cv::imwrite("2.png",cv::Mat(200,300,CV_8UC3,cv::Scalar(255,0,0)), compression_params);
+    cv::imwrite("3.png",cv::Mat(200,300,CV_8UC3,cv::Scalar(0,255,0)), compression_params);
+    cv::imwrite("4.png",cv::Mat(200,300,CV_8UC3,cv::Scalar(0,0,255)), compression_params);
+    cv::imwrite("5.png",cv::Mat(200,300,CV_8UC3,cv::Scalar(255,255,0)), compression_params);
+    cv::imwrite("6.png",cv::Mat(200,300,CV_8UC3,cv::Scalar(0,255,255)), compression_params);
+    cv::imwrite("7.png",cv::Mat(200,300,CV_8UC3,cv::Scalar(255,0,255)), compression_params);
+    cv::imwrite("8.png",cv::Mat(200,300,CV_8UC3,cv::Scalar(255,255,255)), compression_params);
+
+    cv::Mat tmp(300,300,CV_8UC3);
+    cv::imwrite("Nois_1.png",tmp, compression_params);
+    setNois8UC3(tmp,30,51);
+    cv::imwrite("Nois_2.png",tmp, compression_params);
+
+    cv::Mat tmp2(300,300,CV_8UC1);
+    cv::imwrite("Nois_3.png",tmp2, compression_params);
+    setNois8UC1(tmp2,30,51);
+    cv::imwrite("Nois_4.png",tmp2, compression_params);
+
+    //calcNois();
+
     std::ofstream myfile;
-    myfile.open ("Auswertung.txt", std::ios::in | std::ios::app);
+    myfile.open ("Auswertung_50_51.txt", std::ios::in | std::ios::app);
 
     std::vector<cv::String> mImagePaths;
     mImagePaths.clear();
@@ -112,10 +233,6 @@ int main(int argc, char *argv[])
     mImagePaths.push_back("/home/falko/Uni/Master/Bilder/Learn/lena.jpg");
     */
     cv::glob("/home/falko/Uni/Master/lfw-deepfunneled/*.jpg", mImagePaths, true);
-
-    std::vector<int> compression_params;
-    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
-    compression_params.push_back(9);
 
     vector<string> arguments;
     arguments.push_back(""); // Hat arguments keine Werte kann wes wegoptimiert werden und dadurch wirft die Initilaisierung unten Fehler
@@ -159,76 +276,7 @@ int main(int argc, char *argv[])
         det_parameters.push_back(det_params);
     }
 
-    cv::Mat ref =  cv::imread(mImagePaths.at(2), -1);
-
-    double fx=260,fy=260,cx=125,cy=125;
-
-    /*
-    std::cout<<"Anzahl: "<<mImagePaths.size()<<std::endl;
-    myfile<<"Anzahl: "<<mImagePaths.size()<<std::endl;
-
-    bool run = true;
-    double step = 0.1;
-    for(double scall = 1.0; scall > 0.0 && run; scall -= step){
-        std::cout<<"Berechnung auf "<<scall<<" "<<step<<std::endl;
-        myfile<<"Berechnung auf "<<scall<<" "<<step<<std::endl;
-        size_t count = 0, count_ges = 0;
-        double avg_H = 0.0, avg_W = 0.0;
-        for(size_t i = 0; i < mImagePaths.size(); i++){
-            cv::Mat Img =  cv::imread(mImagePaths.at(i), -1);
-            if(Img.data){
-                std::string name = QString::fromStdString(mImagePaths.at(i)).split("/").last().toStdString();
-
-                cv::Mat ret;
-                cv::resize(Img, ret, cv::Size(0,0), scall,scall, CV_INTER_LINEAR);
-
-                bool success = false;
-                cv::Mat_<uchar> grayscale_image;
-                convert_to_grayscale(ret,grayscale_image);
-                //convert_to_grayscale(Img,grayscale_image);
-
-                clnf_model.Reset();
-
-                // Detect faces in an image
-                vector<cv::Rect_<double> > face_detections;
-
-                if(det_params.curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
-                    vector<double> confidences;
-                    LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_model.face_detector_HOG, confidences);
-                }else{
-                    LandmarkDetector::DetectFaces(face_detections, grayscale_image, clnf_model.face_detector_HAAR);
-                }
-
-                for(size_t face=0; face < face_detections.size(); ++face){
-                    // if there are multiple detections go through them
-                    success = LandmarkDetector::DetectLandmarksInImage(grayscale_image, face_detections[face], clnf_model, det_params);
-                }
-
-                count_ges++;
-                if(success){
-                    count++;
-                    double x,y,w,h;
-                    getCLNFBox(clnf_model,x,y,w,h);
-                    avg_H += h;
-                    avg_W += w;
-                }
-            }
-        }
-        std::cout<<scall<<" Gefunden: "<<count<<"/"<<count_ges<<" - "<<avg_H/((double)count)<<"/"<<avg_W/((double)count)<<std::endl;
-        myfile<<scall<<" Gefunden: "<<count<<"/"<<count_ges<<" - "<<avg_H/((double)count)<<"/"<<avg_W/((double)count)<<std::endl;
-        if(scall >= 0.51){
-            step = 0.1;
-        }else{
-            step = 0.01;
-        }
-        if(count == 0){
-            run = false;
-        }
-    }
-    */
-    //-----------------------------------------
-
-    for(size_t typ = 2; typ < 4; typ ++){
+    for(size_t typ = 0; typ < 4; typ ++){
         if(typ == 0){
             std::cout<<"CV_INTER_NN"<<std::endl;
             myfile<<"CV_INTER_NN"<<std::endl;
@@ -242,24 +290,25 @@ int main(int argc, char *argv[])
             std::cout<<"CV_INTER_LANCZOS4"<<std::endl;
             myfile<<"CV_INTER_LANCZOS4"<<std::endl;
         }
-        for(double scall = 0.01; scall < 0.5; scall += 0.01){
+        for(double scall = 0.15; scall < 0.35; scall += 0.01){
             std::cout<<"Berechnung auf "<<scall<<" "<<0.01<<std::endl;
             myfile<<"Berechnung auf "<<scall<<" "<<0.01<<std::endl;
             size_t count = 0, count_ges = 0;
             double avg_H = 0.0, avg_W = 0.0;
             for(size_t i = 0; i < mImagePaths.size(); i += 4){
                 tbb::parallel_for(0, 4, [&](int j){
-                //for(int j = 0; j < 4; j++){
+                    //for(int j = 0; j < 4; j++){
                     if(i+j < mImagePaths.size()){
                         cv::Mat Img =  cv::imread(mImagePaths.at(i+j), -1);
                         if(Img.data){
                             cv::Mat ret;
                             cv::resize(Img, ret, cv::Size(0,0), scall,scall, CV_INTER_LINEAR);
-
+                            for(int anz = 0; anz < 4; anz++){
                             bool success = false;
                             cv::Mat_<uchar> grayscale_image;
                             cv::Mat_<uchar> grayscale_image1;
                             convert_to_grayscale(ret,grayscale_image1);
+                            setNois8UC1(grayscale_image1,50,51);
 
                             if(typ == 0){
                                 cv::resize(grayscale_image1, grayscale_image, cv::Size(300,300), 0,0, CV_INTER_NN);
@@ -297,11 +346,14 @@ int main(int argc, char *argv[])
                                 avg_W += w;
                             }
                         }
+                        }
                     }
                 });
+
             }
             std::cout<<scall<<" Gefunden: "<<count<<"/"<<count_ges<<" - "<<avg_H/((double)count)<<"/"<<avg_W/((double)count)<<std::endl;
             myfile<<scall<<" Gefunden: "<<count<<"/"<<count_ges<<" - "<<avg_H/((double)count)<<"/"<<avg_W/((double)count)<<std::endl;
+            sleep(50);// Vermeidung von überhitzung
         }
 
     }
