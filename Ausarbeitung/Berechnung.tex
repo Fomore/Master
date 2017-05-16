@@ -2,7 +2,7 @@
 \label{calc_Position}
 Zur Bestimmung der Position $P=(X_{avg};Y_{avg};Z_{avg})$ des Gesichtes im Kamerakoordinaten wird die Größe, ein Skalierungsfaktor $S$, des Kopfes im Bild verwendet.\\
 Da bei der Abbildung von den Koordinaten ins Bild gilt $x=f\cdot \frac{X}{Z}$ und $ y=f\cdot \frac{Y}{Z}$, somit kann die Tiefe wie folgt abgeschätzt werden.\\
-Sei $P_1 = (X_1;Y_1;Z_1), P_2=(X_2;Y_2;Z_2)$ die Beschreibung der Größe $G$ eines Kopfes mit.\\
+Sei $P_1 = (X_1;Y_1;Z_1), P_2=(X_2;Y_2;Z_2)$ die Beschreibung der Größe $G$ eines Kopfes mit:\\
 \begin{align*}
 a &= \frac{\sqrt{(X_1-X_2)^2+(Y_1+Y_2)^2}}{\frac{Z_1-Z_2}{2}} =\frac{G}{Z_{avg}}\\
 S &= \frac{S_G}{G}\\
@@ -11,9 +11,13 @@ Z_{avg} &= \frac{f}{S_G}\cdot G = \frac{f}{S}\\
 X_{avg} &= \frac{x \cdot Z_{avg}}{f}\\
 Y_{avg} &= \frac{y \cdot Z_{avg}}{f}\\
 \end{align*}
-Dies beschreibt allerdings nur eine Annäherung an die Tatsächliche Position, da mit einem Durchschnittlichen Kopfgröße gerechnet wird und je weiter der Kopf vom Zentrum entfernt ist dies mit beachtet werden muss.
-\subsection{To Do}
-\begin{itemize}
-\item Bestimmung der Ziele - genauer\\
-Einbeziehen der Pixelrichtung
-\end{itemize}
+Dies beschreibt allerdings nur eine Annäherung an die Tatsächliche Position, da mit einem Durchschnittlichen Kopfgröße gerechnet wird.
+\subsection{Zusammenhang Bildposition \& Weltposition}
+Als Ausgangspunkt werden die Ergebnisse des CNN eingesetzt um mit deren Hilfe wie in \autoref{calc_Position} beschreiben die Position zu bestimmen. Zur Bestimmung der Orientierung $R$ liefert auch das CNN ein Ergebnis $R_{CNN}$. Allerdings stimmt es nur im Zentrum des Bildes, da am Rand immer mehr die Orientierung der einzelnen Pixel mit berücksichtigt werden muss.\\
+\begin{align*}
+euler_x &= \tan^{-1}(\frac{\sqrt{X^2+Z^2}}{Z^2})\\
+euler_y &= \tan^{-1}(\frac{\sqrt{Y^2+Z^2}}{Z^2})\\
+R_{pos} &= R(euler_x,euler_y,0)\\
+R &= R_{CNN}\cdot R{pos}
+\end{align*}
+Eine weitere Verbesserung kann erreicht werden, indem die gefunden 2D-Landmarks mit Hilfe des PDM in 3D zu überführen. Um anschließend die Überführung von 2D nach 3D-Koordinaten erneut zu bestimmen um die Orientierung und Position zu ermitteln. Auch bei diesem Verfahren muss die Pixelorientierung beachtete werden.

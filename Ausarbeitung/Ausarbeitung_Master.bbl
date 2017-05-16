@@ -1,0 +1,90 @@
+\begin{thebibliography}{HMLLM12}
+
+\bibitem[App15]{aufmerksamkeit_Studie}
+Johannes Appel.
+\newblock {\em Die Bedeutung der Aufgaben f{\"u}r das Beteiligungsverhalten der
+  Sch{\"u}ler : eine Videostudie zur Wirksamkeit des Unterrichtsprozesses}.
+\newblock PhD thesis, 2015.
+
+\bibitem[BK08]{OpenCv_What_Is}
+Gary Bradski and Adrian Kaehler.
+\newblock {\em Learning OpenCV}.
+\newblock O{\textquoteright}Reilly Media Inc., 2008.
+
+\bibitem[BRM12]{ICT_database}
+Tadas Baltrusaitis, Peter Robinson, and Louis-Philippe Morency.
+\newblock 3d {Constrained} {Local} {Model} for {Rigid} and {Non}-{Rigid}
+  {Facial} {Tracking}.
+\newblock In {\em Computer {Vision} and {Pattern} {Recognition} ({CVPR} 2012)},
+  Providence, RI, June 2012.
+
+\bibitem[CSA00]{BU_database}
+Marco~La Cascia, Stan Sclaroff, and Vassilis Athitsos.
+\newblock Fast, reliable head tracking under varying illumination: An approach
+  based on registration of texture-mapped 3d models.
+\newblock {\em IEEE Trans. Pattern Anal. Mach. Intell.}, 22(4):322--336, 2000.
+
+\bibitem[FGG11]{BIWI_database}
+Gabriele Fanelli, Juergen Gall, and Luc J.~Van Gool.
+\newblock Real time head pose estimation with random regression forests.
+\newblock In {\em CVPR}, pages 617--624. IEEE Computer Society, 2011.
+
+\bibitem[HMLLM12]{database_Face}
+Gary~B. Huang, Marwan Mattar, Honglak Lee, and Erik Learned-Miller.
+\newblock Learning to align from scratch.
+\newblock In {\em NIPS}, 2012.
+
+\bibitem[HR92]{MAI_Verhaltensbeobachtung}
+Andreas Helmke and Alexander Renkl.
+\newblock {Das Muenchener Aufmerksamkeitsinventar (MAI): Ein Instrument zur
+  systematischen Verhaltensbeobachtung der Schueleraufmerksamkeit im
+  Unterricht}.
+\newblock {\em {Diagnostica}}, 38(2):130--141, 1992.
+
+\bibitem[Kyb07]{pdf_PDM}
+Jan Kybic.
+\newblock Point distribution models, 2007.
+
+\bibitem[KZ15]{MTCCN}
+Zhifeng Li Yu~Qiao Kaipeng~Zhang, Zhanpeng~Zhang.
+\newblock Joint face detection and alignment using multi-task cascaded
+  convolutional networks, 2015.
+
+\bibitem[MWM08]{pdf_GAVAM}
+Louis-Philippe Morency, Jacob Whitehill, and Javier Movellan.
+\newblock Generalized {Adaptive} {View}-based {Appearance} {Model}:
+  {Integrated} {Framework} for {Monocular} {Head} {Pose} {Estimation}.
+\newblock In {\em 8th {International} {Conference} on {Automatic} {Face} and
+  {Gesture} {Recognition}}, Amsterdam, The Netherlands, 2008.
+
+\bibitem[TB16]{OpenFace}
+Louis-Philippe~Morency Tadas~Baltru\v{s}aitis, Peter~Robinson.
+\newblock Openface: an open source facial behavior analysis toolkit, 2016.
+
+\bibitem[WF16]{ElSe}
+Thomas Kübler Enkelejda~Kasneci Wolfgang~Fuhl, Thiago C.~Santini.
+\newblock Else: Ellipse selection for robust pupil detection in real-world
+  environments, 2016.
+
+\bibitem[Wik15]{wiki_Wha_is_OPenCV}
+Wikipedia.
+\newblock Opencv --- wikipedia{,} die freie enzyklopädie, 2015.
+\newblock [Online; Stand 16. Mai 2017].
+
+\bibitem[Wik16a]{wiki_Bicubic}
+Wikipedia.
+\newblock Bicubic interpolation --- wikipedia{,} the free encyclopedia, 2016.
+\newblock [Online; accessed 6-May-2017].
+
+\bibitem[Wik16b]{wiki_Lanczos}
+Wikipedia.
+\newblock Lanczos-filter --- wikipedia{,} die freie enzyklopädie, 2016.
+\newblock [Online; Stand 6. Mai 2017].
+
+\bibitem[Wik17]{wiki_PDM}
+Wikipedia.
+\newblock Point distribution model --- wikipedia{,} the free encyclopedia,
+  2017.
+\newblock [Online; accessed 9-May-2017].
+
+\end{thebibliography}
