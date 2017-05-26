@@ -1,15 +1,15 @@
-#include "frameevents.h"
+#include "eventhandler.h"
 #include <QFile>
 #include <QDebug>
 
 #include <iostream>
 
-FrameEvents::FrameEvents()
+EventHandler::EventHandler()
 {
     mFrames.clear();
 }
 
-int FrameEvents::getFramePos(size_t frame)
+int EventHandler::getFramePos(size_t frame)
 {
     size_t fmin = 0; size_t fmax = mFrames.size();
     size_t pos = (fmin+fmax)/2;
@@ -28,7 +28,7 @@ int FrameEvents::getFramePos(size_t frame)
     return pos;
 }
 
-bool FrameEvents::getNextFrame(size_t &frame)
+bool EventHandler::getNextFrame(size_t &frame)
 {
     int pos = getFramePos(frame)+1;
     if(pos > 0 && mFrames.size() > pos){
@@ -39,7 +39,7 @@ bool FrameEvents::getNextFrame(size_t &frame)
     }
 }
 
-bool FrameEvents::getFrame(size_t &frame, size_t frameID)
+bool EventHandler::getFrame(size_t &frame, size_t frameID)
 {
     if(frameID < mFrames.size()){
         frame = mFrames[frameID].getFrame();
@@ -49,49 +49,49 @@ bool FrameEvents::getFrame(size_t &frame, size_t frameID)
     }
 }
 
-size_t FrameEvents::getBoxSizeInFrame(size_t frameID)
+size_t EventHandler::getBoxSizeInFrame(size_t frameID)
 {
     return mFrames[frameID].getSize();
 }
 
-size_t FrameEvents::getNameSize()
+size_t EventHandler::getNameSize()
 {
     return mNames.size();
 }
 
-cv::Rect FrameEvents::getRect(size_t frameID, size_t boxID)
+cv::Rect EventHandler::getRect(size_t frameID, size_t boxID)
 {
     return mFrames[frameID].getBox(boxID);
 }
 
-cv::Rect FrameEvents::getRectWithName(size_t frameID, size_t nameID)
+cv::Rect EventHandler::getRectWithName(size_t frameID, size_t nameID, int &gaze)
 {
-    return mFrames[frameID].getBox(mNames[nameID].toStdString());
+    return mFrames[frameID].getBox(mNames[nameID].toStdString(), gaze);
 }
 
-void FrameEvents::getLandmarks(size_t frameID, size_t boxID, double land[5][2])
+void EventHandler::getLandmarks(size_t frameID, size_t boxID, double land[5][2])
 {
     mFrames[frameID].getLandmarks(boxID,land);
 }
 
-bool FrameEvents::isLandmark(size_t frameID, size_t boxID)
+bool EventHandler::isLandmark(size_t frameID, size_t boxID)
 {
     return mFrames[frameID].isLandmark(boxID);
 }
 
-bool FrameEvents::isNextFrame(size_t frame)
+bool EventHandler::isNextFrame(size_t frame)
 {
     int pos = getFramePos(frame+1);
     return pos >= 0 && frame+1 == mFrames[pos].getFrame();
 }
 
-bool FrameEvents::isFrameUsed(size_t frame)
+bool EventHandler::isFrameUsed(size_t frame)
 {
     int pos = getFramePos(frame);
     return pos >= 0 && frame == mFrames[pos].getFrame();
 }
 
-bool FrameEvents::getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &name, int &id)
+bool EventHandler::getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &name, int &id)
 {
     for(int i = getFramePos(frame)+1;
         i <= (int)mFrames.size(); i++){
@@ -110,7 +110,7 @@ bool FrameEvents::getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &n
     return false;
 }
 
-bool FrameEvents::isImageFrame(size_t frameID, std::string &ImageName, std::string ObjName)
+bool EventHandler::isImageFrame(size_t frameID, std::string &ImageName, std::string ObjName)
 {
     size_t pos;
     if(isImageFrame(frameID,ImageName,pos)){
@@ -120,7 +120,7 @@ bool FrameEvents::isImageFrame(size_t frameID, std::string &ImageName, std::stri
     }
 }
 
-bool FrameEvents::isImageFrame(size_t frameID, std::string &name, size_t &pos)
+bool EventHandler::isImageFrame(size_t frameID, std::string &name, size_t &pos)
 {
     if(frameID < mFrames.size() && mFrames[frameID].hasEventPart("Img",0,3,pos)){
         name = mFrames[frameID].getEvent(pos)+"_"+mFrames[frameID].getName(pos);
@@ -130,7 +130,7 @@ bool FrameEvents::isImageFrame(size_t frameID, std::string &name, size_t &pos)
     }
 }
 
-std::string FrameEvents::getTitel(size_t frame)
+std::string EventHandler::getTitel(size_t frame)
 {
     int pos = getFramePos(frame);
     for(size_t i = 0; i < mFrames[pos].getSize(); i++){
@@ -142,7 +142,7 @@ std::string FrameEvents::getTitel(size_t frame)
     return "NotFound"+std::to_string(frame);
 }
 
-std::string FrameEvents::getTitel(size_t frameID, size_t boxID)
+std::string EventHandler::getTitel(size_t frameID, size_t boxID)
 {
     if(mFrames.size() > frameID && mFrames[frameID].getSize() > boxID){
         std::string name = mFrames[frameID].getEvent(boxID)+mFrames[frameID].getName(boxID);
@@ -152,7 +152,7 @@ std::string FrameEvents::getTitel(size_t frameID, size_t boxID)
     return "NotFound"+std::to_string(frameID)+"_"+std::to_string(boxID);
 }
 
-std::string FrameEvents::getName(size_t NameID)
+std::string EventHandler::getName(size_t NameID)
 {
     if(NameID < mNames.size()){
         return mNames[NameID].toStdString();
@@ -160,15 +160,19 @@ std::string FrameEvents::getName(size_t NameID)
     return "";
 }
 
-void FrameEvents::clearAll()
+void EventHandler::clearAll()
 {
     for(size_t i = 0; i < mFrames.size(); i++){
         mFrames[i].clearAll();
     }
     mFrames.clear();
+
+    mFramePos.clear();
+    mImagePaths.clear();
+    mRects.clear();
 }
 
-int FrameEvents::addFrame(size_t frame)
+int EventHandler::addFrame(size_t frame)
 {
     if(mFrames.size() == 0){
         mFrames.push_back(*(new Frame(frame)));
@@ -180,23 +184,23 @@ int FrameEvents::addFrame(size_t frame)
     }
 }
 
-void FrameEvents::addBox(int id, int x, int y, int w, int h, QString name, QString event)
+void EventHandler::addBox(int id, int x, int y, int w, int h, QString name, QString event, int gaze = 0)
 {
-    mFrames[id].addBox(x,y,w,h,name.toStdString(),event.toStdString());
+    mFrames[id].addBox(x,y,w,h,name.toStdString(),event.toStdString(),gaze);
     if(!existName(name)){
         mNames.push_back(QString(name));
     }
 }
 
-void FrameEvents::addBox(int id, int x, int y, int w, int h, QString name, QString event, double land[5][2])
+void EventHandler::addBox(int id, int x, int y, int w, int h, QString name, QString event, double land[5][2], int gaze = 0)
 {
-    mFrames[id].addBox(x,y,w,h,name.toStdString(),event.toStdString(), land);
+    mFrames[id].addBox(x,y,w,h,name.toStdString(),event.toStdString(), land,gaze);
     if(!existName(name)){
         mNames.push_back(QString(name));
     }
 }
 
-void FrameEvents::printAll()
+void EventHandler::printAll()
 {
     for(size_t i = 0; i < mFrames.size(); i++){
         std::cout<<"["<<i<<"] "<<mFrames[i].getFrame()<<std::endl;
@@ -204,7 +208,7 @@ void FrameEvents::printAll()
     }
 }
 
-bool FrameEvents::existName(QString name)
+bool EventHandler::existName(QString name)
 {
     for(size_t i = 0; i < mNames.size(); i++){
         if(name == mNames[i]){
@@ -214,7 +218,7 @@ bool FrameEvents::existName(QString name)
     return false;
 }
 
-int FrameEvents::filnameToFrame(QString file)
+int EventHandler::filnameToFrame(QString file)
 {
     QStringList myStringList = file.split('-').last().split('.');
     if(myStringList.size() >=2){
@@ -223,7 +227,7 @@ int FrameEvents::filnameToFrame(QString file)
     return -1;
 }
 
-void FrameEvents::boxAttributToValue(QXmlStreamAttributes att, int &height, int &left, int &top, int &width)
+void EventHandler::boxAttributToValue(QXmlStreamAttributes att, int &height, int &left, int &top, int &width)
 {
     height = att.value("height").toInt();
     left = att.value("left").toInt();
@@ -231,9 +235,11 @@ void FrameEvents::boxAttributToValue(QXmlStreamAttributes att, int &height, int 
     width = att.value("width").toInt();
 }
 
-size_t FrameEvents::loadXML(QString path)
+size_t EventHandler::loadXML(QString path, bool clear = true)
 {
-    clearAll();
+    if(clear){
+        clearAll();
+    }
     std::cout<<"Load XML: "<<path.toStdString()<<std::endl;
 
     QXmlStreamReader xml;
@@ -258,6 +264,7 @@ size_t FrameEvents::loadXML(QString path)
                                     QString event = "";
                                     bool land = false;
                                     double landmarks[5][2];
+                                    int gaze = 0;
                                     while(xml.readNextStartElement()){
                                         if(xml.name() == "label"){
                                             xml.readNext();
@@ -278,14 +285,22 @@ size_t FrameEvents::loadXML(QString path)
                                                 }
                                                 xml.skipCurrentElement();
                                             }
+                                        }else if(xml.name() == "data"){
+                                             gaze = xml.attributes().value("gaze").toInt();
+                                             xml.skipCurrentElement();
                                         }else{
                                             xml.skipCurrentElement();
                                         }
                                     }
-                                    if(land){
-                                        addBox(f_id,left,top,width,height,name,event,landmarks);
-                                    }else{
-                                        addBox(f_id,left,top,width,height,name,event);
+                                    if(!ignoreName || !name.contains("pupil")){
+                                        if(land){
+                                            addBox(f_id,left,top,width,height,name,event,landmarks,gaze);
+                                        }else{
+                                            addBox(f_id,left,top,width,height,name,event,gaze);
+                                        }
+                                    }
+                                    if(event.contains("Img")){
+                                        addImage(name.toStdString()+"_"+event.toStdString(),frame,left,top,width,height);
                                     }
                                 }else{
                                     xml.skipCurrentElement();
@@ -299,7 +314,7 @@ size_t FrameEvents::loadXML(QString path)
                     xml.skipCurrentElement();
                 }
             }
-            std::cout<<"Fertig XML"<<std::endl;
+            std::cout<<"Fertig XML mit "<<mNames.size()<<" Gesichtern"<<std::endl;
         }else{
             std::cout<<"Fehler bei Name dataset: "<<xml.name().toString().toStdString()<<std::endl;
         }

@@ -4,7 +4,6 @@
 #include "ui_mainwindow.h"
 
 #include "control/facedetection.h"
-#include "control/frameevents.h"
 #include "model/camera.h"
 #include "model/image.h"
 
@@ -67,7 +66,6 @@ private:
     Ui::MainWindow *ui;
 //    Image mImage;
     FaceDetection *mFaceDetection;
-    FrameEvents *mFrameEvents;
     Camera* mKamera;
 };
 

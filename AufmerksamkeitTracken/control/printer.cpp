@@ -121,6 +121,7 @@ void Printer::printSmallImage(cv::Mat img, const LandmarkDetector::CLNF &model, 
     }else{
         double X,Y,Width,Height;
         getCLNFBox(model, 1, 68, X,Y,Width,Height);
+        //std::cout<<titel<<": "<<Width<<"/"<<Height<<" "<<model.params_global[0]<<std::endl;
         double f = min((double)sImageH/Height, (double)sImageW/Width);
         cv::resize(img(cv::Rect(X,Y,Width,Height)),R,cv::Size(0,0),f,f);
 
@@ -148,7 +149,7 @@ void Printer::printSmallImage(cv::Mat img, const LandmarkDetector::CLNF &model, 
 void Printer::printSmallImage(cv::Mat img, cv::Rect rec, int id, QPainter &paint, std::string titel, int sImageW, int sImageH)
 {
     if(mSaveImage){
-        saveImage(titel,img(rec));
+        saveImage(titel+"_Small",img(rec));
     }
     printMatToQPainter(img(rec),paint,sImageW,sImageH,id);
 }
@@ -168,6 +169,11 @@ void Printer::setDrawLandmarks(bool landmark)
     mDrawLandmarks = landmark;
 }
 
+bool Printer::isSaveImage()
+{
+    return mSaveImage;
+}
+
 void Printer::printMatToQPainter(cv::Mat Img, QPainter &Paint, int Width, int Height, int Position)
 {
     QImage img = Image::MatToQImage(Img);
@@ -178,6 +184,7 @@ void Printer::printMatToQPainter(cv::Mat Img, QPainter &Paint, int Width, int He
 
 void Printer::saveImage(std::string titel, cv::Mat img)
 {
+    std::cout<<"Speichen: "<<titel<<std::endl;
     std::vector<int> compression_params;
     compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
     compression_params.push_back(9);

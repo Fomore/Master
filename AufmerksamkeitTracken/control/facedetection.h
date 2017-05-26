@@ -3,13 +3,13 @@
 
 #include "model/camera.h"
 #include "model/image.h"
-#include "model/imagesection.h"
+#include "model/boxhandler.h"
 #include "model/target.h"
 
 #include "LandmarkCoreIncludes.h"
 #include "src/algo.h"
 #include "control/atentiontracer.h"
-#include "control/frameevents.h"
+#include "control/eventhandler.h"
 #include "control/printer.h"
 
 #include "ui_mainwindow.h"
@@ -23,14 +23,13 @@ private:
 
     void CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used, double fx);
 
-    Image mImage;
     int Model_Init;
     int imgCount;
 
     Target* mTarget;
 
     AtentionTracer *mAtentionTracer;
-    FrameEvents *mFrameEvents;
+    EventHandler *mEventHandler;
     Camera* mKamera;
     Printer mPrinter;
 
@@ -40,7 +39,7 @@ private:
     // The modules that are being used for tracking
     vector<LandmarkDetector::CLNF> clnf_models;
     vector<bool> active_models;
-    vector<ImageSection> mImageSections;
+    vector<BoxHandler> mBoxHandlers;
 
     void initCLNF();
 
@@ -48,15 +47,15 @@ private:
 
     bool mAutoSize = false;
     bool mUseBox = true;
-    bool mUseImage = false;
+    bool mUseImage = true;
     bool mCLAHE = true;
     bool mUseEye = true;
 
     bool getFrame(cv::Mat &img, size_t FrameID);
-    bool getFrame(cv::Mat &Img, size_t &Frame, cv::Rect &Rec, std::string &Name, double fx, double fy, double cx, double cy, int x, int y);
+    bool getFrame(cv::Mat &Img, size_t &Frame, cv::Rect &Rec, std::string &Name, double &fx, double &fy, double &cx, double &cy, int &x, int &y);
 
 public:
-    FaceDetection(Ui::MainWindow *parent = 0, FrameEvents *frameEV = 0, Camera* cam = 0);
+    FaceDetection(Ui::MainWindow *parent = 0, Camera* cam = 0);
     ~FaceDetection();
     void FaceTracking();
     void FaceTrackingNewVersion();
@@ -81,6 +80,8 @@ public:
 
     void setBoxScall(double s);
     void setBoxMinSize(int w, int h);
+
+    size_t loadXML(QString path, bool clear = true);
 };
 
 #endif // FACEDETECTION_H

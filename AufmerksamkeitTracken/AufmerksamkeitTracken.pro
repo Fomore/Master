@@ -24,13 +24,14 @@ SOURCES += main.cpp\
     control/facedetection.cpp \
     model/image.cpp \
     src/stdafx.cpp \
-    model/imagesection.cpp \
+    model/boxhandler.cpp \
     control/atentiontracer.cpp \
-    control/frameevents.cpp \
+    control/eventhandler.cpp \
     model/frame.cpp \
     model/box.cpp \
     model/target.cpp \
-    control/printer.cpp
+    control/printer.cpp \
+    model/einzelbilder.cpp
 #    FaceLandmarkVidMulti.cpp
 #    FaceLandmarkImg.cpp
 
@@ -41,13 +42,14 @@ HEADERS  += mainwindow.h \
     src/algo.h \
     src/blob_gen.h \
     src/stdafx.h \
-    model/imagesection.h \
+    model/boxhandler.h \
     control/atentiontracer.h \
-    control/frameevents.h \
+    control/eventhandler.h \
     model/frame.h \
     model/box.h \
     model/target.h \
-    control/printer.h
+    control/printer.h \
+    model/einzelbilder.h
 
 FORMS    += mainwindow.ui
 

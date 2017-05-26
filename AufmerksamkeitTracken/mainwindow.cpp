@@ -9,14 +9,19 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    mKamera = new Camera(4);
+    mKamera = new Camera(-1);
 
-    mFrameEvents = new FrameEvents();
+    mKamera->setPath("/home/falko/Uni/Master/Film/Schulklasse/23100601S1.avi");
+    //mKamera->setPath("/home/falko/Uni/Master/Film/Test_Positionen_1.mp4");
 
-    mKamera->setPath("/home/falko/Uni/Master/Film/Test_Positionen_3.mp4");
-    mFrameEvents->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_3_Label.xml");
-
-    mFaceDetection = new FaceDetection(ui,mFrameEvents,mKamera);
+    /*
+    for(int i = 1; i < 2 ; i++){
+        mEventHandler->loadXML("/home/falko/Uni/Master/Film/Schulklasse/23100601S1/23100601S1_"+QString::number(i)+"_Label.xml", i == 1);
+    }
+    */
+    mFaceDetection = new FaceDetection(ui,mKamera);
+    mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/23100601S1_Gaze_Label.xml", true);
+    //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_1_Label.xml", true);
 }
 
 MainWindow::~MainWindow()
@@ -58,7 +63,7 @@ void MainWindow::on_actionOpen_XML_triggered()
 {
     QString filename = QFileDialog::getOpenFileName(this,tr("Open XML-Datei"), "~", tr("XML (*.xml);; All (*.*)"));
     if(!filename.isEmpty() && filename.size() > 0){
-        size_t anzFace = mFrameEvents->loadXML(filename);
+        size_t anzFace = mFaceDetection->loadXML(filename,true);
         mFaceDetection->setMaxFaces(anzFace);
     }
 }

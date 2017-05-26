@@ -26,6 +26,7 @@ public:
     void setShowEye(bool show);
     void setSaveImage(bool save);
     void setDrawLandmarks(bool landmark);
+    bool isSaveImage();
 };
 
 #endif // PRINTER_H

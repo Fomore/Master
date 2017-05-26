@@ -1,22 +1,23 @@
-#ifndef IMAGESECTION_H
-#define IMAGESECTION_H
+#ifndef BOXHANDLER_H
+#define BOXHANDLER_H
 
 #include <opencv2/opencv.hpp>
 #include "LandmarkCoreIncludes.h"
 
-class ImageSection
+class BoxHandler
 {
     cv::Rect Rec_old;
     cv::Rect Rec_new;
     cv::Size mImageSize;
     cv::Size mMinSize;
-    double mScall = 1.2;
+    double mScall = 1.8;
     double fx = 1.0;
     bool mAutoSize = true;
 public:
-    ImageSection(int width, int height);
-    ~ImageSection();
-    bool getSection(int &x, int &y, int &w, int &h);
+    BoxHandler(int width, int height);
+    ~BoxHandler();
+    void getSection(int &x, int &y, int &w, int &h);
+    void getSection(cv::Rect &rect);
     cv::Rect getRect();
     void getImage(cv::Mat Image, cv::Mat &Part);
     void newRect(cv::Rect rec);
@@ -29,6 +30,7 @@ public:
     double getBoxScall();
 
     void setBoxMinSize(int w, int h);
+    void setImageSize(int w, int h);
 };
 
-#endif // IMAGESECTION_H
+#endif // BOXHANDLER_H

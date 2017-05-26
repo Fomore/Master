@@ -14,27 +14,27 @@ size_t Frame::getSize()
 
 void Frame::addBox(int x, int y, int w, int h)
 {
-    addBox(cv::Rect(x,y,w,h),"","");
+    addBox(cv::Rect(x,y,w,h),"","",0);
 }
 
-void Frame::addBox(int x, int y, int w, int h, std::string name, std::string event)
+void Frame::addBox(int x, int y, int w, int h, std::string name, std::string event, int gaze)
 {
-    addBox(cv::Rect(x,y,w,h), name, event);
+    addBox(cv::Rect(x,y,w,h), name, event, gaze);
 }
 
-void Frame::addBox(int x, int y, int w, int h, std::string name, std::string event, double land[5][2])
+void Frame::addBox(int x, int y, int w, int h, std::string name, std::string event, double land[5][2], int gaze)
 {
-    addBox(cv::Rect(x,y,w,h), name, event, land);
+    addBox(cv::Rect(x,y,w,h), name, event, land, gaze);
 }
 
-void Frame::addBox(cv::Rect rec, std::string name, std::string event)
+void Frame::addBox(cv::Rect rec, std::string name, std::string event, int gaze)
 {
-    mBoxes.push_back(*(new Box(rec,name,event)));
+    mBoxes.push_back(*(new Box(rec,name,event,gaze)));
 }
 
-void Frame::addBox(cv::Rect rec, std::string name, std::string event, double land[5][2])
+void Frame::addBox(cv::Rect rec, std::string name, std::string event, double land[5][2], int gaze)
 {
-    mBoxes.push_back(*(new Box(rec,name,event,land)));
+    mBoxes.push_back(*(new Box(rec,name,event,land, gaze)));
 }
 
 void Frame::deleteBox(int p)
@@ -50,17 +50,22 @@ size_t Frame::getFrame()
 
 cv::Rect Frame::getBox(size_t i)
 {
-    if(i < mBoxes.size())
+    if(i < mBoxes.size()){
         return mBoxes[i].getRect();
+    }else{
+        return cv::Rect(0,0,0,0);
+    }
 }
 
-cv::Rect Frame::getBox(std::string name)
+cv::Rect Frame::getBox(std::string name, int &gaze)
 {
     for(size_t i = 0; i < mBoxes.size(); i++){
         if(mBoxes[i].getName() == name){
+            gaze = mBoxes[i].getGaze();
             return mBoxes[i].getRect();
         }
     }
+    gaze = 0;
     return cv::Rect(0,0,0,0);
 }
 
@@ -110,4 +115,21 @@ std::string Frame::getName(int i)
 {
     if(i >= 0 && i < (int)mBoxes.size())
         return mBoxes[i].getName();
+}
+
+int Frame::getGaze(int i)
+{
+    if(i >= 0 && i < (int)mBoxes.size())
+        return mBoxes[i].getGaze();
+}
+
+bool Frame::isGaze(size_t &pos)
+{
+    for(size_t i = 0; i < mBoxes.size(); i++){
+        if(mBoxes[i].getGaze() > 0){
+            pos = i;
+            return true;
+        }
+    }
+    return false;
 }

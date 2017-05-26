@@ -2,134 +2,11 @@
 
 Image::Image()
 {
-    mImagePaths.clear();
-//    cv::glob("/home/falko/Uni/Master/Bilder/*g", mImagePaths, true);
-//    cv::glob("/home/falko/Uni/Master/Bilder/Learn/*.jpgg", mImagePaths, true);//erhalten durch cv::Mat img = get_Face_Image(read_image,155,280,36,42); auf Grau setzen
-//    cv::glob("/home/falko/Uni/Master/Bilder/HeadPose/*.jpg", mImagePaths, true);
-//    cv::glob("/home/falko/Uni/Master/Bilder/Aufnahme2/*.JPG", mImagePaths, true);
-    cv::glob("/home/falko/Uni/Master/Bilder/HeadPose/*.jpg", mImagePaths, true);
-
-    Image_ID = 0;
 }
 
 Image::~Image()
 {
 
-}
-
-bool Image::getNextImage(cv::Mat& out){
-    if(mImagePaths.size() <= Image_ID){
-        Image_ID = 0;
-        std::cout<<"Reset"<<std::endl;
-        return false;
-    }
-    bool ret = getImage(out);
-    Image_ID++;
-    return ret;
-}
-
-bool Image::getImage(cv::Mat &out){
-    out = cv::imread(mImagePaths.at(Image_ID), -1);
-    if(out.data){
-        if(out.cols < 200){
-            int col = out.cols;
-            double fx = (200.0)/out.cols;
-            resize(out, out, cv::Size(), fx, fx, CV_INTER_LINEAR);
-            convert_to_grayscale(out,out);
-            std::cout<<"Bildbreite: "<<col<<" "<<fx<<" Skalliert: "<<200.0-(Image_ID*10.0)<<" - "<<out.cols<<"/"<<out.rows<<std::endl;
-        }
-        return true;
-    }else{
-        std::cout<<"Fehler in Der ImageList"<<std::endl;
-        return false;
-    }
-}
-
-bool Image::getImage(cv::Mat &Img, size_t &ImageID, std::string &name)
-{
-    Img.release();
-    if(ImageID < mImagePaths.size()){
-        Img =  cv::imread(mImagePaths.at(ImageID), -1);
-        name = QString::fromStdString(mImagePaths.at(ImageID)).split("/").last().toStdString();
-        return (Img.data);
-    }else{
-        return false;
-    }
-}
-
-bool Image::getScallImage(cv::Mat &out){
-    convert_to_grayscale(cv::imread("/home/falko/Uni/Master/Film/face_14.png", -1),out);
-    if(out.data){
-        int col = out.cols;
-        double fx = (200.0-(Image_ID*10.0))/out.cols;
-        resize(out, out, cv::Size(), fx, fx, CV_INTER_LINEAR);
-        std::cout<<"Bildbreite: "<<col<<" "<<fx<<" Skalliert: "<<200.0-(Image_ID*10.0)<<" - "<<out.cols<<"/"<<out.rows<<std::endl;
-        Image_ID++;
-        if(Image_ID>=10){
-            Image_ID=0;
-        }
-        return true;
-    }
-    return false;
-}
-
-cv::Mat Image::get_Face_Image(cv::Mat image, int &X, int &Y, int &Width, int &Height, double MinSize){
-    cv::Rect rec(X,Y,Width,Height);
-    cv::Mat ret = get_Face_Image(image,rec,MinSize);
-
-    X = rec.x;
-    Y = rec.y;
-    Width = rec.width;
-    Height = rec.height;
-    return ret;
-}
-
-cv::Mat Image::get_Face_Image(cv::Mat image, cv::Rect &rec, double MinSize)
-{
-    if(rec.x < 0){
-        rec.width += rec.x;
-        rec.x = 0;
-    }
-    if(rec.y < 0){
-        rec.height += rec.y;
-        rec.y = 0;
-    }
-    if(rec.x+rec.width > image.cols){
-        rec.width = image.cols-rec.x;
-    }
-    if(rec.y+rec.height > image.rows){
-        rec.height = image.rows-rec.y;
-    }
-    cv::Mat image_cut = image(rec);
-    if(rec.width < MinSize){
-        double fx = MinSize/rec.width;
-        cv::Mat ret;
-        resize(image_cut, ret, cv::Size(), fx, fx, CV_INTER_LINEAR);
-        return ret;
-    }
-    return image_cut;
-}
-
-void Image::getFaceParameter(int Face_ID, int &X, int &Y, int &Width, int &Hight){
-
-    if(Face_ID == 0){
-        X=230; Y=65, Width=48; Hight=64;
-    }else if(Face_ID == 1){
-        X=381; Y=95, Width=36; Hight=48;
-    }else if(Face_ID == 2){
-        X=440; Y=90, Width=35; Hight=45;
-    }else if(Face_ID == 4){
-        X=304; Y=117, Width=21; Hight=37;
-    }else if(Face_ID == 3){
-        X=161; Y=72, Width=35; Hight=50;
-    }else if(Face_ID == 5){
-        X=516; Y=92, Width=41; Hight=56;
-    }else if(Face_ID == 6){
-        X=75; Y=80, Width=40; Hight=50;
-    }else{
-        X=Y=0;
-        Width=Hight=1;
-    }
 }
 
 // Diese Methode stammt von OpenFace
@@ -200,10 +77,6 @@ QImage Image::MatToQImage(const cv::Mat& mat)
         //        qDebug() << "ERROR: Mat could not be converted to QImage.";
         return QImage();
     }
-}
-
-int Image::getImageID(){
-    return Image_ID;
 }
 
 void Image::CLAHE(cv::Mat in, cv::Mat &out, double clip)

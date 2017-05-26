@@ -1,35 +1,39 @@
-#include "imagesection.h"
+#include "boxhandler.h"
 
-ImageSection::ImageSection(int width, int height)
+BoxHandler::BoxHandler(int width, int height)
 {
     mImageSize.width = width;
     mImageSize.height = height;
     Rec_new.x = Rec_new.y = Rec_new.width = Rec_new.height = 0;
     Rec_old.x = Rec_old.y = Rec_old.width = Rec_old.height = 0;
-    mMinSize.width = 150;
-    mMinSize.height = 200;
+    mMinSize.width = 200;
+    mMinSize.height = 220;
 }
 
 
-ImageSection::~ImageSection()
+BoxHandler::~BoxHandler()
 {
 
 }
 
-bool ImageSection::getSection(int &x, int &y, int &w, int &h){
+void BoxHandler::getSection(int &x, int &y, int &w, int &h){
     x = Rec_new.x;
     y = Rec_new.y;
     w = Rec_new.width;
     h = Rec_new.height;
-    return true;
 }
 
-cv::Rect ImageSection::getRect()
+void BoxHandler::getSection(cv::Rect &rect)
+{
+    getSection(rect.x, rect.y, rect.width, rect.height);
+}
+
+cv::Rect BoxHandler::getRect()
 {
     return Rec_new;
 }
 
-void ImageSection::getImage(cv::Mat Image,cv::Mat &Part)
+void BoxHandler::getImage(cv::Mat Image,cv::Mat &Part)
 {
     if(fx > 1.0){
         cv::resize(Image(Rec_new),Part,cv::Size(0,0),fx,fx);
@@ -38,15 +42,15 @@ void ImageSection::getImage(cv::Mat Image,cv::Mat &Part)
     }
 }
 
-void ImageSection::newRect(cv::Rect rec)
+void BoxHandler::newRect(cv::Rect rec)
 {
     Rec_old.x = Rec_new.x;
     Rec_old.y = Rec_new.y;
     Rec_old.width = Rec_new.width;
     Rec_old.height = Rec_new.height;
 
-    double w = rec.width * mScall;
-    double h = rec.height * mScall;
+    double w = std::max(rec.width,10) * mScall * 1.2;
+    double h = std::max(rec.height,12) * mScall;
 
     if(w > 0.0 && h > 0.0){
         if(w < mMinSize.width || h < mMinSize.height){
@@ -64,23 +68,29 @@ void ImageSection::newRect(cv::Rect rec)
     }
 }
 
-void ImageSection::setBoxScall(double s)
+void BoxHandler::setBoxScall(double s)
 {
     mScall = s;
 }
 
-double ImageSection::getBoxScall()
+double BoxHandler::getBoxScall()
 {
     return mScall;
 }
 
-void ImageSection::setBoxMinSize(int w, int h)
+void BoxHandler::setBoxMinSize(int w, int h)
 {
     mMinSize.width = w;
     mMinSize.height = h;
 }
 
-void ImageSection::toImage(LandmarkDetector::CLNF &clnf)
+void BoxHandler::setImageSize(int w, int h)
+{
+    mImageSize.width = w;
+    mImageSize.height = h;
+}
+
+void BoxHandler::toImage(LandmarkDetector::CLNF &clnf)
 {
     cv::Mat_<double> shape2D = clnf.detected_landmarks;
 
@@ -126,17 +136,17 @@ void ImageSection::toImage(LandmarkDetector::CLNF &clnf)
     }
 }
 
-void ImageSection::setAutoSize(bool use)
+void BoxHandler::setAutoSize(bool use)
 {
     mAutoSize = true;
 }
 
-double ImageSection::getImageScall()
+double BoxHandler::getImageScall()
 {
     return fx;
 }
 
-void ImageSection::toSection(LandmarkDetector::CLNF &clnf)
+void BoxHandler::toSection(LandmarkDetector::CLNF &clnf)
 {
     cv::Mat_<double> shape2D = clnf.detected_landmarks;
 
