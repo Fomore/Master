@@ -50,7 +50,7 @@ void Printer::print_CLNF(cv::Mat img,const LandmarkDetector::CLNF &model, double
     }
 
     // Work out the pose of the head from the tracked model
-    cv::Vec6d pose_estimate = LandmarkDetector::GetCorrectedPoseWorld(model, fx, fy, cx, cy);
+    cv::Vec6d pose_estimate = LandmarkDetector::GetPoseWorld(model, fx, fy, cx, cy);
 
     // Draw it in reddish if uncertain, blueish if certain
     LandmarkDetector::DrawBox(img, pose_estimate, cv::Scalar((1-itens)*255.0,0, itens*255), thickness, fx, fy, cx, cy);

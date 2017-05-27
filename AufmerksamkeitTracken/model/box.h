@@ -21,7 +21,7 @@ public:
     void setLandmarks(double land[5][2]);
     void getLandmarks(double land[5][2]);
     bool isLandmark();
-    bool getGaze();
+    int getGaze();
 };
 
 #endif // BOX_H

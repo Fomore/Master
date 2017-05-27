@@ -20,7 +20,8 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     */
     mFaceDetection = new FaceDetection(ui,mKamera);
-    mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/23100601S1_Gaze_Label.xml", true);
+    mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/23100601S1_Label.xml", true);
+    //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/23100601S1_Gaze_3_Label.xml", true);
     //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_1_Label.xml", true);
 }
 
@@ -158,4 +159,10 @@ void MainWindow::on_actionShow_Atention_triggered(bool checked)
 void MainWindow::on_actionShow_Landmarks_triggered(bool checked)
 {
     mFaceDetection->setShowLandmarks(checked);
+}
+
+void MainWindow::on_actionBeobachte_Gaze_triggered()
+{
+    mFaceDetection->setGaze(QInputDialog::getInt(this,"Select Gaze","GAZE_YET_UNCHANGED = 0\n UNKNOWN = 1\n BLACKBOARD = 2\n DESK = 3\n WINDOW = 4\n TEACHER = 5\n CONTRIBUTING_STUDENT = 6\n OTHER_STUDENT = 7",
+                                                 mFaceDetection->getGaze(),0,7,1));
 }

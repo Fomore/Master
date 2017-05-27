@@ -207,6 +207,7 @@
      <addaction name="actionShow_Eyes"/>
      <addaction name="actionShow_Atention"/>
      <addaction name="actionShow_Landmarks"/>
+     <addaction name="actionBeobachte_Gaze"/>
     </widget>
     <addaction name="actionSelect_Camera"/>
     <addaction name="actionMax_Faces"/>
@@ -399,6 +400,11 @@
    </property>
    <property name="text">
     <string>Show Landmarks</string>
+   </property>
+  </action>
+  <action name="actionBeobachte_Gaze">
+   <property name="text">
+    <string>Beobachte Gaze</string>
    </property>
   </action>
  </widget>

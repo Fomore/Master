@@ -81,10 +81,11 @@ bool Frame::isLandmark(size_t id)
     return mBoxes[id].isLandmark();
 }
 
-bool Frame::hasEventPart(std::string event, size_t start, size_t size, size_t &pos)
+bool Frame::hasEventPart(std::string event, size_t start, size_t size, size_t &pos, int gaze)
 {
     for(size_t i = 0; i < mBoxes.size(); i++){
-        if(mBoxes[i].getEvent().compare(start,size,event) == 0){
+        if(mBoxes[i].getEvent().compare(start,size,event) == 0
+                || (gaze > 0 && mBoxes[i].getGaze() > gaze)){
             pos = i;
             return true;
         }

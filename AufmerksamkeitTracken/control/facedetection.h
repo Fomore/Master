@@ -25,6 +25,7 @@ private:
 
     int Model_Init;
     int imgCount;
+    int mGaze = 2;
 
     Target* mTarget;
 
@@ -80,6 +81,9 @@ public:
 
     void setBoxScall(double s);
     void setBoxMinSize(int w, int h);
+
+    void setGaze(int gaze);
+    int getGaze();
 
     size_t loadXML(QString path, bool clear = true);
 };

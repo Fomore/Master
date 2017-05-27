@@ -22,7 +22,7 @@ bool Box::isLandmark()
     return mIsLandmarksSet;
 }
 
-bool Box::getGaze()
+int Box::getGaze()
 {
     return mGaze;
 }

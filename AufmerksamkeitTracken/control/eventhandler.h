@@ -26,7 +26,7 @@ private:
     void printAll();
 
     bool existName(QString name);
-    bool isImageFrame(size_t frameID, std::string &name, size_t &pos);
+    bool isImageFrame(size_t frameID, std::string &name, size_t &pos, int gaze);
 public:
     EventHandler();
     size_t loadXML(QString path, bool clear);
@@ -46,8 +46,8 @@ public:
     bool isNextFrame(size_t frame);
     bool isFrameUsed(size_t frame);
 
-    bool getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &name, int &id);
-    bool isImageFrame(size_t frameID, std::string &ImageName, std::string ObjName);
+    bool getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &name, int &id, int gaze);
+    bool isImageFrame(size_t frameID, std::string &ImageName, std::string ObjName, int gaze);
     std::string getTitel(size_t frame);
     std::string getTitel(size_t frameID, size_t boxID);
     std::string getName(size_t NameID);

@@ -91,12 +91,12 @@ bool EventHandler::isFrameUsed(size_t frame)
     return pos >= 0 && frame == mFrames[pos].getFrame();
 }
 
-bool EventHandler::getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &name, int &id)
+bool EventHandler::getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &name, int &id, int gaze)
 {
     for(int i = getFramePos(frame)+1;
         i <= (int)mFrames.size(); i++){
         size_t pos;
-        if(isImageFrame(i,name,pos)){
+        if(isImageFrame(i,name,pos,gaze)){
             cv::Rect r = mFrames[i].getBox(pos);
             rec.x = r.x;
             rec.y = r.y;
@@ -110,19 +110,19 @@ bool EventHandler::getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &
     return false;
 }
 
-bool EventHandler::isImageFrame(size_t frameID, std::string &ImageName, std::string ObjName)
+bool EventHandler::isImageFrame(size_t frameID, std::string &ImageName, std::string ObjName, int gaze)
 {
     size_t pos;
-    if(isImageFrame(frameID,ImageName,pos)){
+    if(isImageFrame(frameID,ImageName,pos, gaze)){
         return ObjName == mFrames[frameID].getName(pos);
     }else {
         return false;
     }
 }
 
-bool EventHandler::isImageFrame(size_t frameID, std::string &name, size_t &pos)
+bool EventHandler::isImageFrame(size_t frameID, std::string &name, size_t &pos, int gaze)
 {
-    if(frameID < mFrames.size() && mFrames[frameID].hasEventPart("Img",0,3,pos)){
+    if(frameID < mFrames.size() && mFrames[frameID].hasEventPart("Img",0,3,pos, gaze)){
         name = mFrames[frameID].getEvent(pos)+"_"+mFrames[frameID].getName(pos);
         return true;
     }else{
@@ -135,7 +135,7 @@ std::string EventHandler::getTitel(size_t frame)
     int pos = getFramePos(frame);
     for(size_t i = 0; i < mFrames[pos].getSize(); i++){
         size_t pos;
-        if(mFrames[i].hasEventPart("Img",0,3,pos)){
+        if(mFrames[i].hasEventPart("Img",0,3,pos,0)){
             return mFrames[i].getEvent(pos)+mFrames[i].getName(pos);
         }
     }
@@ -299,8 +299,11 @@ size_t EventHandler::loadXML(QString path, bool clear = true)
                                             addBox(f_id,left,top,width,height,name,event,gaze);
                                         }
                                     }
-                                    if(event.contains("Img")){
-                                        addImage(name.toStdString()+"_"+event.toStdString(),frame,left,top,width,height);
+                                    if(event.contains("Img") || gaze > 1){
+                                        if(gaze > 1){
+                                            name += "_"+QString::number(gaze);
+                                        }
+                                        addImage(name.toStdString(),frame,left,top,width,height);
                                     }
                                 }else{
                                     xml.skipCurrentElement();

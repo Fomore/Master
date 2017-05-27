@@ -62,6 +62,8 @@ private slots:
 
     void on_actionShow_Landmarks_triggered(bool checked);
 
+    void on_actionBeobachte_Gaze_triggered();
+
 private:
     Ui::MainWindow *ui;
 //    Image mImage;

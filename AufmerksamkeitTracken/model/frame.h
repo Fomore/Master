@@ -25,7 +25,7 @@ public:
     cv::Rect getBox(std::string name, int &gaze);
     void getLandmarks(size_t id, double land[5][2]);
     bool isLandmark(size_t id);
-    bool hasEventPart(std::string event, size_t start, size_t size, size_t &pos);
+    bool hasEventPart(std::string event, size_t start, size_t size, size_t &pos, int gaze);
     void printAll();
     void clearAll();
     std::string getEvent(int i);

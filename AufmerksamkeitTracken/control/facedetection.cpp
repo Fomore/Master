@@ -282,7 +282,7 @@ void FaceDetection::FaceTrackingNewVersion(){
                     CalcualteEyes(disp_image,model,used,mBoxHandlers[model].getImageScall());
                     std::string name;
 
-                    bool isImageFrame = mEventHandler->isImageFrame(FrameID,name,mEventHandler->getName(model));
+                    bool isImageFrame = mEventHandler->isImageFrame(FrameID,name,mEventHandler->getName(model),mGaze);
                     name = "img/Head_"+name;
                     if(isImageFrame){
                         std::cout<<mKamera->getFrameNr()<<": "<<model<<" "<<name<<mBoxHandlers[model].getRect()<<std::endl;
@@ -380,9 +380,9 @@ void FaceDetection::FaceTrackingImage(){
 
             if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
                 vector<double> confidences;
-                LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_models[0].face_detector_HOG, confidences);
+                LandmarkDetector::DetectFacesHOG(face_detections, grayscale_image, clnf_models[Model_Init].face_detector_HOG, confidences);
             }else{
-                LandmarkDetector::DetectFaces(face_detections, grayscale_image, clnf_models[0].face_detector_HAAR);
+                LandmarkDetector::DetectFaces(face_detections, grayscale_image, clnf_models[Model_Init].face_detector_HAAR);
             }
 
             for(size_t face=0; face < face_detections.size(); ++face){
@@ -470,7 +470,7 @@ void FaceDetection::ShowFromeFile()
     std::string name = "";
     cv::Rect box;
     int i = -1;
-    while(mEventHandler->getNextImageFrame(frm,box,name, i)){
+    while(mEventHandler->getNextImageFrame(frm,box,name, i, mGaze)){
         name = "img/"+name;
         mKamera->getFrame(frame,frm);
         // perform landmark detection for every face detected
@@ -753,6 +753,16 @@ void FaceDetection::setBoxMinSize(int w, int h)
     }
 }
 
+void FaceDetection::setGaze(int gaze)
+{
+    mGaze = gaze;
+}
+
+int FaceDetection::getGaze()
+{
+    return mGaze;
+}
+
 size_t FaceDetection::loadXML(QString path, bool clear)
 {
     return mEventHandler->loadXML(path,clear);
@@ -847,7 +857,7 @@ bool FaceDetection::getFrame(cv::Mat &Img, size_t &Frame, cv::Rect &Rec, string 
     }else{
         std::cout<<"Box "<<Frame<<std::endl;
         int BoxID = -1;
-        if(mEventHandler->getNextImageFrame(Frame,Rec,Name, BoxID)){
+        if(mEventHandler->getNextImageFrame(Frame,Rec,Name, BoxID,mGaze)){
             std::cout<<"Rec "<<Rec<<std::endl;
             mKamera->getFrame(Img,Frame);
 

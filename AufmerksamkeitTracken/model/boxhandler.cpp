@@ -73,8 +73,8 @@ void BoxHandler::setNewRect(cv::Rect rec)
 
             Rec_new.x = px_min;
             Rec_new.y = py_min;
-            Rec_new.width = px_max-px_min+1.0;
-            Rec_new.height= py_max-py_min+1.0;
+            Rec_new.width = px_max-px_min+2.0;
+            Rec_new.height= py_max-py_min+2.0;
         }
     }else{
         Rec_new.x = Rec_new.y = Rec_new.width = Rec_new.height = 0;
