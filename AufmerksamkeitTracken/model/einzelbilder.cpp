@@ -71,7 +71,7 @@ void Einzelbilder::addImage(std::string name, int FramePos, int X, int Y, int Wi
         mImagePaths.push_back(name+"&"+std::to_string(mRects.size()));
         mFramePos.push_back(FramePos);
         mRects.push_back(cv::Rect(X,Y,Width,Height));
-        std::cout<<name<<" "<<FramePos<<" "<<X<<" "<<Y<<" "<<Width<<" "<<Height<<std::endl;
+        //std::cout<<name<<" "<<FramePos<<" "<<X<<" "<<Y<<" "<<Width<<" "<<Height<<std::endl;
     }else{// es handelt sich um ein Bild (jpg/png/usw)
         mImagePaths.push_back(name);
         mFramePos.push_back(-1);

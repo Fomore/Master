@@ -6,7 +6,7 @@
 
 class BoxHandler
 {
-    cv::Rect Rec_old;
+    cv::Rect2d Rec_old;
     cv::Rect Rec_new;
     cv::Size mImageSize;
     cv::Size mMinSize;
@@ -20,7 +20,7 @@ public:
     void getSection(cv::Rect &rect);
     cv::Rect getRect();
     void getImage(cv::Mat Image, cv::Mat &Part);
-    void newRect(cv::Rect rec);
+
     void toSection(LandmarkDetector::CLNF &clnf);
     void toImage(LandmarkDetector::CLNF &clnf);
     void setAutoSize(bool use);
@@ -31,6 +31,9 @@ public:
 
     void setBoxMinSize(int w, int h);
     void setImageSize(int w, int h);
+
+    void setNewRect(cv::Rect rec);
+    void setOldRect(cv::Rect2d rec);
 };
 
 #endif // BOXHANDLER_H

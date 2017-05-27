@@ -200,6 +200,7 @@ void FaceDetection::FaceTrackingNewVersion(){
     cv::Mat frame_colore;
 
     for(size_t FrameID = 0;getFrame(frame_colore, FrameID);FrameID++){
+        std::cout<<"For: "<<FrameID<<std::endl;
         QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
         pixmapL->fill(Qt::transparent);
         QPainter *painterL=new QPainter(pixmapL);
@@ -213,12 +214,14 @@ void FaceDetection::FaceTrackingNewVersion(){
         int num_active_models = 0;
 
         for(int model = 0; model < num_faces_max; model++){
+            std::cout<<"Model "<<model<<std::endl;
             int gaze;
             countFrame++;
 
-            mBoxHandlers[model].newRect(mKamera->correct_Rect(mEventHandler->getRectWithName(FrameID,model,gaze)));
+            mBoxHandlers[model].setNewRect(mKamera->correct_Rect(mEventHandler->getRectWithName(FrameID,model,gaze)));
             int x,y,w,h;
             mBoxHandlers[model].getSection(x,y,w,h);
+            std::cout<<x<<" "<<y<<" "<<w<<" "<<h<<std::endl;
 
             cv::Rect rec = clnf_models[model].GetBoundingBox(); //Unschöhn!
             if(w > 0 && h > 0 && rec.width > 0 && rec.height > 0 && !(rec.x > x && rec.y > y && x+w > rec.x+rec.width && y+h >rec.y+rec.height)){
@@ -231,90 +234,88 @@ void FaceDetection::FaceTrackingNewVersion(){
                 active_models[model] = false;
                 clnf_models[model].Reset();
             }
-            if( w > 0 && h > 0){
-                cv::Mat faceImageColore;
-                mBoxHandlers[model].getImage(frame_colore,faceImageColore);
-                //cv::imshow("Gesicht "+std::to_string(model),faceImageColore);
+            cv::Mat faceImageColore;
+            mBoxHandlers[model].getImage(frame_colore,faceImageColore);
+            //cv::imshow("Gesicht "+std::to_string(model),faceImageColore);
 
-                //cv::Mat faceImageColore = disp_image(cv::Rect(x,y,w,h));
-                cv::Mat_<uchar> faceImage;
-                Image::convert_to_grayscale(faceImageColore,faceImage);
-                mBoxHandlers[model].toSection(clnf_models[model]);
+            //cv::Mat faceImageColore = disp_image(cv::Rect(x,y,w,h));
+            cv::Mat_<uchar> faceImage;
+            Image::convert_to_grayscale(faceImageColore,faceImage);
+            mBoxHandlers[model].toSection(clnf_models[model]);
 
-                bool detection_success;
-                if(!active_models[model]){
-                    vector<cv::Rect_<double> > face_detections;
-                    if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
-                        vector<double> confidences;
-                        LandmarkDetector::DetectFacesHOG(face_detections, faceImage, clnf_models[0].face_detector_HOG, confidences);
-                    }else{
-                        LandmarkDetector::DetectFaces(face_detections, faceImage, clnf_models[0].face_detector_HAAR);
-                    }
-                    if(face_detections.size() == 1){
-                        // Reinitialise the model
-                        clnf_models[model].Reset();
-
-                        // This ensures that a wider window is used for the initial landmark localisation
-                        clnf_models[model].detection_success = false;
-
-                        detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, face_detections[0], clnf_models[model], det_parameters[model]);
-
-                        // This activates the model
-                        active_models[model] = true;
-                    }
+            bool detection_success;
+            if(!active_models[model]){
+                vector<cv::Rect_<double> > face_detections;
+                if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
+                    vector<double> confidences;
+                    LandmarkDetector::DetectFacesHOG(face_detections, faceImage, clnf_models[0].face_detector_HOG, confidences);
                 }else{
-                    detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, clnf_models[model], det_parameters[model]);
+                    LandmarkDetector::DetectFaces(face_detections, faceImage, clnf_models[0].face_detector_HAAR);
+                }
+                if(face_detections.size() == 1){
+                    // Reinitialise the model
+                    clnf_models[model].Reset();
+
+                    // This ensures that a wider window is used for the initial landmark localisation
+                    clnf_models[model].detection_success = false;
+
+                    detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, face_detections[0], clnf_models[model], det_parameters[model]);
+
+                    // This activates the model
+                    active_models[model] = true;
+                }
+            }else{
+                detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, clnf_models[model], det_parameters[model]);
+            }
+
+            double detection_certainty = clnf_models[model].detection_certainty; // Qualität der detection: -1 perfekt und 1 falsch
+            double visualisation_boundary = -0.1;
+
+            mBoxHandlers[model].toImage(clnf_models[model]);
+            mBoxHandlers[model].setOldRect(clnf_models[model].GetBoundingBox());
+
+            double colore = (double)model/num_faces_max;
+
+            // Only draw if the reliability is reasonable, the value is slightly ad-hoc
+            double itens = 0;
+            if(detection_certainty < visualisation_boundary){
+                std::cout<<"Detection"<<std::endl;
+                if(detection_certainty > 1)
+                    detection_certainty = 1;
+                if(detection_certainty < -1)
+                    detection_certainty = -1;
+                itens = (detection_certainty + 1)/(visualisation_boundary +1);
+
+                int used;
+                CalcualteEyes(disp_image,model,used,mBoxHandlers[model].getImageScall());
+                std::string name;
+
+                bool isImageFrame = mEventHandler->isImageFrame(FrameID,name,mEventHandler->getName(model));
+                name = "img/Head_"+name;
+                if(isImageFrame){
+                    std::cout<<mKamera->getFrameNr()<<": "<<model<<" "<<name<<mBoxHandlers[model].getRect()<<std::endl;
                 }
 
-                double detection_certainty = clnf_models[model].detection_certainty; // Qualität der detection: -1 perfekt und 1 falsch
-                double visualisation_boundary = -0.1;
-
-                mBoxHandlers[model].toImage(clnf_models[model]);
-
-                double colore = (double)model/num_faces_max;
-
-                // Only draw if the reliability is reasonable, the value is slightly ad-hoc
-                double itens = 0;
-                if(detection_certainty < visualisation_boundary){
-                    if(detection_certainty > 1)
-                        detection_certainty = 1;
-                    if(detection_certainty < -1)
-                        detection_certainty = -1;
-                    itens = (detection_certainty + 1)/(visualisation_boundary +1);
-
-                    int used;
-                    CalcualteEyes(disp_image,model,used,mBoxHandlers[model].getImageScall());
-                    std::string name;
-
-                    bool isImageFrame = mEventHandler->isImageFrame(FrameID,name,mEventHandler->getName(model));
-                    name = "img/Head_"+name;
-                    if(isImageFrame){
-                        std::cout<<mKamera->getFrameNr()<<": "<<model<<" "<<name<<mBoxHandlers[model].getRect()<<std::endl;
-                    }
-
-                    mPrinter.printSmallImage(frame_colore,clnf_models[model],*painterR,*painterL, name,
-                                    mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, model);
-
-                    if(gaze >1){
-                        name += std::to_string(gaze);
-                    }
-                    // Estimate head pose and eye gaze
-                    mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[model],fx,fy,cx,cy, colore, isImageFrame || gaze > 1);
-
-                    mPrinter.print_CLNF(disp_image,clnf_models[model],0.5,fx,fy,cx,cy, colore);
-
-                    num_active_models++;
-                    countFound++;
-                }
+                mPrinter.printSmallImage(frame_colore,clnf_models[model],*painterR,*painterL, name,
+                                         mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, model);
 
                 if(gaze >1){
-                    std::cout<<"Gaze: "<<FrameID<<" "<<model<<std::endl;
+                    name += std::to_string(gaze);
                 }
-                cv::rectangle(disp_image,cv::Rect(x,y,w,h),
-                              cv::Scalar(255.0*(1.0-colore),255.0*colore,255.0*(1.0-colore)),2);
-            }else{
-                clnf_models[model].failures_in_a_row++;
+                // Estimate head pose and eye gaze
+                mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[model],fx,fy,cx,cy, colore, isImageFrame || gaze > 1);
+
+                mPrinter.print_CLNF(disp_image,clnf_models[model],0.5,fx,fy,cx,cy, colore);
+
+                num_active_models++;
+                countFound++;
             }
+
+            if(gaze >1){
+                std::cout<<"Gaze: "<<FrameID<<" "<<model<<std::endl;
+            }
+            cv::rectangle(disp_image,cv::Rect(x,y,w,h),
+                          cv::Scalar(255.0*(1.0-colore),255.0*colore,255.0*(1.0-colore)),2);
         }
         if(FrameID % 10 == 0)
         {
@@ -360,7 +361,7 @@ void FaceDetection::FaceTrackingImage(){
         cv::Mat_<uchar> grayscale_image;
         //Image::convert_to_grayscale(frame_col,grayIMG);
         if(rec.width > 0 && rec.height > 0){
-            mBoxHandlers[0].newRect(rec);
+            mBoxHandlers[0].setNewRect(rec);
             cv::Mat part;
             mBoxHandlers[0].getImage(frame,part);
             Image::convert_to_grayscale(part,grayscale_image);

@@ -20,8 +20,8 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     */
     mFaceDetection = new FaceDetection(ui,mKamera);
-    mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/23100601S1_Gaze_Label.xml", true);
-    //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_1_Label.xml", true);
+    //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/23100601S1_Gaze_Label.xml", true);
+    mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_1_Label.xml", true);
 }
 
 MainWindow::~MainWindow()
