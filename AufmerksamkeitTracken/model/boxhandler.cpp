@@ -6,8 +6,8 @@ BoxHandler::BoxHandler(int width, int height)
     mImageSize.height = height;
     Rec_new.x = Rec_new.y = Rec_new.width = Rec_new.height = 0;
     Rec_old.x = Rec_old.y = Rec_old.width = Rec_old.height = 0.0;
-    mMinSize.width = 200;
-    mMinSize.height = 220;
+    mMinSize.width = 150;
+    mMinSize.height = 170;
 }
 
 
@@ -44,43 +44,59 @@ void BoxHandler::getImage(cv::Mat Image,cv::Mat &Part)
 
 void BoxHandler::setNewRect(cv::Rect rec)
 {
-    double w = std::max(rec.width,10) * mScall * 1.2;
-    double h = std::max(rec.height,12) * mScall;
+    if(rec.width > 0.0 && rec.height > 0.0){
+        double w = rec.width * mScall * 1.2;
+        double h = rec.height* mScall;
 
-    if(w > 0.0 && h > 0.0){
         if(rec.width < mMinSize.width || rec.height < mMinSize.height){
             fx = max(mMinSize.width/rec.width, mMinSize.height/rec.height);
         }else{
             fx = 1.0;
         }
-        double px_min = rec.x-(w-rec.width)/2.0;
-        double py_min = rec.y-(h-rec.height)/2.0;
-        double px_max = px_min+w;
-        double py_max = py_min+h;
+        Rec_new.x = max((int)(rec.x-(w-rec.width)/2.0),0);
+        Rec_new.y = max((int)(rec.y-(h-rec.height)/2.0),0);
 
-        px_min = min(px_min, Rec_old.x);
-        py_min = min(py_min, Rec_old.y);
-        px_max = max(px_max, Rec_old.x+Rec_old.width);
-        py_max = max(py_max, Rec_old.y+Rec_old.height);
+        Rec_new.width = min((int)w,mImageSize.width-Rec_new.x);
+        Rec_new.height = min((int)h,mImageSize.height-Rec_new.y);
 
-        Rec_new.x = max((int)px_min,0);
-        Rec_new.y = max((int)py_min,0);
+        if(Rec_old.width > 0 && Rec_old.height > 0){
+            double px_min = max(0.0,min((double)Rec_new.x,Rec_old.x));
+            double py_min = max(0.0,min((double)Rec_new.y,Rec_old.y));
 
-        Rec_new.width = min((int)(px_max-Rec_new.x),mImageSize.width-Rec_new.x);
-        Rec_new.height = min((int)(py_max-Rec_new.y),mImageSize.height-Rec_new.y);
+            double px_max = min((double)mImageSize.width ,max((double)Rec_new.x+Rec_new.width ,Rec_old.x+Rec_old.width));
+            double py_max = min((double)mImageSize.height,max((double)Rec_new.y+Rec_new.height,Rec_old.y+Rec_old.height));
+
+            px_min = min(px_min, Rec_old.x);
+            py_min = min(py_min, Rec_old.y);
+            px_max = max(px_max, Rec_old.x+Rec_old.width);
+            py_max = max(py_max, Rec_old.y+Rec_old.height);
+
+            Rec_new.x = px_min;
+            Rec_new.y = py_min;
+            Rec_new.width = px_max-px_min+1.0;
+            Rec_new.height= py_max-py_min+1.0;
+        }
     }else{
-        Rec_new.x = Rec_new.y = 0;
-        Rec_new.width = mImageSize.width;
-        Rec_new.height = mImageSize.height;
+        Rec_new.x = Rec_new.y = Rec_new.width = Rec_new.height = 0;
     }
 }
 
 void BoxHandler::setOldRect(cv::Rect2d rec)
 {
-    Rec_old.x = rec.x;
-    Rec_old.y = rec.y;
-    Rec_old.width = rec.width;
-    Rec_old.height= rec.height;
+    setOldRect(rec.x,rec.y,rec.width,rec.height);
+}
+
+void BoxHandler::setOldRect(double X, double Y, double W, double H)
+{
+    Rec_old.x = X;
+    Rec_old.y = Y;
+    Rec_old.width = W;
+    Rec_old.height= H;
+}
+
+bool BoxHandler::existBox()
+{
+    return Rec_new.width > 0.0 && Rec_new.height > 0.0;
 }
 
 void BoxHandler::setBoxScall(double s)

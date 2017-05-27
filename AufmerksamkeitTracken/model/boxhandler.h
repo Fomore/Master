@@ -34,6 +34,9 @@ public:
 
     void setNewRect(cv::Rect rec);
     void setOldRect(cv::Rect2d rec);
+    void setOldRect(double X, double Y, double W, double H);
+
+    bool existBox();
 };
 
 #endif // BOXHANDLER_H

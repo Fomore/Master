@@ -136,7 +136,7 @@ void FaceDetection::FaceTracking(){
             if(detection_certainty < visualisation_boundary){
 
                 mPrinter.printSmallImage(frame_col,clnf_models[model],*painterR,*painterL,"Frame_"+std::to_string(FrameID),
-                                mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, model);
+                                         mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, model);
 
                 if(detection_certainty > 1)
                     detection_certainty = 1;
@@ -200,7 +200,6 @@ void FaceDetection::FaceTrackingNewVersion(){
     cv::Mat frame_colore;
 
     for(size_t FrameID = 0;getFrame(frame_colore, FrameID);FrameID++){
-        std::cout<<"For: "<<FrameID<<std::endl;
         QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
         pixmapL->fill(Qt::transparent);
         QPainter *painterL=new QPainter(pixmapL);
@@ -214,108 +213,104 @@ void FaceDetection::FaceTrackingNewVersion(){
         int num_active_models = 0;
 
         for(int model = 0; model < num_faces_max; model++){
-            std::cout<<"Model "<<model<<std::endl;
             int gaze;
             countFrame++;
-
             mBoxHandlers[model].setNewRect(mKamera->correct_Rect(mEventHandler->getRectWithName(FrameID,model,gaze)));
-            int x,y,w,h;
-            mBoxHandlers[model].getSection(x,y,w,h);
-            std::cout<<x<<" "<<y<<" "<<w<<" "<<h<<std::endl;
 
-            cv::Rect rec = clnf_models[model].GetBoundingBox(); //Unschöhn!
-            if(w > 0 && h > 0 && rec.width > 0 && rec.height > 0 && !(rec.x > x && rec.y > y && x+w > rec.x+rec.width && y+h >rec.y+rec.height)){
-                std::cout<<"Boxfehler: "<<mKamera->getFrameNr()<<" - "<<model<<rec<<std::endl;
-            }
-            // If the current model has failed more than 4 times in a row, remove it
-            if(clnf_models[model].failures_in_a_row > 4
-                    || !(rec.x > x && rec.y > y && x+w > rec.x+rec.width && y+h >rec.y+rec.height))
-            {
-                active_models[model] = false;
-                clnf_models[model].Reset();
-            }
-            cv::Mat faceImageColore;
-            mBoxHandlers[model].getImage(frame_colore,faceImageColore);
-            //cv::imshow("Gesicht "+std::to_string(model),faceImageColore);
-
-            //cv::Mat faceImageColore = disp_image(cv::Rect(x,y,w,h));
-            cv::Mat_<uchar> faceImage;
-            Image::convert_to_grayscale(faceImageColore,faceImage);
-            mBoxHandlers[model].toSection(clnf_models[model]);
-
-            bool detection_success;
-            if(!active_models[model]){
-                vector<cv::Rect_<double> > face_detections;
-                if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
-                    vector<double> confidences;
-                    LandmarkDetector::DetectFacesHOG(face_detections, faceImage, clnf_models[0].face_detector_HOG, confidences);
-                }else{
-                    LandmarkDetector::DetectFaces(face_detections, faceImage, clnf_models[0].face_detector_HAAR);
-                }
-                if(face_detections.size() == 1){
-                    // Reinitialise the model
+            if(mBoxHandlers[model].existBox()){
+                // If the current model has failed more than 4 times in a row, remove it
+                if(clnf_models[model].failures_in_a_row > 4)
+                {
+                    active_models[model] = false;
                     clnf_models[model].Reset();
-
-                    // This ensures that a wider window is used for the initial landmark localisation
-                    clnf_models[model].detection_success = false;
-
-                    detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, face_detections[0], clnf_models[model], det_parameters[model]);
-
-                    // This activates the model
-                    active_models[model] = true;
+                    mBoxHandlers[model].setOldRect(cv::Rect2d(0,0,0,0));
                 }
-            }else{
-                detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, clnf_models[model], det_parameters[model]);
-            }
+                cv::Mat faceImageColore;
+                mBoxHandlers[model].getImage(frame_colore,faceImageColore);
+                //cv::imshow("Gesicht "+std::to_string(model),faceImageColore);
 
-            double detection_certainty = clnf_models[model].detection_certainty; // Qualität der detection: -1 perfekt und 1 falsch
-            double visualisation_boundary = -0.1;
+                //cv::Mat faceImageColore = disp_image(cv::Rect(x,y,w,h));
+                cv::Mat_<uchar> faceImage;
+                Image::convert_to_grayscale(faceImageColore,faceImage);
+                mBoxHandlers[model].toSection(clnf_models[model]);
 
-            mBoxHandlers[model].toImage(clnf_models[model]);
-            mBoxHandlers[model].setOldRect(clnf_models[model].GetBoundingBox());
+                bool detection_success;
+                if(!active_models[model]){
+                    vector<cv::Rect_<double> > face_detections;
+                    if(det_parameters[0].curr_face_detector == LandmarkDetector::FaceModelParameters::HOG_SVM_DETECTOR){
+                        vector<double> confidences;
+                        LandmarkDetector::DetectFacesHOG(face_detections, faceImage, clnf_models[0].face_detector_HOG, confidences);
+                    }else{
+                        LandmarkDetector::DetectFaces(face_detections, faceImage, clnf_models[0].face_detector_HAAR);
+                    }
+                    if(face_detections.size() == 1){
+                        // Reinitialise the model
+                        clnf_models[model].Reset();
 
-            double colore = (double)model/num_faces_max;
+                        // This ensures that a wider window is used for the initial landmark localisation
+                        clnf_models[model].detection_success = false;
 
-            // Only draw if the reliability is reasonable, the value is slightly ad-hoc
-            double itens = 0;
-            if(detection_certainty < visualisation_boundary){
-                std::cout<<"Detection"<<std::endl;
-                if(detection_certainty > 1)
-                    detection_certainty = 1;
-                if(detection_certainty < -1)
-                    detection_certainty = -1;
-                itens = (detection_certainty + 1)/(visualisation_boundary +1);
+                        detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, face_detections[0], clnf_models[model], det_parameters[model]);
 
-                int used;
-                CalcualteEyes(disp_image,model,used,mBoxHandlers[model].getImageScall());
-                std::string name;
-
-                bool isImageFrame = mEventHandler->isImageFrame(FrameID,name,mEventHandler->getName(model));
-                name = "img/Head_"+name;
-                if(isImageFrame){
-                    std::cout<<mKamera->getFrameNr()<<": "<<model<<" "<<name<<mBoxHandlers[model].getRect()<<std::endl;
+                        // This activates the model
+                        active_models[model] = true;
+                    }
+                }else{
+                    detection_success = LandmarkDetector::DetectLandmarksInVideo(faceImage, clnf_models[model], det_parameters[model]);
                 }
 
-                mPrinter.printSmallImage(frame_colore,clnf_models[model],*painterR,*painterL, name,
-                                         mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, model);
+                double detection_certainty = clnf_models[model].detection_certainty; // Qualität der detection: -1 perfekt und 1 falsch
+                double visualisation_boundary = -0.1;
+
+                mBoxHandlers[model].toImage(clnf_models[model]);
+
+                double colore = (double)model/num_faces_max;
+
+                // Only draw if the reliability is reasonable, the value is slightly ad-hoc
+                double itens = 0;
+                if(detection_certainty < visualisation_boundary){
+                    std::cout<<"Detection"<<std::endl;
+                    if(detection_certainty > 1)
+                        detection_certainty = 1;
+                    if(detection_certainty < -1)
+                        detection_certainty = -1;
+                    itens = (detection_certainty + 1)/(visualisation_boundary +1);
+
+                    mBoxHandlers[model].setOldRect(clnf_models[model].GetBoundingBox());
+
+                    int used;
+                    CalcualteEyes(disp_image,model,used,mBoxHandlers[model].getImageScall());
+                    std::string name;
+
+                    bool isImageFrame = mEventHandler->isImageFrame(FrameID,name,mEventHandler->getName(model));
+                    name = "img/Head_"+name;
+                    if(isImageFrame){
+                        std::cout<<mKamera->getFrameNr()<<": "<<model<<" "<<name<<mBoxHandlers[model].getRect()<<std::endl;
+                    }
+
+                    mPrinter.printSmallImage(frame_colore,clnf_models[model],*painterR,*painterL, name,
+                                             mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, model);
+
+                    if(gaze >1){
+                        name += std::to_string(gaze);
+                    }
+                    // Estimate head pose and eye gaze
+                    mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[model],fx,fy,cx,cy, colore, isImageFrame || gaze > 1);
+
+                    mPrinter.print_CLNF(disp_image,clnf_models[model],0.5,fx,fy,cx,cy, colore);
+
+                    num_active_models++;
+                    countFound++;
+                }else{
+
+                }
 
                 if(gaze >1){
-                    name += std::to_string(gaze);
+                    std::cout<<"Gaze: "<<FrameID<<" "<<model<<std::endl;
                 }
-                // Estimate head pose and eye gaze
-                mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[model],fx,fy,cx,cy, colore, isImageFrame || gaze > 1);
-
-                mPrinter.print_CLNF(disp_image,clnf_models[model],0.5,fx,fy,cx,cy, colore);
-
-                num_active_models++;
-                countFound++;
+                cv::rectangle(disp_image,mBoxHandlers[model].getRect(),
+                              cv::Scalar(255.0*(1.0-colore),255.0*colore,255.0*(1.0-colore)),2);
             }
-
-            if(gaze >1){
-                std::cout<<"Gaze: "<<FrameID<<" "<<model<<std::endl;
-            }
-            cv::rectangle(disp_image,cv::Rect(x,y,w,h),
-                          cv::Scalar(255.0*(1.0-colore),255.0*colore,255.0*(1.0-colore)),2);
         }
         if(FrameID % 10 == 0)
         {
@@ -418,7 +413,7 @@ void FaceDetection::FaceTrackingImage(){
             name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
 
             mPrinter.printSmallImage(disp_image.clone(),clnf_models[Model_Init],*painterR,*painterL, name,
-                            mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, Model_Init);
+                                     mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, Model_Init);
 
 
             double colore = (double)Model_Init/num_faces_max;
@@ -488,7 +483,7 @@ void FaceDetection::ShowFromeFile()
         QPainter *painterR=new QPainter(pixmapR);
 
         mPrinter.printSmallImage(frame,box,i,*painterL, name,
-                        mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max);
+                                 mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max);
 
         frameID = mEventHandler->getFramePos(frm);
         if(mEventHandler->isLandmark(frameID,i)){
@@ -499,7 +494,7 @@ void FaceDetection::ShowFromeFile()
             }
         }
         mPrinter.printSmallImage(frame,box,i,*painterR, name,
-                        mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max);
+                                 mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max);
 
         cv::rectangle(frame,box,cv::Scalar(0,255,0),3);
 
