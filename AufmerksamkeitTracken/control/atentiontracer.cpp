@@ -42,7 +42,7 @@ void AtentionTracer::showSolution(QString name, const LandmarkDetector::CLNF &mo
     cv::Point3f gazeDirection1(0, 0, -1);
     FaceAnalysis::EstimateGaze(model, gazeDirection0, fx, fy, cx, cy, true);
     FaceAnalysis::EstimateGaze(model, gazeDirection1, fx, fy, cx, cy, false);
-    cv::Vec6d headPoseWorld = LandmarkDetector::GetPoseCamera(model, fx, fy, cx, cy);//Distanz in Millimeter
+    cv::Vec6d headPoseWorld = LandmarkDetector::GetPoseWorld(model, fx, fy, cx, cy);//Distanz in Millimeter
 
     if(mShowAtention){
         newPosition(colore,headPoseWorld,model.params_global,gazeDirection0,gazeDirection1);

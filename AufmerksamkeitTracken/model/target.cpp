@@ -59,6 +59,8 @@ Target::Target()
     mPoint2[2][0] = 0;
     mPoint2[2][1] = 40;
     mPoint2[2][2] = 50;
+
+    //Tafel bei 23100601S1: 987.072, -110.714, 247.096
 }
 
 void Target::getWorldPosition(QStringList list, double &x, double &y, double &z)
