@@ -16,7 +16,8 @@ FaceDetection::FaceDetection(Ui::MainWindow *mWindow, Camera *cam)
 {
     mTheWindow = mWindow;
 
-    mAtentionTracer = new AtentionTracer(mWindow,cam);
+    QString TFName = "/home/falko/Uni/Master/AufmerksamkeitTracken/data/Target_3.txt";
+    mAtentionTracer = new AtentionTracer(mWindow,cam,TFName);
     mEventHandler = new EventHandler();
     mKamera = cam;
 

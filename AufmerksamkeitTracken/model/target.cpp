@@ -60,7 +60,8 @@ Target::Target()
     mPoint2[2][1] = 40;
     mPoint2[2][2] = 50;
 
-    //Tafel bei 23100601S1: 987.072, -110.714, 247.096
+    //Tafel bei 23100601S1:
+    mPoints.push_back(cv::Point3d(987.072, -110.714, 247.096));
 }
 
 void Target::getWorldPosition(QStringList list, double &x, double &y, double &z)
@@ -106,6 +107,18 @@ cv::Point2d Target::calcAngle(cv::Point3d Point)
     return calcAngle(Point.x,Point.y,Point.z);
 }
 
+bool Target::getPoint(QString Name, cv::Point3d &Point){
+    for(int i = 0; i < mReferenceName.size(); i++){
+        if(mReferenceName[i] == Name){
+            Point.x = mPoints[i].x*10;
+            Point.y = mPoints[i].y*10;
+            Point.z = mPoints[i].z*10;
+            return true;
+        }
+    }
+    return false;
+}
+/*
 void Target::getPoint(QString Name, cv::Point3d &Point)
 {
     size_t id = 0;
@@ -153,7 +166,7 @@ void Target::getPoint(size_t id, double &x, double &y, double &z)
         x=y=z=0.0;
     }
 }
-
+*/
 void Target::getOrienation(QString name, cv::Point2d &WAngle, cv::Point3d &WPosition, cv::Point2d &RAngle, cv::Point3d &Target)
 {
     QRegExp rx("(\\ |\\_)");
@@ -169,4 +182,36 @@ void Target::getOrienation(QString name, cv::Point2d &WAngle, cv::Point3d &WPosi
     cv::Vec3d pnt = mKamera->rotateToCamera(WPosition);
 
     RAngle = calcAngle(pnt[0]-pos[0],pnt[1]-pos[1],pnt[2]-pos[2]);
+}
+
+void Target::addTarget(QString name, cv::Point3d Target)
+{
+    mReferenceName.push_back(name);
+    mPoints.push_back(cv::Point3d(Target));
+}
+
+void Target::loadFromFile(QString FileName)
+{
+    clear();
+
+    std::ifstream file(FileName.toStdString());
+    std::string line;
+    if(file.is_open()){
+        while (std::getline(file, line)){
+            std::istringstream iss(line);
+            std::string name;
+            double x,y,z;
+            iss >> name;
+            iss >> x, iss >> y, iss >> z;
+
+            mPoints.push_back(cv::Point3d(x,y,z));
+            mReferenceName.push_back(QString::fromStdString(name));
+        }
+    }
+}
+
+void Target::clear()
+{
+    mReferenceName.clear();
+    mPoints.clear();
 }

@@ -4,7 +4,6 @@
 #include "model/camera.h"
 #include "model/image.h"
 #include "model/boxhandler.h"
-#include "model/target.h"
 
 #include "LandmarkCoreIncludes.h"
 #include "src/algo.h"
@@ -26,8 +25,6 @@ private:
     int Model_Init;
     int imgCount;
     int mGaze = 2;
-
-    Target* mTarget;
 
     AtentionTracer *mAtentionTracer;
     EventHandler *mEventHandler;

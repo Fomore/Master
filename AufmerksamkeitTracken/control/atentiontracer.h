@@ -52,7 +52,7 @@ private:
     void writeSolutionToFile(QString name, cv::Vec6d Model, cv::Vec6d HeadPoseWorld, cv::Point3f GazeDirection0, cv::Point3f GazeDirection1);
     bool linePlaneIntersection(cv::Vec3d &contact, cv::Vec3d ray, cv::Vec3d rayOrigin, cv::Vec3d normal, cv::Vec3d coord);
 public:
-    AtentionTracer(Ui::MainWindow *parent = 0,Camera *cam = 0);
+    AtentionTracer(Ui::MainWindow *parent = 0, Camera *cam = 0, QString TargetFileName = "");
     ~AtentionTracer();
     void print();
     void reset();

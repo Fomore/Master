@@ -6,7 +6,7 @@
 #include "model/image.h"
 #include <cmath>
 
-AtentionTracer::AtentionTracer(Ui::MainWindow *parent, Camera *cam)
+AtentionTracer::AtentionTracer(Ui::MainWindow *parent, Camera *cam, QString TargetFileName)
 {
     mTheWindow = parent;
     mKamera = cam;
@@ -20,6 +20,7 @@ AtentionTracer::AtentionTracer(Ui::MainWindow *parent, Camera *cam)
     mAttentiondCamOri = cv::Matx33d(1,0,0,
                                     0,-1,0,
                                     0,0,1);
+    loadFromFile(TargetFileName);
 }
 
 AtentionTracer::~AtentionTracer()
