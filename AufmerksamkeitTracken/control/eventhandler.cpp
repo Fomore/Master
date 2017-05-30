@@ -123,7 +123,7 @@ bool EventHandler::isImageFrame(size_t frameID, std::string &ImageName, std::str
 bool EventHandler::isImageFrame(size_t frameID, std::string &name, size_t &pos, int gaze)
 {
     if(frameID < mFrames.size() && mFrames[frameID].hasEventPart("Img",0,3,pos, gaze)){
-        name = mFrames[frameID].getEvent(pos)+"_"+mFrames[frameID].getName(pos);
+        name = mFrames[frameID].getEvent(pos)+" "+mFrames[frameID].getName(pos);
         return true;
     }else{
     return false;

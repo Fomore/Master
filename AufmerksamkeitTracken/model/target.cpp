@@ -5,86 +5,31 @@
 #include <fstream>
 Target::Target()
 {
-    // Punkt Zentrum 0
-    mPoint[0][0] = 0.0;
-    mPoint[0][1] = 170;
-    mPoint[0][2] = -41;
-
-    //Links
-    mPoint[1][0] = -128.5; //1
-    mPoint[1][1] = 194;
-    mPoint[1][2] = 0;
-
-    mPoint[2][0] = -308.5; //2
-    mPoint[2][1] = 194;
-    mPoint[2][2] = 0;
-
-    mPoint[3][0] = -308.5; //3
-    mPoint[3][1] = 113.5;
-    mPoint[3][2] = 0;
-
-    mPoint[4][0] = -128.5; //4
-    mPoint[4][1] = 113.5;
-    mPoint[4][2] = 0;
-
-    //Rechts
-    mPoint[5][0] = 128.5; //1
-    mPoint[5][1] = 194;
-    mPoint[5][2] = 0;
-
-    mPoint[6][0] = 308.5; //2
-    mPoint[6][1] = 194;
-    mPoint[6][2] = 0;
-
-    mPoint[7][0] = 308.5; //3
-    mPoint[7][1] = 113.5;
-    mPoint[7][2] = 0;
-
-    mPoint[8][0] = 128.5; //4
-    mPoint[8][1] = 113.5;
-    mPoint[8][2] = 0;
-
-    mFHeight = 170;
-    mTHeight = 166;
-
-    mPoint2[0][0] = 0;
-    mPoint2[0][1] = 148+40;
-    mPoint2[0][2] = 0;
-
-
-    mPoint2[1][0] = 0;
-    mPoint2[1][1] = (70+40);
-    mPoint2[1][2] = 0;
-
-    mPoint2[2][0] = 0;
-    mPoint2[2][1] = 40;
-    mPoint2[2][2] = 50;
-
-    //Tafel bei 23100601S1:
-    mPoints.push_back(cv::Point3d(987.072, -110.714, 247.096));
+    mFHeight = 1700;
+    mTHeight = 1660;
 }
 
 void Target::getWorldPosition(QStringList list, double &x, double &y, double &z)
 {
     if(list.size() >= 4){
-        int a = list[list.size()-4].toInt();
-        int b = list[list.size()-2].toInt();
+        int a = list[1].toInt();
+        int b = list[3].toInt();
         if(a >= 1 && a <= 12){
-            z = a*100.0;
+            z = a*1000.0;
         }else{
             z = 0.0;
         }
 
         if(b >= 0 && b <= 7){
-            x = (b-4)*100.0;//Innen
+            x = (b-4)*1000.0;//Innen
             //x = (4-b)*100.0;//Außen
         }else{
             x = 0.0;
         }
 
-        if(list[list.size()-1] == "Thomas"){
+        if(list[4] == "Thomas"){
             y = mTHeight;
-        }else if(list[list.size()-1] == "Falko"){
+        }else if(list[4] == "Falko"){
             y = mFHeight;
         }else{
             y = 0;
@@ -110,71 +55,22 @@ cv::Point2d Target::calcAngle(cv::Point3d Point)
 bool Target::getPoint(QString Name, cv::Point3d &Point){
     for(int i = 0; i < mReferenceName.size(); i++){
         if(mReferenceName[i] == Name){
-            Point.x = mPoints[i].x*10;
-            Point.y = mPoints[i].y*10;
-            Point.z = mPoints[i].z*10;
+            Point.x = mPoints[i].x;
+            Point.y = mPoints[i].y;
+            Point.z = mPoints[i].z;
             return true;
         }
     }
     return false;
 }
-/*
-void Target::getPoint(QString Name, cv::Point3d &Point)
-{
-    size_t id = 0;
-    if(Name.size() >= 2){
-        QChar O = Name.at(0);
-        int p = (int)Name.at(1).toLatin1()-48;
-        if((O == 'R' || O == 'L') && p >= 1 && p <= 4){ //
-            id += p;
-            if(O == 'R'){
-                id += 4;
-            }
-        }else{
-            int a = (int)Name.at(0).toLatin1()-48;
-            int b = (int)Name.at(1).toLatin1()-48;
 
-            if(a == b && a < 3){
-                if(a == 0){
-                    id = 10;
-                }else if(a == 1){
-                    id = 11;
-                }else if(a == 2){
-                    id = 12;
-                }
-            }else if((a == 3 || a == 9) && b >= 0 && b <= 7){
-                Point.x = (4-b)*1000;
-                Point.z = (a-1)*1000;
-                return;
-            }
-        }
-    }
-    getPoint(id,Point.x,Point.y,Point.z);
-}
-
-void Target::getPoint(size_t id, double &x, double &y, double &z)
-{
-    if(id < 9){
-        x = mPoint[id][0]*10;
-        y = mPoint[id][1]*10;
-        z = mPoint[id][2]*10;
-    }else if(id >= 10 && id <13){
-        x = mPoint2[id-10][0]*10;
-        y = mPoint2[id-10][1]*10;
-        z = mPoint2[id-10][2]*10;
-    }else{
-        x=y=z=0.0;
-    }
-}
-*/
 void Target::getOrienation(QString name, cv::Point2d &WAngle, cv::Point3d &WPosition, cv::Point2d &RAngle, cv::Point3d &Target)
 {
-    QRegExp rx("(\\ |\\_)");
-    QStringList list = name.split(rx);
+    QStringList list = name.split(' ');
 
     getWorldPosition(list,WPosition.x, WPosition.y, WPosition.z);
 
-    getPoint(list[2],Target);
+    getPoint(list[0],Target);
 
     WAngle = calcAngle(WPosition.x-Target.x,WPosition.y-Target.y,WPosition.z-Target.z);
 
@@ -204,7 +100,7 @@ void Target::loadFromFile(QString FileName)
             iss >> name;
             iss >> x, iss >> y, iss >> z;
 
-            mPoints.push_back(cv::Point3d(x,y,z));
+            mPoints.push_back(cv::Point3d(x*10.0,y*10.0,z*10.0));
             mReferenceName.push_back(QString::fromStdString(name));
         }
     }

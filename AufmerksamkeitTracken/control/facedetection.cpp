@@ -284,17 +284,13 @@ void FaceDetection::FaceTrackingNewVersion(){
                     std::string name;
 
                     bool isImageFrame = mEventHandler->isImageFrame(FrameID,name,mEventHandler->getName(model),mGaze);
-                    name = "img/Head_"+name;
                     if(isImageFrame){
                         std::cout<<mKamera->getFrameNr()<<": "<<model<<" "<<name<<mBoxHandlers[model].getRect()<<std::endl;
                     }
 
-                    mPrinter.printSmallImage(frame_colore,clnf_models[model],*painterR,*painterL, name,
+                    mPrinter.printSmallImage(frame_colore,clnf_models[model],*painterR,*painterL, "img/Head_"+name,
                                              mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, model);
 
-                    if(gaze >1){
-                        name += std::to_string(gaze);
-                    }
                     // Estimate head pose and eye gaze
                     mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[model],fx,fy,cx,cy, colore, isImageFrame || gaze > 1);
 
@@ -345,11 +341,8 @@ void FaceDetection::FaceTrackingImage(){
     size_t frm=0;
     std::cout<<"Bild berechung"<<std::endl;
     while(getFrame(frame,frm,rec,name,fx,fy,cx,cy,x,y)){
-        std::cout<<"Frame: "<<frm<<rec<<" "<<fx<<" "<<fy<<" "<<cx<<" "<<cy<<" "<<x<<" "<<y<<std::endl;
-
         mAtentionTracer->setImageSize(x,y);
         mBoxHandlers[0].setImageSize(x,y);
-        name = "img/Head_"+name;
 
         cv::Mat disp_image = frame.clone();
 
@@ -410,10 +403,7 @@ void FaceDetection::FaceTrackingImage(){
 
             mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[Model_Init],fx,fy,cx,cy, (double)Model_Init/num_faces_max, true);
 
-            name += "_"+std::to_string(used);
-            name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
-
-            mPrinter.printSmallImage(disp_image.clone(),clnf_models[Model_Init],*painterR,*painterL, name,
+            mPrinter.printSmallImage(disp_image.clone(),clnf_models[Model_Init],*painterR,*painterL, "img/Head_"+name,
                                      mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, Model_Init);
 
 
@@ -833,7 +823,7 @@ bool FaceDetection::getFrame(cv::Mat &img, size_t FrameID)
 bool FaceDetection::getFrame(cv::Mat &Img, size_t &Frame, cv::Rect &Rec, string &Name,
                              double &fx, double &fy, double &cx, double &cy, int &x, int &y)
 {
-    if(true || mUseImage){
+    if(mUseImage){
         int FramePos = -1;
         if(mEventHandler->getImage(Img,Frame, Name,FramePos,Rec)){
             if(FramePos >= 0){
@@ -856,12 +846,9 @@ bool FaceDetection::getFrame(cv::Mat &Img, size_t &Frame, cv::Rect &Rec, string 
             return false;
         }
     }else{
-        std::cout<<"Box "<<Frame<<std::endl;
         int BoxID = -1;
         if(mEventHandler->getNextImageFrame(Frame,Rec,Name, BoxID,mGaze)){
-            std::cout<<"Rec "<<Rec<<std::endl;
             mKamera->getFrame(Img,Frame);
-
             mKamera->setImageSize(Img.cols,Img.rows);
             mKamera->get_camera_params(fx,fy,cx,cy,x,y);
             return true;

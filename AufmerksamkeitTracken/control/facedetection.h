@@ -45,7 +45,7 @@ private:
 
     bool mAutoSize = false;
     bool mUseBox = true;
-    bool mUseImage = true;
+    bool mUseImage = false;
     bool mCLAHE = true;
     bool mUseEye = true;
 

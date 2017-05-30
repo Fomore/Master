@@ -194,8 +194,8 @@ void AtentionTracer::printAttention(){
 
 void AtentionTracer::printTargets(cv::Mat &img, const cv::Vec3d &Pose, const cv::Matx33d Ori, double fx, double cx, double cy)
 {
-    for(int i = 0; i < 9 ; i++){
-        cv::circle(img,calcPose2Image(mKamera->rotateToCamera(cv::Vec3d(mPoint[i][0],mPoint[i][1],mPoint[i][2]))*10.0,Pose,Ori,fx,cx,cy),
+    for(size_t i = 0; i < mPoints.size() ; i++){
+        cv::circle(img,calcPose2Image(mKamera->rotateToCamera(cv::Vec3d(mPoints[i].x,mPoints[i].y,mPoints[i].z)),Pose,Ori,fx,cx,cy),
                    cvRound(fx/50),cv::Scalar(255,0,0),-1);
     }
 }
