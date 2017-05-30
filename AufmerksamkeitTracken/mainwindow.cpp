@@ -11,8 +11,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     mKamera = new Camera(-1);
 
-    mKamera->setPath("/home/falko/Uni/Master/Film/Schulklasse/23100601S1.avi");
-    //mKamera->setPath("/home/falko/Uni/Master/Film/Test_Positionen_1.mp4");
+    //mKamera->setPath("/home/falko/Uni/Master/Film/Schulklasse/23100601S1.avi");
+    mKamera->setPath("/home/falko/Uni/Master/Film/Test_Positionen_1.mp4");
 
     /*
     for(int i = 1; i < 2 ; i++){
@@ -20,9 +20,9 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     */
     mFaceDetection = new FaceDetection(ui,mKamera);
-    mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/23100601S1_Label.xml", true);
+    //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/23100601S1_Label.xml", true);
     //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/23100601S1_Gaze_3_Label.xml", true);
-    //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_1_Label.xml", true);
+    mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_1_Label.xml", true);
 }
 
 MainWindow::~MainWindow()
