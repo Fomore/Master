@@ -26,7 +26,7 @@ for root, dirnames, filenames in os.walk('/home/falko/Uni/Master/Bilder/SynthEye
 #        cv2.rectangle(cv_img,(x,y),(x+w,y+h),(0,255,0),2)
 #        cv2.imshow("Image", cv_img)
 #        cv2.waitKey(30)
-        out.write(path2+' ')
+        out.write(path+' ')
         out.write(str(ellipse_i))
         out.write(' ')
         out.write(str(ellipse_p))
