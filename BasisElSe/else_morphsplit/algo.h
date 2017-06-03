@@ -6,8 +6,6 @@
   ETRA 2016 : Eye Tracking Research and Application 2016
  
   The code and the algorithm are for non-comercial use only.
-
-  else_morphsplit
 */
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -24,7 +22,7 @@
 namespace ELSE{
 
 
-static cv::RotatedRect run(cv::Mat input_img){
+static cv::RotatedRect run(cv::Mat input_img, float &Quality, bool &Blob){
 
 
 	float rz_fakk=float(input_img.cols)/384.0;
@@ -93,9 +91,11 @@ static cv::RotatedRect run(cv::Mat input_img){
 
 	if(ellipse.center.x<=0 && ellipse.center.y<=0 || ellipse.center.x>=pic.cols || ellipse.center.y>=pic.rows){
 
-		ellipse=blob_finder(&pic);
-
-	}
+        ellipse=blob_finder(&pic, Quality);
+        Blob = true;
+    }else{
+        Blob = false;
+    }
 
 
 	ellipse.size.height=ellipse.size.height*rz_fakk;

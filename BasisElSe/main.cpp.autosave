@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 
     for(int i = 0; i < 7; i++){
         for(int j = 0; j < 4; j++)
-        cv::imwrite(std::to_string(i)+"_"+std::to_string(j)+"b.png",convert_rgb(cv::imread(mImagePaths[i],-1),j));
+        cv::imwrite(std::to_string(i)+"_"+std::to_string(j)+".png",convert_rgb(cv::imread(mImagePaths[i],-1),j));
     }
 
     return 0;

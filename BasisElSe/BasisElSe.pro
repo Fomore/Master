@@ -16,12 +16,20 @@ TEMPLATE = app
 
 CONFIG += c++11
 
-SOURCES += main.cpp \
-    algo/stdafx.cpp
+SOURCES += main.cpp
 
-HEADERS  += src/algo.h \
-    algo/blob_gen.h \
-    algo/stdafx.h
+HEADERS  += algo/algo.h \
+    algo/blob_gen.h
+HEADERS  += else_algosplit/algo.h \
+    else_algosplit/find_best_edge.h \
+    else_algosplit/canny_impl.h \
+    else_algosplit/blob_gen.h \
+    else_algosplit/filter_edges.h
+HEADERS  += else_morphsplit/algo.h \
+    else_morphsplit/find_best_edge.h \
+    else_morphsplit/canny_impl.h \
+    else_morphsplit/blob_gen.h \
+    else_morphsplit/filter_edges.h
 
 PKGCONFIG += x11
 

@@ -2,17 +2,14 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
-
-// algo
-
 #include "blob_gen.h"
+
 #include <iostream>
 
 namespace ELSE{
 
 
-static cv::RotatedRect run(cv::Mat input_img, float &Quality){
-
+static cv::RotatedRect run(cv::Mat input_img, float &Quality, bool &Blob){
 
 	float rz_fakk=float(input_img.cols)/384.0;
 
@@ -29,6 +26,7 @@ static cv::RotatedRect run(cv::Mat input_img, float &Quality){
 
 
     cv::RotatedRect ellipse=blob_finder(&pic,border,Quality);
+    Blob=true;
 
 
 
