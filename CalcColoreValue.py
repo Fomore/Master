@@ -39,18 +39,41 @@ def CalcRating(Iris, Pupil):
     return Rating
 
 AnzI =    4069880.0
-GesI = np.array([147577004, 174640344, 207137983])
 AnzP =   1669322.0
-GesP = np.array([24481813, 30175950, 35351595])
 AnzH = 98444171.0
 AnzE = 5083827.0
+# BGR
+GesI = np.array([147577004, 174640344, 207137983])
+GesP = np.array([24481813, 30175950, 35351595])
 GesH = np.array([4723734145, 6261052230, 8923742132])
 GesE = np.array([370187161, 396665628, 492340673])
+
+GesP_N = np.array([  33073689,  40785596,   47683823])
+GesI_N = np.array([ 196427042, 233525480,  277929514])
+GesE_N = np.array([ 497947194, 536475499,  669697821])
+GesH_N = np.array([6270670086,8391141331,12102454021])
 
 print ("I",GesI/AnzI)
 print ("P",GesP/AnzP)
 print ("E",GesE/AnzE)
 print ("H",GesH/AnzH)
+
+In = (GesI/AnzI)/sum(GesI/AnzI)
+Pn = (GesP/AnzP)/sum(GesP/AnzP)
+Hn = (GesH/AnzH)/sum(GesH/AnzH)
+En = (GesE/AnzE)/sum(GesE/AnzE)
+
+Idn = abs(In-Pn)
+Edn = abs(En-Pn)
+Hdn = abs(Hn-Pn)
+
+print ("In",Idn,Idn/sum(Idn))
+print ("En",Edn,Edn/sum(Edn))
+print ("Hn",Hdn,Hdn/sum(Hdn))
+
+print ("Ergebnis",(Hdn*3+Edn*2+Idn)/sum(Hdn*3+Edn*2+Idn))
+
+
 print ("IP",CalcRating(GesI/AnzI,GesP/AnzP))
 print ("PI",CalcRating(GesP/AnzP,GesI/AnzI))
     
@@ -60,14 +83,13 @@ print ('Gray_60_16_24', 40.367079619055104/16.334735299720485) #2.47 - 0.5970661
 print ('Gray_14_51_35', 44.251588498923802/18.221625306561585) #2.43 - 0.13962652,  0.51415666,  0.34621682
 print ('Gray_11_59_30', 44.045516575427285/18.166344779497305) #2.42 - 0.114,0.587,0.299
 
-Gray_P = 0
-Gray_I = 0
+#Gray_P = 0
+#Gray_I = 0
 
 AVGColoreH = np.array([0,0,0])
 AVGColoreE = np.array([0,0,0])
-
-GesColoreH = np.array([0,0,0])
-GesColoreE = np.array([0,0,0])
+AVGColoreI = np.array([0,0,0])
+AVGColoreP = np.array([0,0,0])
 
 out = open('workfileColore.txt', 'w+')
 #(x_centre,y_centre),(minor_axis,major_axis),angle
@@ -85,6 +107,7 @@ for root, dirnames, filenames in os.walk('/home/falko/Uni/Master/Bilder/SynthEye
         ellipse_p = cv2.fitEllipse(pupil)
         
         cv_img = cv2.imread(path)
+        cv2.normalize(cv_img,cv_img,0,255,cv2.NORM_MINMAX)
         
         img_lids = np.zeros(cv_img.shape,dtype='uint8')
         cv2.fillConvexPoly(img_lids, lids.astype(int),(1,1,1))
@@ -103,14 +126,10 @@ for root, dirnames, filenames in os.walk('/home/falko/Uni/Master/Bilder/SynthEye
 #        img_pupil = np.zeros([w,h,1],dtype='uint8')
 #        cv2.ellipse(img_pupil,ellipse_p,(1),-1)  
 
-       
-#        AVGColoreI = AVGColoreI + ImageSum(cv_img*(img_iris-img_pupil)*img_lids)
-#        AVGColoreP = AVGColoreP + ImageSum(cv_img*img_pupil*img_lids)
         AVGColoreH = AVGColoreH + ImageSum(cv_img*img_head)
         AVGColoreE = AVGColoreE + ImageSum(cv_img*(img_lids-(img_lids*img_iris)))
-        
-        GesColoreH = GesColoreH + ImageSum(img_head)
-        GesColoreE = GesColoreE + ImageSum(img_lids-(img_lids*img_iris))
+        AVGColoreI = AVGColoreI + ImageSum(cv_img*img_lids*(img_iris-img_pupil))
+        AVGColoreP = AVGColoreP + ImageSum(cv_img*img_lids*img_pupil)
        
 #        ImgI = (img_iris-img_pupil)*img_lids
 #        ImgP = img_pupil*img_lids
@@ -121,8 +140,10 @@ for root, dirnames, filenames in os.walk('/home/falko/Uni/Master/Bilder/SynthEye
 #        cv2.imshow("Ges", cv_img)
 #        cv2.imshow("Auge", cv_img*img_head)
 #        cv2.waitKey(300)
-print (AVGColoreH,GesColoreH)
-print (AVGColoreE,GesColoreE)
+print ("AVGColoreP",AVGColoreP)
+print ("AVGColoreI",AVGColoreI)
+print ("AVGColoreE",AVGColoreE)
+print ("AVGColoreH",AVGColoreH)
 #        out.write('\n')
 #cv2.destroyAllWindows()
 print("Ende")

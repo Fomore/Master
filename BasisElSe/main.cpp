@@ -6,9 +6,10 @@
 #include <math.h>
 #include <QString>
 #include <QRegExp>
-#include "algo/algo.h" //CV_8UC1
+
+//#include "algo/algo.h" //CV_8UC1
 //#include "else_algosplit/algo.h" //CV_8UC1
-//#include "else_morphsplit/algo.h" //CV_8UC1
+#include "else_morphsplit/algo.h" //CV_8UC1
 
 cv::Mat convert_rgb(cv::Mat in, int abw = 0){
     if(!(in.type() == CV_8UC3 || in.type() == CV_8UC4)){
@@ -38,8 +39,9 @@ cv::Mat convert_rgb(cv::Mat in, int abw = 0){
                 }
             }
 
-            //float gray_val= (0.24079208*red) + (0.16214176*green) + (0.59706616*blue); //Luma coding in video systems
-            float gray_val= (0.299*red) + (0.587*green) + (0.114*blue); //Luma coding in video systems
+            float gray_val= (0.35663438*blue) + (0.24882321*green) + (0.39454241*red);
+            //float gray_val= (0.24079208*red) + (0.16214176*green) + (0.59706616*blue);
+            //float gray_val= (0.299*red) + (0.587*green) + (0.114*blue); //Luma coding in video systems
             //float gray_val= (0.333*red) + (0.333*green) + (0.333*blue);
 
             if(abw == 1){
@@ -63,8 +65,35 @@ cv::Mat convert_rgb(cv::Mat in, int abw = 0){
                 gray_val=gray_val*sqrt(gray_val/255.0);
             }else if(abw == 3){
                 gray_val=gray_val*pow(gray_val/255.0,2);
-            }
+            }else if(abw == 4){
+                double rs = 1;
+                double gs = 1;
+                double bs = 1;
+                if(rs <= 73)
+                    rs = -0.00032440*pow(red,2)+0.071533*red;
+                if(gs <= 78)
+                    gs = -0.00022737*pow(green,2)+0.059648*green;
+                if(bs <= 85)
+                    bs = -0.00026996*pow(blue,2)+0.053288*blue;
+                gray_val= (red*rs + green*gs + blue*bs)/3.0;
+            }else if(abw == 5){
+                double rs = 1;
+                double gs = 1;
+                double bs = 1;
+                if(rs <= 85)
+                    rs =  -31/102510*pow(red,2)+6253/102510*red;
+                if(gs <= 85)
+                    gs =  -31/102510*pow(green,2)+6253/102510*green;
+                if(bs <= 85)
+                    bs =  -31/102510*pow(blue,2)+6253/102510*blue;
+                gray_val= (0.299*red*rs) + (0.587*green*gs) + (0.114*blue*bs);
 
+            }else if(abw == 6){
+                double rs = 0.059077*red-0.81949;
+                double gs = 0.053561*green-0.90855;
+                double bs = 0.033964*blue-0.66562;
+                gray_val=std::max(0.0,std::min(255.0,(red*rs + green*gs + blue*bs)/3.0));
+            }
             out.at<float>(i,j)=gray_val;
         }
     }
@@ -75,13 +104,13 @@ cv::Mat convert_rgb(cv::Mat in, int abw = 0){
     return out;
 }
 
-cv::Vec4f compareEllipse(cv::RotatedRect Ellipse1, cv::RotatedRect Ellipse2){
-    double abstandCenter = sqrt(pow(Ellipse1.center.x-Ellipse2.center.x,2)+pow(Ellipse1.center.y-Ellipse2.center.y,2));
+cv::Vec4f compareEllipse(cv::RotatedRect Ellipse1, cv::RotatedRect Ellipse2, double scall){
+    double abstandCenter = sqrt(pow(Ellipse1.center.x-scall*Ellipse2.center.x,2)+pow(Ellipse1.center.y-scall*Ellipse2.center.y,2));
     float angle = Ellipse1.angle-Ellipse2.angle;
     if(angle < 0)
         angle *= -1.0;
-    float width = Ellipse1.size.width-Ellipse2.size.width;
-    float height = Ellipse1.size.height - Ellipse2.size.height;
+    float width = Ellipse1.size.width - scall*Ellipse2.size.width;
+    float height = Ellipse1.size.height - scall*Ellipse2.size.height;
     return cv::Vec4f(abstandCenter,angle,width,height);
 }
 
@@ -89,9 +118,84 @@ bool isEllipse(cv::RotatedRect Ellipse){
     return Ellipse.center.x >= 0 && Ellipse.center.y >= 0 && Ellipse.size.width > 0 && Ellipse.size.height > 0;
 }
 
+
+bool myfunction (double i,double j) { return (i<j); }
+
+cv::Vec3d Auswertung(std::vector<bool> Blob, std::vector<double> Values, int Typ){
+    if(Blob.size() != Values.size()){
+        std::cout<<"Feher: Blob="<<Blob.size()<<" Values="<<Values.size()<<std::endl;
+        return cv::Vec3d(0,0,0);
+    }
+    size_t count = 0;
+    double summe = 0.0;
+    std::vector<double> val;
+    for(size_t i = 0; i < Values.size(); i++){
+        if(Typ == 3 || (Typ == 1 && Blob[i]) || (Typ == 2 && !Blob[i])){
+            count++;
+            summe += Values[i];
+            val.push_back(Values[i]);
+        }
+    }
+
+    if(val.size() > 0){
+        std::sort(val.begin(), val.end(),myfunction);
+        size_t q = val.size()/4;
+        return cv::Vec3d(val[q],summe/((double) count),val[q*3]);
+    }else{
+        return cv::Vec3d(0,0,0);
+    }
+}
+
+void AuswertungFile(){
+    std::ofstream myfileGes;
+    myfileGes.open ("Auswertung.txt", std::ios::in | std::ios::app);
+    std::vector<cv::String> FileNames;
+    cv::glob("solution_algo/*0.txt",FileNames,false);
+    for(size_t i = 0; i < FileNames.size(); i++){
+        std::ifstream file(FileNames[i]);
+        std::string line;
+
+        size_t p = FileNames[i].size();
+        std::string ScalString = FileNames[i].substr(p-12,8);
+        double scall = std::stod(ScalString);
+        std::cout<<"Berechne "<<scall<<std::endl;
+
+        std::vector<std::vector<double>> Values;
+        for(int j = 0; j < 9; j++){
+            Values.push_back(std::vector<double>());
+        }
+        std::vector<bool> Blob;
+
+        QRegExp ausdruck("[\\[\\]\\,]");
+        if(file.is_open()){
+            while (std::getline(file, line)){
+                std::istringstream iss(QString::fromStdString(line).remove(ausdruck).toStdString());
+                double val;
+                bool blob;
+                iss >> val;
+                Values[0].push_back(val);
+                iss >> blob;
+                Blob.push_back(blob);
+                for(int j = 1; j < 9; j++){
+                    iss >> val;
+                    Values[j].push_back(val);
+                }
+            }
+        }
+        myfileGes<<scall;
+        for(size_t j = 0; j < Values.size(); j++){
+            myfileGes<<Auswertung(Blob,Values[j],1)<<Auswertung(Blob,Values[j],2);
+        }
+        myfileGes<<std::endl;
+    }
+    myfileGes.close();
+}
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
+
+    //AuswertungFile();
 
     std::vector<std::string> mImagePaths;
     std::vector<cv::RotatedRect> mIris;
@@ -121,11 +225,12 @@ int main(int argc, char *argv[])
         }
     }
 
-    for(int i = 0; i < 7; i++){
-        for(int j = 0; j < 4; j++)
-        cv::imwrite(std::to_string(i)+"_"+std::to_string(j)+"b.png",convert_rgb(cv::imread(mImagePaths[i],-1),j));
+    for(int i = 0; i < 5; i++){
+        for(int k = 0; k < 1; k++){
+        cv::Mat Img = cv::imread(mImagePaths[i]);
+        cv::imwrite("Ergebnis_V"+std::to_string(i)+"_"+std::to_string(k)+".png",convert_rgb(Img,k));
+        }
     }
-
     return 0;
 
     std::ofstream myfileGes;
@@ -148,17 +253,20 @@ int main(int argc, char *argv[])
                         cv::Mat ret;
                         cv::resize(Img,ret,cv::Size(0,0),scall,scall);
                         //ellipse[j] = ELSE::run(ret, quality[j],blob[j]);
-                        ellipse[j] = ELSE::run(convert_rgb(ret), quality[j],blob[j]);
+                        ellipse[j] = ELSE::run(convert_rgb(ret,0), quality[j],blob[j]);
                     }
+                    //cv::ellipse(Img,ellipse[j],cv::Scalar(255,255,0),2);
+                    //cv::imshow("Ergebnis_"+std::to_string(j),Img);
                 }
             });
+            //cv::waitKey(300);
             for(int j = 0; j < 4; j++){
-                myfile<<quality[j]<<" "<<blob[j]<<" "
-                     <<compareEllipse(ellipse[j],mIris[i+j])
-                        <<compareEllipse(ellipse[j],mPupils[i+j])
-                        <<std::endl;
                 if(isEllipse(ellipse[j])){
+                    myfile<<quality[j]<<" "<<blob[j]<<" "
+                         <<compareEllipse(ellipse[j],mIris[i+j],scall)<<" "
+                        <<compareEllipse(ellipse[j],mPupils[i+j],scall)<<std::endl;
                     countGes++;
+                    QualityGes += quality[j];
                 }
             }
         }
@@ -171,5 +279,6 @@ int main(int argc, char *argv[])
         }
     }
     myfileGes.close();
+    std::cout<<"Ende"<<std::endl;
     return a.exec();
 }
