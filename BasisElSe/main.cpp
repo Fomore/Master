@@ -1,11 +1,11 @@
 #include <QCoreApplication>
 
 #include <opencv2/opencv.hpp>
-#include "LandmarkCoreIncludes.h"
 #include <iostream>
 #include <math.h>
 #include <QString>
 #include <QRegExp>
+#include "LandmarkCoreIncludes.h"
 
 //#include "algo/algo.h" //CV_8UC1
 //#include "else_algosplit/algo.h" //CV_8UC1
@@ -39,9 +39,9 @@ cv::Mat convert_rgb(cv::Mat in, int abw = 0){
                 }
             }
 
-            float gray_val= (0.35663438*blue) + (0.24882321*green) + (0.39454241*red);
+            //float gray_val= (0.35663438*blue) + (0.24882321*green) + (0.39454241*red);
             //float gray_val= (0.24079208*red) + (0.16214176*green) + (0.59706616*blue);
-            //float gray_val= (0.299*red) + (0.587*green) + (0.114*blue); //Luma coding in video systems
+            float gray_val= (0.299*red) + (0.587*green) + (0.114*blue); //Luma coding in video systems
             //float gray_val= (0.333*red) + (0.333*green) + (0.333*blue);
 
             if(abw == 1){
@@ -104,8 +104,11 @@ cv::Mat convert_rgb(cv::Mat in, int abw = 0){
     return out;
 }
 
-cv::Vec4f compareEllipse(cv::RotatedRect Ellipse1, cv::RotatedRect Ellipse2, double scall){
-    double abstandCenter = sqrt(pow(Ellipse1.center.x-scall*Ellipse2.center.x,2)+pow(Ellipse1.center.y-scall*Ellipse2.center.y,2));
+cv::Vec4f compareEllipse(cv::RotatedRect Ellipse1, cv::RotatedRect Ellipse2, double scall, cv::Rect Box){
+    double x = Box.x;
+    double y = Box.y;
+    double abstandCenter = sqrt(pow(Ellipse1.center.x-scall*(Ellipse2.center.x-x),2)
+                               +pow(Ellipse1.center.y-scall*(Ellipse2.center.y-y),2));
     float angle = Ellipse1.angle-Ellipse2.angle;
     if(angle < 0)
         angle *= -1.0;
@@ -148,9 +151,9 @@ cv::Vec3d Auswertung(std::vector<bool> Blob, std::vector<double> Values, int Typ
 
 void AuswertungFile(){
     std::ofstream myfileGes;
-    myfileGes.open ("Auswertung.txt", std::ios::in | std::ios::app);
+    myfileGes.open ("Auswertung_morphsplit.txt", std::ios::in | std::ios::app);
     std::vector<cv::String> FileNames;
-    cv::glob("solution_algo/*0.txt",FileNames,false);
+    cv::glob("solution_morphsplit/*0.txt",FileNames,false);
     for(size_t i = 0; i < FileNames.size(); i++){
         std::ifstream file(FileNames[i]);
         std::string line;
@@ -191,6 +194,10 @@ void AuswertungFile(){
     myfileGes.close();
 }
 
+cv::Rect resizeRect(cv::Rect Box){
+    return cv::Rect(Box.x-3,Box.y-3,Box.width+6,Box.height+6);
+}
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
@@ -225,13 +232,14 @@ int main(int argc, char *argv[])
         }
     }
 
+    /*
     for(int i = 0; i < 5; i++){
-        for(int k = 0; k < 1; k++){
         cv::Mat Img = cv::imread(mImagePaths[i]);
-        cv::imwrite("Ergebnis_V"+std::to_string(i)+"_"+std::to_string(k)+".png",convert_rgb(Img,k));
-        }
+        cv::imwrite("Ergebnis_"+std::to_string(i)+"O.png",Img);
+        cv::imwrite("Ergebnis_"+std::to_string(i)+"B.png",convert_rgb(Img(resizeRect(mBoxes[i]))));
     }
     return 0;
+    */
 
     std::ofstream myfileGes;
     myfileGes.open ("solution/Auge_ges.txt", std::ios::in | std::ios::app);
@@ -249,13 +257,13 @@ int main(int argc, char *argv[])
             tbb::parallel_for(0, 4, [&](int j){
                 if(i+j < mImagePaths.size()){
                     cv::Mat Img = cv::imread(mImagePaths.at(i+j));
-                    if(Img.data){
+                    if(Img.data && mBoxes[i+j].height*scall > 0.5){
                         cv::Mat ret;
-                        cv::resize(Img,ret,cv::Size(0,0),scall,scall);
+                        cv::resize(Img(mBoxes[i+j]),ret,cv::Size(0,0),scall,scall);
                         //ellipse[j] = ELSE::run(ret, quality[j],blob[j]);
                         ellipse[j] = ELSE::run(convert_rgb(ret,0), quality[j],blob[j]);
                     }
-                    //cv::ellipse(Img,ellipse[j],cv::Scalar(255,255,0),2);
+                    //cv::ellipse(Img(mBoxes[i+j]),ellipse[j],cv::Scalar(255,255,0),2);
                     //cv::imshow("Ergebnis_"+std::to_string(j),Img);
                 }
             });
@@ -263,8 +271,8 @@ int main(int argc, char *argv[])
             for(int j = 0; j < 4; j++){
                 if(isEllipse(ellipse[j])){
                     myfile<<quality[j]<<" "<<blob[j]<<" "
-                         <<compareEllipse(ellipse[j],mIris[i+j],scall)<<" "
-                        <<compareEllipse(ellipse[j],mPupils[i+j],scall)<<std::endl;
+                         <<compareEllipse(ellipse[j],mIris[i+j],scall,mBoxes[i+j])<<" "
+                        <<compareEllipse(ellipse[j],mPupils[i+j],scall,mBoxes[i+j])<<std::endl;
                     countGes++;
                     QualityGes += quality[j];
                 }
