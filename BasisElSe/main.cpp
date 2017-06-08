@@ -56,7 +56,7 @@ cv::Mat convert_rgb(cv::Mat in, int abw = 0){
         cv::minMaxLoc(gaus, &min, &max);
         cv::Mat out=cv::Mat::zeros(in.size(),CV_8UC1);
         if(abw == 4){
-            double a = 255.0/max;
+            double a = (min+255.0)/max;
             for(int i=0;i<in.rows;i++){
                 for(int j=0;j<in.cols;j++){
                     out.at<uchar>(i,j)= std::min(255,std::max((int)(gray.at<uchar>(i,j)*a-min+0.5),0));
@@ -146,6 +146,78 @@ cv::Mat convert_rgb(cv::Mat in, int abw = 0){
     return out;
 }
 
+cv::Mat toGray(cv::Mat Image){
+//    Parameter bestimmen
+    int maxRGB[3] = {0,0,0};
+    for(int i=0;i<Image.rows;i++){
+        for(int j=0;j<Image.cols;j++){
+            if(Image.type() == CV_8UC4){
+                cv::Vec4b pix = Image.at<cv::Vec4b>(i,j);
+                if(pix[3] == 255){
+                    maxRGB[0] = std::max(maxRGB[0],(int)pix[0]);
+                    maxRGB[1] = std::max(maxRGB[1],(int)pix[1]);
+                    maxRGB[2] = std::max(maxRGB[2],(int)pix[2]);
+                }
+            }else if(Image.type() == CV_8UC3){
+                cv::Vec3b pix = Image.at<cv::Vec3b>(i,j);
+                maxRGB[0] = std::max(maxRGB[0],(int)pix[0]);
+                maxRGB[1] = std::max(maxRGB[1],(int)pix[1]);
+                maxRGB[2] = std::max(maxRGB[2],(int)pix[2]);
+            }
+        }
+    }
+    double Val[] = {log(255.0)/log(maxRGB[0]), log(255.0)/log(maxRGB[1]), log(255.0)/log(maxRGB[2])};
+
+//    std::cout<<Val[0]<<" "<<Val[1]<<" "<<Val[2]<<std::endl;
+//    To Gray
+    int minGray = 255, maxGray = 0;
+    cv::Mat grayImage=cv::Mat::zeros(Image.size(),CV_8UC1);
+    for(int i=0;i<Image.rows;i++){
+        for(int j=0;j<Image.cols;j++){
+            if(Image.type() == CV_8UC4){
+                cv::Vec4b pix = Image.at<cv::Vec4b>(i,j);
+                if(pix[3] == 255){
+                    int colore = std::min(255,(int)((pow(pix[0],Val[0]) + pow(pix[1],Val[1]) + pow(pix[2],Val[2]) +0.5)/3.0));
+                    maxGray = std::max(maxGray,colore);
+                    minGray = std::min(minGray,colore);
+                    grayImage.at<uchar>(i,j) = colore;
+                }else{
+                    grayImage.at<uchar>(i,j) = 255;
+                }
+            }else if(Image.type() == CV_8UC3){
+                cv::Vec3b pix = Image.at<cv::Vec3b>(i,j);
+                int colore = std::min(255,(int)(pow(pix[0],Val[0]) + pow(pix[1],Val[1]) + pow(pix[2],Val[2]) +0.5));
+                maxGray = std::max(maxGray,colore);
+                minGray = std::min(minGray,colore);
+                grayImage.at<uchar>(i,j) = colore;
+            }
+        }
+    }
+
+    cv::Mat gaus;
+    cv::GaussianBlur(grayImage, gaus, cv::Size(7,7), 1.5, 1.5);
+
+    minGray = 255, maxGray = 0;
+    for(int i=0;i<Image.rows;i++){
+        for(int j=0;j<Image.cols;j++){
+            if(!(Image.type() == CV_8UC4 && Image.at<cv::Vec4b>(i,j)[3] != 255)){
+                int colore = gaus.at<uchar>(i,j);
+                maxGray = std::max(maxGray,colore);
+                minGray = std::min(minGray,colore);
+            }
+        }
+    }
+
+    cv::Mat out=cv::Mat::zeros(Image.size(),CV_8UC1);
+    double a = (255.0+minGray)/maxGray;
+    for(int i=0;i<Image.rows;i++){
+        for(int j=0;j<Image.cols;j++){
+            out.at<uchar>(i,j)= std::min(255,std::max((int)(grayImage.at<uchar>(i,j)*a-minGray+0.5),0));
+        }
+    }
+    return out;
+}
+
 cv::Vec4f compareEllipse(cv::RotatedRect Ellipse1, cv::RotatedRect Ellipse2, double scall, cv::Rect Box){
     double x = Box.x;
     double y = Box.y;
@@ -198,9 +270,10 @@ cv::Vec3d Auswertung(std::vector<bool> Blob, std::vector<double> Values, int Typ
 
 void AuswertungFile(){
     std::ofstream myfileGes;
-    myfileGes.open ("Auswertung_algo.txt", std::ios::in | std::ios::app);
+    myfileGes.open ("Auswertung_OpenFace.txt", std::ios::in | std::ios::app);
     std::vector<cv::String> FileNames;
-    cv::glob("solution_algo/*0.txt",FileNames,false);
+    cv::glob("/home/falko/Uni/Master/build-BasisOpenFaceEye-Desktop-Debug/solution/*0.txt",FileNames,false);
+//    cv::glob("solution_OpenFace/*0.txt",FileNames,false);
     for(size_t i = 0; i < FileNames.size(); i++){
         std::ifstream file(FileNames[i]);
         std::string line;
@@ -217,22 +290,30 @@ void AuswertungFile(){
         std::vector<bool> Blob;
         size_t CountBlob = 0;
         QRegExp ausdruck("[\\[\\]\\,]");
+        bool ElSe = false;
         if(file.is_open()){
             while (std::getline(file, line)){
                 std::istringstream iss(QString::fromStdString(line).remove(ausdruck).toStdString());
                 double val;
                 bool blob;
-                iss >> val;
-                Values[0].push_back(val);
-                iss >> blob;
-                Blob.push_back(blob);
+                if(ElSe){
+                    iss >> val;
+                    Values[0].push_back(val);
+                    iss >> blob;
+                    Blob.push_back(blob);
+                    if(blob){
+                        CountBlob++;
+                    }
+                }else{
+                    Values[0].push_back(0);
+                    Blob.push_back(true);
+                    CountBlob++;
+                }
                 for(int j = 1; j < 9; j++){
                     iss >> val;
                     Values[j].push_back(val);
                 }
-                if(blob){
-                    CountBlob++;
-                }
+
             }
         }
         myfileGes<<scall;
@@ -244,7 +325,7 @@ void AuswertungFile(){
                 myfileGes<<Auswertung(Blob,Values[j],1,scall)<<Auswertung(Blob,Values[j],2,scall);
             }
         }
-        double ant = (double)CountBlob/Blob.size();
+        double ant = (double)CountBlob/(double)Blob.size();
         myfileGes<<" "<<std::to_string(ant)<<std::endl;
     }
     myfileGes.close();
@@ -258,7 +339,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    AuswertungFile();
+//    AuswertungFile();
 
     std::vector<std::string> mImagePaths;
     std::vector<cv::RotatedRect> mIris;
@@ -289,9 +370,11 @@ int main(int argc, char *argv[])
     }
 
     for(int i = 0; i < 8; i++){
+        std::cout<<mImagePaths[i]<<std::endl;
         for(int j = 0; j <= 6; j++){
-        cv::Mat Img = cv::imread(mImagePaths[i],-1);
-        cv::imwrite("Ergebnis_"+std::to_string(i)+"_"+std::to_string(j)+".png",convert_rgb(Img(resizeRect(mBoxes[i])),j));
+            cv::Mat Img = cv::imread(mImagePaths[i],-1);
+            cv::imwrite("Ergebnis_"+std::to_string(i)+"_"+std::to_string(j)+".png",convert_rgb(Img(resizeRect(mBoxes[i])),j));
+            cv::imwrite("Ergebnis_"+std::to_string(i)+"Neu"+std::to_string(j)+".png",   toGray(Img(resizeRect(mBoxes[i])),j));
         }
     }
     return 0;
