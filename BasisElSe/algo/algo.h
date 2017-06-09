@@ -9,7 +9,7 @@
 namespace ELSE{
 
 
-static cv::RotatedRect run(cv::Mat input_img, float &Quality, bool &Blob){
+static cv::RotatedRect run(cv::Mat input_img, float &Quality, bool &Blob, double Radius){
 
 	float rz_fakk=float(input_img.cols)/384.0;
 
@@ -25,7 +25,7 @@ static cv::RotatedRect run(cv::Mat input_img, float &Quality, bool &Blob){
 	double border=0.1;
 
 
-    cv::RotatedRect ellipse=blob_finder(&pic,border,Quality);
+    cv::RotatedRect ellipse=blob_finder(&pic,border,Quality,Radius);
     Blob=true;
 
 

@@ -239,7 +239,7 @@ static bool is_good_ellipse_evaluation(cv::RotatedRect *ellipse, cv::Mat *pic, f
 
 
 
-static cv::RotatedRect blob_finder(cv::Mat *pic, float border,  float &Quality){
+static cv::RotatedRect blob_finder(cv::Mat *pic, float border,  float &Quality, double Radius){
 
 	cv::Point pos(0,0);
 	float abs_max=0;
@@ -248,8 +248,10 @@ static cv::RotatedRect blob_finder(cv::Mat *pic, float border,  float &Quality){
 	cv::Mat blob_mat, blob_mat_neg;
 
 
-	int fak_mum=4;//4
-	int fakk=12;//12
+    int fak_mum=5;//4
+    int fakk = (int) Radius;
+//    int fakk=std::max(pic->cols/100,pic->rows/100)+1;//12
+//    int fakk=12
 
 	cv::Mat img;
 	mum(pic, &img, fak_mum);
