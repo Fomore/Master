@@ -33,6 +33,11 @@ FaceDetection::~FaceDetection()
 }
 
 void FaceDetection::FaceTracking(){
+    if(mAtentionTracer->getUseTime()){
+        mKamera->setFrame(mEventHandler->mStartVideoAnalyse);
+        mAtentionTracer->mVideoTimeShift = mKamera->getTimeSec();
+    }
+
     // Initialisiierung
     double fx,fy,cx,cy;
     int x,y;
@@ -292,7 +297,16 @@ void FaceDetection::FaceTrackingNewVersion(){
                                              mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, model);
 
                     // Estimate head pose and eye gaze
-                    mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[model],fx,fy,cx,cy, colore, isImageFrame || gaze > 1);
+                    if(mAtentionTracer->getUseTime()){
+                        mAtentionTracer->showSolution(QString::number(mKamera->getTimeSec()),
+                                                      clnf_models[model],fx,fy,cx,cy, colore,
+                                                      mKamera->getFrameNr() >= mEventHandler->mStartVideoObservation);
+
+                    }else{
+                    mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[model],fx,fy,cx,cy, colore,
+                                                  isImageFrame || gaze > 1);
+
+                    }
 
                     mPrinter.print_CLNF(disp_image,clnf_models[model],0.5,fx,fy,cx,cy, colore);
 
@@ -762,6 +776,11 @@ size_t FaceDetection::loadXML(QString path, bool clear)
 void FaceDetection::setUseBox(bool b)
 {
     mUseBox = b;
+}
+
+void FaceDetection::setUseTime(bool t)
+{
+    mAtentionTracer->setUseTime(t);
 }
 
 void FaceDetection::setLearn(bool l)

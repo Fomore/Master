@@ -188,6 +188,7 @@
      </property>
      <addaction name="actionUse_Boxes"/>
      <addaction name="actionLearn_Model"/>
+     <addaction name="actionUse_Video"/>
     </widget>
     <widget class="QMenu" name="menuPositionsberechnung">
      <property name="title">
@@ -266,7 +267,7 @@
     <bool>true</bool>
    </property>
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>Use Boxes</string>
@@ -405,6 +406,17 @@
   <action name="actionBeobachte_Gaze">
    <property name="text">
     <string>Beobachte Gaze</string>
+   </property>
+  </action>
+  <action name="actionUse_Video">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Use Video</string>
    </property>
   </action>
  </widget>

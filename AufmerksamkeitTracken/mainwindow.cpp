@@ -12,7 +12,8 @@ MainWindow::MainWindow(QWidget *parent) :
     mKamera = new Camera(-1);
 
     //mKamera->setPath("/home/falko/Uni/Master/Film/Schulklasse/23100601S1.avi");
-    mKamera->setPath("/home/falko/Uni/Master/Film/Test_Positionen_1.mp4");
+    mKamera->setPath("/home/falko/Uni/Master/Film/VideoMessung/falko_no_glasses.avi");
+    //mKamera->setPath("/home/falko/Uni/Master/Film/Test_Positionen_1.mp4");
 
     /*
     for(int i = 1; i < 2 ; i++){
@@ -22,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mFaceDetection = new FaceDetection(ui,mKamera);
     //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/23100601S1_Label.xml", true);
     //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/23100601S1_Gaze_3_Label.xml", true);
-    mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_1_Label.xml", true);
+    //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_1_Label.xml", true);
 }
 
 MainWindow::~MainWindow()
@@ -91,6 +92,15 @@ void MainWindow::on_actionSelect_Camera_triggered()
 void MainWindow::on_actionUse_Boxes_triggered(bool checked)
 {
     mFaceDetection->setUseBox(checked);
+    mFaceDetection->setUseTime(checked);
+    ui->actionUse_Video->setChecked(!checked);
+}
+
+void MainWindow::on_actionUse_Video_triggered(bool checked)
+{
+    mFaceDetection->setUseTime(checked);
+    mFaceDetection->setUseBox(!checked);
+    ui->actionUse_Boxes->setChecked(!checked);
 }
 
 void MainWindow::on_actionCorrect_Image_triggered(bool checked)

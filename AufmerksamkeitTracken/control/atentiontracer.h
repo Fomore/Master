@@ -14,6 +14,7 @@ private:
 
     bool mWriteToFile = true;
     bool mShowAtention = true;
+    bool mUseTime = true;
 
     std::vector<double> mColores;
     //Positives linkshändiges Koordinatensystem
@@ -61,6 +62,11 @@ public:
                       double fx, double fy, double cx, double cy, double colore, bool write);
     void setWriteToFile(bool write);
     void setShowAtention(bool show);
+
+    bool getUseTime();
+    void setUseTime(bool t);
+
+    double mVideoTimeShift = 0.0;
 };
 
 #endif // ATENTIONTRACER_H

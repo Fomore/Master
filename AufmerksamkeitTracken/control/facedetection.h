@@ -44,7 +44,7 @@ private:
     int num_faces_max = 2;
 
     bool mAutoSize = false;
-    bool mUseBox = true;
+    bool mUseBox = false;
     bool mUseImage = false;
     bool mCLAHE = true;
     bool mUseEye = true;
@@ -66,6 +66,7 @@ public:
 
     void setAutoSize(bool a);
     void setUseBox(bool b);
+    void setUseTime(bool t);
     void setLearn(bool l);
     void setCLAHE(bool c);
     void setUseEye(bool e);

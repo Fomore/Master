@@ -31,6 +31,8 @@ public:
     bool setPath(QString path);
     void setCameraParameter(int id);
 
+    double getTimeSec();
+
     bool UseCorrection();
 
     void correct_Image(cv::Mat img);
@@ -40,12 +42,14 @@ public:
     void setUseCorrection(bool c);
 
     void setFrame(size_t frame);
+    void setFrame(double frame);
     void setImageSize(int Wight, int Height);
 
     cv::Vec3d rotateToWorld(cv::Point3f in);
     cv::Vec3d rotateToWorld(cv::Vec3d in);
 
     cv::Vec3d rotateToCamera(cv::Vec3d in);
+    cv::Vec3d rotateToCamera(cv::Point3d in);
 
     cv::Matx33d getRotationMatrix();
 

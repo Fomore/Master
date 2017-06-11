@@ -64,6 +64,8 @@ private slots:
 
     void on_actionBeobachte_Gaze_triggered();
 
+    void on_actionUse_Video_triggered(bool checked);
+
 private:
     Ui::MainWindow *ui;
 //    Image mImage;

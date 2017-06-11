@@ -67,10 +67,13 @@ void AtentionTracer::writeSolutionToFile(QString name, cv::Vec6d Model, cv::Vec6
 {
     cv::Point2d worldAngle, rotatAngle;
     cv::Point3d worlPoint, target;
-    getOrienation(name,worldAngle,worlPoint, rotatAngle, target);
-
+    if(mUseTime){
+        getOrienation(mKamera->getTimeSec(),worldAngle,worlPoint, rotatAngle, target);
+    }else{
+        getOrienation(name,worldAngle,worlPoint, rotatAngle, target);
+    }
     std::ofstream myfile;
-    myfile.open ("./data/BerechnungWinkel_Video.txt", std::ios::in | std::ios::app);
+    myfile.open ("./data/Video_Analyse.txt", std::ios::in | std::ios::app);
     myfile <<worlPoint<<target<<Model<<"|"
           <<HeadPoseWorld<<"|"<<calcAbweichung(HeadPoseWorld,target)
          <<" "<<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection0,target)
@@ -194,9 +197,16 @@ void AtentionTracer::printAttention(){
 
 void AtentionTracer::printTargets(cv::Mat &img, const cv::Vec3d &Pose, const cv::Matx33d Ori, double fx, double cx, double cy)
 {
-    for(size_t i = 0; i < mPoints.size() ; i++){
-        cv::circle(img,calcPose2Image(mKamera->rotateToCamera(cv::Vec3d(mPoints[i].x,mPoints[i].y,mPoints[i].z)),Pose,Ori,fx,cx,cy),
+    if(mUseTime){
+        cv::circle(img,calcPose2Image(mKamera->rotateToCamera(getTimeTarget(mKamera->getTimeSec()-mVideoTimeShift)),
+                                      Pose,Ori,fx,cx,cy),
                    cvRound(fx/50),cv::Scalar(255,0,0),-1);
+
+    }else{
+        for(size_t i = 0; i < mPoints.size() ; i++){
+            cv::circle(img,calcPose2Image(mKamera->rotateToCamera(mPoints[i]),Pose,Ori,fx,cx,cy),
+                       cvRound(fx/50),cv::Scalar(255,0,0),-1);
+        }
     }
 }
 
@@ -269,6 +279,16 @@ void AtentionTracer::setWriteToFile(bool write)
 void AtentionTracer::setShowAtention(bool show)
 {
     mShowAtention = show;
+}
+
+bool AtentionTracer::getUseTime()
+{
+    return mUseTime;
+}
+
+void AtentionTracer::setUseTime(bool t)
+{
+    mUseTime = t;
 }
 
 void AtentionTracer::setImageSize(int Width, int Height){

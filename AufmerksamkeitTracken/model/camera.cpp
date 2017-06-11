@@ -9,13 +9,22 @@ Camera::Camera(int id)
 {
     setCameraParameter(id);
     setPath("/home/falko/Uni/Master/Film/Test_Positionen_1.mp4");
-
+    /*
     //Innenaufnahme
     mRotMatrix = cv::Matx33d(0.9936581272313783, 0.03038307716496669, -0.1082607722539323,
                              -0.06568480537591176, 0.9382912981081369, -0.3395510951790254,
                              0.09126353340605708, 0.3445087930902981, 0.9343364805859329);
     mTranslation = cv::Vec3d(0, 206, -31);
     //fx=1130.69 fy=1124.03
+    */
+
+    //Video Messung
+    mRotMatrix = cv::Matx33d(0.9998900056918177, -0.01474785878659751, 0.001573905596829441,
+                             0.01473015278795625, 0.9998339988008559, 0.01072368596769573,
+                             -0.001731795732936419, -0.01069932255336143, 0.9999412609650821);
+
+     mTranslation = cv::Vec3d(0, -24 -12.5);
+   //fx=1185.06 fy=1201.78
 
     /*
     // Außenaufnahme
@@ -104,6 +113,11 @@ void Camera::setCameraParameter(int id){
     cv::initUndistortRectifyMap(cameraMatrix, distCoeffs, cv::Mat(),
                                 getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize, 0), imageSize,
                                 CV_16SC2, map1, map2);
+}
+
+double Camera::getTimeSec()
+{
+    return video.get(CV_CAP_PROP_POS_MSEC)/1000.0;
 }
 
 bool Camera::UseCorrection()
@@ -218,6 +232,11 @@ void Camera::setUseCorrection(bool c)
 void Camera::setFrame(size_t frame)
 {
     video.set(CV_CAP_PROP_POS_FRAMES,(double)frame-1);
+    std::cout<<"SetFrame: "<<frame<<std::endl;
+}
+void Camera::setFrame(double frame)
+{
+    video.set(CV_CAP_PROP_POS_FRAMES,frame);
 }
 
 void Camera::setImageSize(int Wight, int Height)
@@ -250,6 +269,11 @@ cv::Vec3d Camera::rotateToWorld(cv::Point3f in)
 cv::Vec3d Camera::rotateToWorld(cv::Vec3d in)
 {
     return mRotMatrix.t() * in + mTranslation;
+}
+
+cv::Vec3d Camera::rotateToCamera(cv::Point3d in)
+{
+    return rotateToCamera(cv::Vec3d(in.x, in.y, in.z));
 }
 
 cv::Vec3d Camera::rotateToCamera(cv::Vec3d in)
