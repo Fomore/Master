@@ -16,9 +16,9 @@ AtentionTracer::AtentionTracer(Ui::MainWindow *parent, Camera *cam, QString Targ
                                -1,0,0,
                                0,1,0);
 
-    mAttentionCamPose = cv::Vec3d(0,0,-5500);
+    mAttentionCamPose = cv::Vec3d(0,0,-3500);
     mAttentiondCamOri = cv::Matx33d(1,0,0,
-                                    0,-1,0,
+                                    0,1,0,
                                     0,0,1);
     loadFromFile(TargetFileName);
 }
@@ -68,7 +68,7 @@ void AtentionTracer::writeSolutionToFile(QString name, cv::Vec6d Model, cv::Vec6
     cv::Point2d worldAngle, rotatAngle;
     cv::Point3d worlPoint, target;
     if(mUseTime){
-        getOrienation(mKamera->getTimeSec(),worldAngle,worlPoint, rotatAngle, target);
+        getOrienation(mKamera->getTimeSec()-mVideoTimeShift,worldAngle,worlPoint, rotatAngle, target);
     }else{
         getOrienation(name,worldAngle,worlPoint, rotatAngle, target);
     }
@@ -187,6 +187,7 @@ void AtentionTracer::printAttention(){
         cv::Vec3d contact;
         if(linePlaneIntersection(contact,ray,position,normale,cv::Vec3d(0,0,0))){
             cv::circle(img,calcPose2Image(contact,mAttentionCamPose,mAttentiondCamOri,fx,fx,cy),cvRound(fx/50),color,-1);
+            cv::circle(img,calcPose2Image(position,mAttentionCamPose,mAttentiondCamOri,fx,fx,cy),cvRound(fx/50),cv::Scalar(255,255,255),-1);
         }
     }
     if(!img.empty()){

@@ -9,7 +9,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    mKamera = new Camera(-1);
+    mKamera = new Camera(8);
 
     //mKamera->setPath("/home/falko/Uni/Master/Film/Schulklasse/23100601S1.avi");
     mKamera->setPath("/home/falko/Uni/Master/Film/VideoMessung/falko_no_glasses.avi");

@@ -10,19 +10,19 @@ Target::Target()
 
     std::vector<cv::Point3d> tmp;
 
-    tmp.push_back(cv::Point3d(1340, 745, 0));
-    tmp.push_back(cv::Point3d(1790, 0, 0));
-    tmp.push_back(cv::Point3d(2680, 0, 0));
+    tmp.push_back(cv::Point3d(1340,    745, 0));
+    tmp.push_back(cv::Point3d( 890,745+745, 0));
+    tmp.push_back(cv::Point3d(   0,745+745, 0));
 
-    tmp.push_back(cv::Point3d(2680, 745, 0));
-    tmp.push_back(cv::Point3d(2680, 745+745, 0));
-    tmp.push_back(cv::Point3d(1340, 745+745, 0));
+    tmp.push_back(cv::Point3d(   0,745, 0));
+    tmp.push_back(cv::Point3d(   0,  0, 0));
+    tmp.push_back(cv::Point3d(1340,  0, 0));
 
-    tmp.push_back(cv::Point3d(  0, 745+745, 0));
-    tmp.push_back(cv::Point3d(  0, 745, 0));
-    tmp.push_back(cv::Point3d(  0, 0, 0));
+    tmp.push_back(cv::Point3d(2680,  0, 0));
+    tmp.push_back(cv::Point3d(2680,745, 0));
+    tmp.push_back(cv::Point3d(2680,745+745, 0));
 
-    tmp.push_back(cv::Point3d(890, 0, 0));
+    tmp.push_back(cv::Point3d(1790,745+745, 0));
 
     mTimePoints.push_back(tmp[0]);
     mTimePoints.push_back(tmp[1]);
@@ -130,7 +130,7 @@ void Target::getOrienation(double VideoTime, cv::Point2d &WAngle, cv::Point3d &W
 {
     Target = getTimeTarget(VideoTime);
     //To Do: Ursprung besser
-    WPosition = cv::Point3d(1.438, 0.582, 1476);
+    WPosition = cv::Point3d(2680-1438,1490-582, 1476);
 
     getOrienation(WAngle,WPosition,RAngle,Target);
 }
