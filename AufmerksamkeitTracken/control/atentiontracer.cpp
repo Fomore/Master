@@ -21,6 +21,9 @@ AtentionTracer::AtentionTracer(Ui::MainWindow *parent, Camera *cam, QString Targ
                                     0,1,0,
                                     0,0,1);
     loadFromFile(TargetFileName);
+
+    mAttentionSumImage = cv::Mat(cv::Size(800,600), CV_8UC3, cv::Scalar(255,255,255));
+    printAllTarget(mAttentionSumImage,mAttentionCamPose,mAttentiondCamOri,400,400,300,cv::Scalar(0,0,0));
 }
 
 AtentionTracer::~AtentionTracer()
@@ -175,6 +178,7 @@ void AtentionTracer::printAttention(){
     printTargets(img,mAttentionCamPose,mAttentiondCamOri,fx,fx,cy);
     cv::circle(img,calcPose2Image(cv::Vec3d(0,0,0),mAttentionCamPose,mAttentiondCamOri,fx,fx,cy),cvRound(fx/50),cv::Scalar(0,0,255),-1);
     cv::Vec3d normale = mKamera->getRotationMatrix() * cv::Vec3d(0,0,1);
+    cv::Vec3b center(0,0,-mKamera->getTranslation()[3]);
     for(size_t i = 0; i < mHeadWorld.size(); i++){
         cv::Scalar color(255.0*(1.0-mColores[i]),255.0*mColores[i],255.0*(1.0-mColores[i]));
         cv::Vec6d pos = mHeadWorld[i];
@@ -185,14 +189,16 @@ void AtentionTracer::printAttention(){
         cv::Vec3d ray = R*cv::Vec3d(0,0,-1);
 
         cv::Vec3d contact;
-        if(linePlaneIntersection(contact,ray,position,normale,cv::Vec3d(0,0,0))){
+        if(linePlaneIntersection(contact,ray,position,normale,center)){
             cv::circle(img,calcPose2Image(contact,mAttentionCamPose,mAttentiondCamOri,fx,fx,cy),cvRound(fx/50),color,-1);
+            cv::circle(mAttentionSumImage,calcPose2Image(contact,mAttentionCamPose,mAttentiondCamOri,400,400,300),5,cv::Scalar(255,0,0),-1);
         }
     }
     if(!img.empty()){
         QPixmap pix = QPixmap::fromImage(Image::MatToQImage(img));
         mTheWindow->ImageBottomRight_label->setPixmap(pix);
     }
+    cv::imwrite("Summe.png",mAttentionSumImage);
 }
 
 void AtentionTracer::printTargets(cv::Mat &img, const cv::Vec3d &Pose, const cv::Matx33d Ori, double fx, double cx, double cy)
@@ -219,6 +225,15 @@ void AtentionTracer::printGrid(cv::Mat &img, cv::Point3d Point1, cv::Point3d Poi
                 cv::circle(img,calcPose2Image(cv::Vec3d(x,y,z),Cam,R,fx,cx,cy),cvRound(fx/200),cv::Scalar(255,255,255),-1);
             }
         }
+    }
+}
+
+void AtentionTracer::printAllTarget(cv::Mat &img, const cv::Vec3d &Pose, const cv::Matx33d Ori, double fx, double cx, double cy, cv::Scalar Colore)
+{
+    for(size_t i = 0; i+1 < mTimePoints.size(); i++){
+        cv::line(img,calcPose2Image(mKamera->rotateToCamera(mTimePoints[i]),Pose,Ori,fx,cx,cy),
+                     calcPose2Image(mKamera->rotateToCamera(mTimePoints[i+1]),Pose,Ori,fx,cx,cy),
+                Colore,2);
     }
 }
 

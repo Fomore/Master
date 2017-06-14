@@ -12,6 +12,8 @@ class AtentionTracer : public Target
 private:
     Ui::MainWindow* mTheWindow;
 
+    cv::Mat mAttentionSumImage;
+
     bool mWriteToFile = true;
     bool mShowAtention = true;
     bool mUseTime = true;
@@ -44,6 +46,8 @@ private:
     void printAttention();
     void printTargets(cv::Mat &img, const cv::Vec3d &Pose, const cv::Matx33d Ori, double fx, double cx, double cy);
     void printGrid(cv::Mat &img, cv::Point3d Point1, cv::Point3d Point2, double Step, const cv::Vec3d &Cam, const cv::Matx33d &R, double fx, double cx, double cy);
+
+    void printAllTarget(cv::Mat &img, const cv::Vec3d &Pose, const cv::Matx33d Ori, double fx, double cx, double cy, cv::Scalar Colore);
 
     double calcAbweichung(cv::Vec6d Params, cv::Point3d Target);
     double calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target);

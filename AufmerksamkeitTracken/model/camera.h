@@ -28,6 +28,8 @@ public:
     bool getFrame(cv::Mat &img);
     bool getFrame(cv::Mat &img, size_t pos);
 
+    cv::Vec3d getTranslation();
+
     bool setPath(QString path);
     void setCameraParameter(int id);
 

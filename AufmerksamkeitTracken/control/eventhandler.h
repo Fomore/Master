@@ -55,8 +55,9 @@ public:
 
     void clearAll();
 
-    size_t mStartVideoObservation = 251;//In Frames
-    size_t mStartVideoAnalyse = 234;
+    size_t mVideoObservationStart = 251;//In Frames
+    size_t mVideoAnalyseStart = 234;
+    size_t mVideoObservationEnde = 2043;
 };
 
 #endif // EVENTHANDLER_H

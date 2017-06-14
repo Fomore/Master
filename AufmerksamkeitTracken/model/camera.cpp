@@ -355,3 +355,8 @@ bool Camera::getFrame(cv::Mat &img, size_t pos)
     video.set(CV_CAP_PROP_POS_FRAMES,(double)pos-1);
     return getFrame(img);
 }
+
+cv::Vec3d Camera::getTranslation()
+{
+    return mTranslation;
+}

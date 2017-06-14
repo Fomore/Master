@@ -34,7 +34,7 @@ FaceDetection::~FaceDetection()
 
 void FaceDetection::FaceTracking(){
     if(mAtentionTracer->getUseTime()){
-        mKamera->setFrame(mEventHandler->mStartVideoAnalyse);
+        mKamera->setFrame(mEventHandler->mVideoAnalyseStart);
         mAtentionTracer->mVideoTimeShift = mKamera->getTimeSec();
     }
 
@@ -300,7 +300,7 @@ void FaceDetection::FaceTrackingNewVersion(){
                     if(mAtentionTracer->getUseTime()){
                         mAtentionTracer->showSolution(QString::number(mKamera->getTimeSec()),
                                                       clnf_models[model],fx,fy,cx,cy, colore,
-                                                      mKamera->getFrameNr() >= mEventHandler->mStartVideoObservation);
+                                                      mKamera->getFrameNr() >= mEventHandler->mVideoObservationStart);
 
                     }else{
                     mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[model],fx,fy,cx,cy, colore,
@@ -840,7 +840,7 @@ void FaceDetection::setShowLandmarks(bool land)
 bool FaceDetection::getFrame(cv::Mat &img, size_t FrameID)
 {
     size_t frameNr;
-    if(!mUseBox){
+    if(!mUseBox && mKamera->getFrameNr() <= mEventHandler->mVideoObservationEnde){
         return mKamera->getFrame(img);
     }else if(mEventHandler->getFrame(frameNr,FrameID)){ //FrameID -> FarmeNummer
         if(mKamera->getFrameNr() +1 == frameNr){
