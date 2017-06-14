@@ -66,6 +66,10 @@ private slots:
 
     void on_actionUse_Video_triggered(bool checked);
 
+    void on_actionShow_Image_Box_triggered(bool checked);
+
+    void on_actionShow_Head_Box_triggered(bool checked);
+
 private:
     Ui::MainWindow *ui;
 //    Image mImage;

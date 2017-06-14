@@ -240,7 +240,6 @@ void Camera::setUseCorrection(bool c)
 void Camera::setFrame(size_t frame)
 {
     video.set(CV_CAP_PROP_POS_FRAMES,(double)frame-1);
-    std::cout<<"SetFrame: "<<frame<<std::endl;
 }
 void Camera::setFrame(double frame)
 {

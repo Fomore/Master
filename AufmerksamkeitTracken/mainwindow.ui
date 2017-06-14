@@ -209,6 +209,8 @@
      <addaction name="actionShow_Atention"/>
      <addaction name="actionShow_Landmarks"/>
      <addaction name="actionBeobachte_Gaze"/>
+     <addaction name="actionShow_Image_Box"/>
+     <addaction name="actionShow_Head_Box"/>
     </widget>
     <addaction name="actionSelect_Camera"/>
     <addaction name="actionMax_Faces"/>
@@ -417,6 +419,28 @@
    </property>
    <property name="text">
     <string>Use Video</string>
+   </property>
+  </action>
+  <action name="actionShow_Image_Box">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Image Box</string>
+   </property>
+  </action>
+  <action name="actionShow_Head_Box">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Head Box</string>
    </property>
   </action>
  </widget>

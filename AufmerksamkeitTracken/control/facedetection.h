@@ -49,6 +49,8 @@ private:
     bool mCLAHE = true;
     bool mUseEye = true;
 
+    bool mShowImageBox = true;
+
     bool getFrame(cv::Mat &img, size_t FrameID);
     bool getFrame(cv::Mat &Img, size_t &Frame, cv::Rect &Rec, std::string &Name, double &fx, double &fy, double &cx, double &cy, int &x, int &y);
 
@@ -82,6 +84,9 @@ public:
 
     void setGaze(int gaze);
     int getGaze();
+
+    void setShowImageBox(bool b);
+    void setShowHeadBox(bool h);
 
     size_t loadXML(QString path, bool clear = true);
 };

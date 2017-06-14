@@ -187,7 +187,6 @@ void AtentionTracer::printAttention(){
         cv::Vec3d contact;
         if(linePlaneIntersection(contact,ray,position,normale,cv::Vec3d(0,0,0))){
             cv::circle(img,calcPose2Image(contact,mAttentionCamPose,mAttentiondCamOri,fx,fx,cy),cvRound(fx/50),color,-1);
-            cv::circle(img,calcPose2Image(position,mAttentionCamPose,mAttentiondCamOri,fx,fx,cy),cvRound(fx/50),cv::Scalar(255,255,255),-1);
         }
     }
     if(!img.empty()){

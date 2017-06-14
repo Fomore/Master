@@ -12,6 +12,8 @@ private:
     bool mDrawEyeLandmarks = false;
     bool mDrawLandmarks = true;
     bool mSaveImage = false;
+    bool mShowHeadBox = true;
+
 public:
     Printer();
     void saveImage(std::string titel, cv::Mat img);
@@ -27,6 +29,8 @@ public:
     void setSaveImage(bool save);
     void setDrawLandmarks(bool landmark);
     bool isSaveImage();
+
+    void setShowHeadBox(bool h);
 };
 
 #endif // PRINTER_H

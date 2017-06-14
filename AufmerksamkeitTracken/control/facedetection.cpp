@@ -319,8 +319,10 @@ void FaceDetection::FaceTrackingNewVersion(){
                 if(gaze >1){
                     std::cout<<"Gaze: "<<FrameID<<" "<<model<<std::endl;
                 }
-                cv::rectangle(disp_image,mBoxHandlers[model].getRect(),
-                              cv::Scalar(255.0*(1.0-colore),255.0*colore,255.0*(1.0-colore)),2);
+                if(mShowImageBox){
+                    cv::rectangle(disp_image,mBoxHandlers[model].getRect(),
+                                  cv::Scalar(255.0*(1.0-colore),255.0*colore,255.0*(1.0-colore)),2);
+                }
             }
         }
         if(FrameID % 10 == 0)
@@ -501,7 +503,9 @@ void FaceDetection::ShowFromeFile()
         mPrinter.printSmallImage(frame,box,i,*painterR, name,
                                  mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max);
 
-        cv::rectangle(frame,box,cv::Scalar(0,255,0),3);
+        if(mShowImageBox){
+            cv::rectangle(frame,box,cv::Scalar(0,255,0),3);
+        }
 
         showImage(frame, *pixmapL, *pixmapR);
 
@@ -766,6 +770,16 @@ void FaceDetection::setGaze(int gaze)
 int FaceDetection::getGaze()
 {
     return mGaze;
+}
+
+void FaceDetection::setShowImageBox(bool b)
+{
+    mShowImageBox = b;
+}
+
+void FaceDetection::setShowHeadBox(bool h)
+{
+    mPrinter.setShowHeadBox(h);
 }
 
 size_t FaceDetection::loadXML(QString path, bool clear)

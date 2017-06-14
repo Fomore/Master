@@ -11,8 +11,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     mKamera = new Camera(8);
 
-    //mKamera->setPath("/home/falko/Uni/Master/Film/Schulklasse/23100601S1.avi");
-    mKamera->setPath("/home/falko/Uni/Master/Film/VideoMessung/falko_no_glasses.avi");
+    mKamera->setPath("/home/falko/Uni/Master/Film/Schulklasse/23100601S1.avi");
+    //mKamera->setPath("/home/falko/Uni/Master/Film/VideoMessung/falko_no_glasses.avi");
     //mKamera->setPath("/home/falko/Uni/Master/Film/Test_Positionen_1.mp4");
 
     /*
@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     */
     mFaceDetection = new FaceDetection(ui,mKamera);
-    //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/23100601S1_Label.xml", true);
+    mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/23100601S1_Label.xml", true);
     //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/23100601S1_Gaze_3_Label.xml", true);
     //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_1_Label.xml", true);
 }
@@ -84,7 +84,7 @@ void MainWindow::on_actionAuto_Size_triggered(bool checked)
 
 void MainWindow::on_actionSelect_Camera_triggered()
 {
-    int i = QInputDialog::getInt(this,"Kamera","Wähle eine Kamera-Einstellung:\n1: Webcam\n2: 1280P der 4k Actioncam (als Webcam)\n3: 1940P der 4K Actioncam (1080P Einstellung)\n4: 2688P der 4k Actioncam (2.7K Einstellung)\n5: 2688P der 4k Actioncam (2.7K Einstellung in Box)\n7: 3840P der 4K Actioncam",
+    int i = QInputDialog::getInt(this,"Kamera","Wähle eine Kamera-Einstellung:\n1: Webcam\n2: 1280P der 4k Actioncam (als Webcam)\n3: 1940P der 4K Actioncam (1080P Einstellung)\n4: 2688P der 4k Actioncam (2.7K Einstellung)\n5: 2688P der 4k Actioncam (2.7K Einstellung in Box)\n7: 3840P der 4K Actioncam\n8: Logitech c920",
                                  mKamera->getCameraID(),0,10,1);
     mKamera->setCameraParameter(i);
 }
@@ -175,4 +175,14 @@ void MainWindow::on_actionBeobachte_Gaze_triggered()
 {
     mFaceDetection->setGaze(QInputDialog::getInt(this,"Select Gaze","GAZE_YET_UNCHANGED = 0\n UNKNOWN = 1\n BLACKBOARD = 2\n DESK = 3\n WINDOW = 4\n TEACHER = 5\n CONTRIBUTING_STUDENT = 6\n OTHER_STUDENT = 7",
                                                  mFaceDetection->getGaze(),0,7,1));
+}
+
+void MainWindow::on_actionShow_Image_Box_triggered(bool checked)
+{
+    mFaceDetection->setShowImageBox(checked);
+}
+
+void MainWindow::on_actionShow_Head_Box_triggered(bool checked)
+{
+    mFaceDetection->setShowHeadBox(checked);
 }
