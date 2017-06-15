@@ -11,14 +11,52 @@
 //#include "else_algosplit/algo.h" //CV_8UC1
 //#include "else_morphsplit/algo.h" //CV_8UC1
 
-cv::Mat toGray(cv::Mat Image){
-    if(Image.cols * Image.rows < 70){
+cv::Mat toGray(cv::Mat Image, int Norm){
+    if(!(Norm > 0 && Norm <= 5)){
         cv::Mat out;
         cv::cvtColor(Image,out , cv::COLOR_BGR2GRAY);
         out.convertTo(out,CV_8UC1);
         cv::normalize(out, out, 0, 255, cv::NORM_MINMAX, CV_8UC1);
         return out;
+    }else if(Norm == 3){
+        cv::Mat grayImage=cv::Mat::zeros(Image.size(),CV_8UC1);
+        for(int i=0;i<Image.rows;i++){
+            for(int j=0;j<Image.cols;j++){
+                if(Image.type() == CV_8UC4){
+                    cv::Vec4b pix = Image.at<cv::Vec4b>(i,j);
+                    if(pix[3] == 255){
+                        grayImage.at<uchar>(i,j) = std::max(pix[0],std::max(pix[1],pix[2]));
+                    }else{
+                        grayImage.at<uchar>(i,j) = 255;
+                    }
+                }else if(Image.type() == CV_8UC3){
+                    cv::Vec3b pix = Image.at<cv::Vec3b>(i,j);
+                    grayImage.at<uchar>(i,j) = std::max(pix[0],std::max(pix[1],pix[2]));
+                }
+            }
+        }
+        cv::normalize(grayImage, grayImage, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+        return grayImage;
+    }else if(Norm == 5){
+    cv::Mat grayImage=cv::Mat::zeros(Image.size(),CV_8UC1);
+    for(int i=0;i<Image.rows;i++){
+        for(int j=0;j<Image.cols;j++){
+            if(Image.type() == CV_8UC4){
+                cv::Vec4b pix = Image.at<cv::Vec4b>(i,j);
+                if(pix[3] == 255){
+                    grayImage.at<uchar>(i,j) = std::min(pix[0],std::min(pix[1],pix[2]));
+                }else{
+                    grayImage.at<uchar>(i,j) = 255;
+                }
+            }else if(Image.type() == CV_8UC3){
+                cv::Vec3b pix = Image.at<cv::Vec3b>(i,j);
+                grayImage.at<uchar>(i,j) = std::min(pix[0],std::min(pix[1],pix[2]));
+            }
+        }
     }
+    cv::normalize(grayImage, grayImage, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+    return grayImage;
+}
 //    Parameter bestimmen
     int maxRGB[3] = {0,0,0};
     for(int i=0;i<Image.rows;i++){
@@ -38,7 +76,17 @@ cv::Mat toGray(cv::Mat Image){
             }
         }
     }
-    double Val[] = {log(255.0)/log(maxRGB[0]), log(255.0)/log(maxRGB[1]), log(255.0)/log(maxRGB[2])};
+    //double Val[] = {log(255.0)/log(maxRGB[0]), log(255.0)/log(maxRGB[1]), log(255.0)/log(maxRGB[2])};
+    double Val[] = {1.0/2.2, 1.0/2.2, 1.0/2.2};
+    if(Norm == 1){
+        Val[0] = log(255.0)/log(maxRGB[0]);
+        Val[1] = log(255.0)/log(maxRGB[1]);
+        Val[2] = log(255.0)/log(maxRGB[2]);
+    }else if(Norm == 4){
+        Val[0] = 2.0;
+        Val[1] = 2.0;
+        Val[2] = 2.0;
+    }
 
 //    std::cout<<Val[0]<<" "<<Val[1]<<" "<<Val[2]<<std::endl;
 //    To Gray
@@ -49,7 +97,9 @@ cv::Mat toGray(cv::Mat Image){
             if(Image.type() == CV_8UC4){
                 cv::Vec4b pix = Image.at<cv::Vec4b>(i,j);
                 if(pix[3] == 255){
-                    int colore = std::min(255,(int)((pow(pix[0],Val[0]) + pow(pix[1],Val[1]) + pow(pix[2],Val[2]) +0.5)/3.0));
+                    double faktor = (pow(pix[0]/255.0,Val[0]) + pow(pix[1]/255.0,Val[1]) + pow(pix[2]/255.0,Val[2]))/3.0;
+                    int colore = std::max(0,std::min(255,(int)(255.0*faktor + 0.5)));
+
                     maxGray = std::max(maxGray,colore);
                     minGray = std::min(minGray,colore);
                     grayImage.at<uchar>(i,j) = colore;
@@ -58,7 +108,9 @@ cv::Mat toGray(cv::Mat Image){
                 }
             }else if(Image.type() == CV_8UC3){
                 cv::Vec3b pix = Image.at<cv::Vec3b>(i,j);
-                int colore = std::min(255,(int)(pow(pix[0],Val[0]) + pow(pix[1],Val[1]) + pow(pix[2],Val[2]) +0.5));
+                double faktor = (pow(pix[0]/255.0,Val[0]) + pow(pix[1]/255.0,Val[1]) + pow(pix[2]/255.0,Val[2]))/3.0;
+                int colore = std::max(0,std::min(255,(int)(255.0*faktor + 0.5)));
+
                 maxGray = std::max(maxGray,colore);
                 minGray = std::min(minGray,colore);
                 grayImage.at<uchar>(i,j) = colore;
@@ -93,16 +145,14 @@ cv::Mat toGray(cv::Mat Image){
 cv::Vec4f compareEllipse(cv::RotatedRect Ellipse1, cv::RotatedRect Ellipse2, double scall, cv::Rect Box){
     double x = Box.x;
     double y = Box.y;
-    double abstandCenter = sqrt(pow(Ellipse1.center.x-scall*(Ellipse2.center.x-x),2)
-                               +pow(Ellipse1.center.y-scall*(Ellipse2.center.y-y),2));
+    double abstandCenter = sqrt(pow(Ellipse1.center.x/scall - (Ellipse2.center.x-x),2)
+                               +pow(Ellipse1.center.y/scall - (Ellipse2.center.y-y),2));
 //    std::cout<<Ellipse1.center<<Ellipse2.center<<" "<<x<<"/"<<y<<" "<<abstandCenter<<std::endl;
-    float angle = Ellipse1.angle-Ellipse2.angle;
-    if(angle < 0)
-        angle *= -1.0;
+    float angle = std::abs(Ellipse1.angle-Ellipse2.angle);
     if(angle >= 180.0f)
         angle -= 180.0f;
-    float width = std::abs(Ellipse1.size.width - scall*Ellipse2.size.width);
-    float height = std::abs(Ellipse1.size.height - scall*Ellipse2.size.height);
+    float width = std::abs(Ellipse1.size.width/scall - Ellipse2.size.width);
+    float height = std::abs(Ellipse1.size.height/scall - Ellipse2.size.height);
     return cv::Vec4f(abstandCenter,angle,width,height);
 }
 
@@ -113,7 +163,7 @@ bool isEllipse(cv::RotatedRect Ellipse){
 
 bool myfunction (double i,double j) { return (i<j); }
 
-cv::Vec3d Auswertung(std::vector<bool> Blob, std::vector<double> Values, int Typ, double Scall){
+cv::Vec3d Auswertung(std::vector<bool> Blob, std::vector<double> Values, int Typ){
     if(Blob.size() != Values.size()){
         std::cout<<"Feher: Blob="<<Blob.size()<<" Values="<<Values.size()<<std::endl;
         return cv::Vec3d(0,0,0);
@@ -132,9 +182,7 @@ cv::Vec3d Auswertung(std::vector<bool> Blob, std::vector<double> Values, int Typ
     if(val.size() > 0){
         std::sort(val.begin(), val.end(),myfunction);
         size_t q = val.size()/4;
-        return cv::Vec3d(val[q]/Scall,
-                         (summe/((double) count))/Scall,
-                         val[q*3]/Scall);
+        return cv::Vec3d(val[q], summe/((double) count), val[q*3]);
     }else{
         return cv::Vec3d(0,0,0);
     }
@@ -142,18 +190,18 @@ cv::Vec3d Auswertung(std::vector<bool> Blob, std::vector<double> Values, int Typ
 
 void AuswertungFile(){
     std::ofstream myfileGes;
-    myfileGes.open ("Auswertung_ElSe.txt", std::ios::in | std::ios::app);
+    myfileGes.open ("Auswertung_Radius_18.txt", std::ios::in | std::ios::app);
     std::vector<cv::String> FileNames;
 //    cv::glob("/home/falko/Uni/Master/build-BasisOpenFaceEye-Desktop-Debug/solution/*0.txt",FileNames,false);
-    cv::glob("solution/*0.txt",FileNames,false);
+    cv::glob("solution/*_18.txt",FileNames,false);
     for(size_t i = 0; i < FileNames.size(); i++){
         std::ifstream file(FileNames[i]);
         std::string line;
 
         size_t p = FileNames[i].size();
-        std::string ScalString = FileNames[i].substr(p-12,8);
+        std::string ScalString = FileNames[i].substr(p-15,8);
         double scall = std::stod(ScalString);
-        std::cout<<"Berechne "<<scall<<" "<<FileNames[i]<<std::endl;
+        std::cout<<"Berechne "<<scall<<" "<<FileNames[i]<<" "<<ScalString<<std::endl;
 
         std::vector<std::vector<double>> Values;
         for(int j = 0; j < 9; j++){
@@ -162,7 +210,7 @@ void AuswertungFile(){
         std::vector<bool> Blob;
         size_t CountBlob = 0;
         QRegExp ausdruck("[\\[\\]\\,]");
-        bool ElSe = false;
+        bool ElSe = true;
         if(file.is_open()){
             while (std::getline(file, line)){
                 std::istringstream iss(QString::fromStdString(line).remove(ausdruck).toStdString());
@@ -185,17 +233,12 @@ void AuswertungFile(){
                     iss >> val;
                     Values[j].push_back(val);
                 }
-
             }
         }
+        file.close();
         myfileGes<<scall;
         for(size_t j = 0; j < Values.size(); j++){
-//            Quality [abstandCenter,angle,width,height][abstandCenter,angle,width,height]
-            if(j == 0 || j == 2 || j == 6){
-                myfileGes<<Auswertung(Blob,Values[j],1,1)<<Auswertung(Blob,Values[j],2,1);
-            }else{
-                myfileGes<<Auswertung(Blob,Values[j],1,scall)<<Auswertung(Blob,Values[j],2,scall);
-            }
+            myfileGes<<Auswertung(Blob,Values[j],1)<<Auswertung(Blob,Values[j],2);
         }
         double ant = (double)CountBlob/(double)Blob.size();
         myfileGes<<" "<<std::to_string(ant)<<std::endl;
@@ -203,8 +246,28 @@ void AuswertungFile(){
     myfileGes.close();
 }
 
-cv::Rect resizeRect(cv::Rect Box){
+cv::Rect resizeRect(const cv::Rect &Box){
     return cv::Rect(Box.x-3,Box.y-3,Box.width+6,Box.height+6);
+}
+
+cv::Mat getFarbKarte(){
+    cv::Mat ret(cv::Size(201,201), CV_8UC3, cv::Scalar(255,255,255));
+    int r = 0, g= 0, b= 0;
+    for(int i = 0; i < 8; i++){
+        for(int j = 0; j < 8; j++){
+            cv::rectangle(ret,cv::Rect(1+i*25,1+j*25,24,24),cv::Scalar(85*r,85*g,85*b),-1);
+            r++;
+            if(r >= 4){
+                g++;
+                r = 0;
+            }
+            if(g >= 4){
+                b++;
+                g=0;
+            }
+        }
+    }
+    return ret;
 }
 
 int main(int argc, char *argv[])
@@ -242,67 +305,83 @@ int main(int argc, char *argv[])
         }
     }
 
-    /*
-    for(int i = 0; i < 6; i++){
-        cv::Mat Img = cv::imread(mImagePaths[i]);
-        for(double scall = 1.0; scall > 0.0; scall -= 0.02){
-            if((int)(scall * (mBoxes[i].width+6)) > 1){
-            cv::Mat ret;
-            cv::resize(Img(resizeRect(mBoxes[i])),ret,cv::Size(0,0),scall,scall);
-            cv::imwrite("Auge_"+std::to_string(i)+"_"+std::to_string(scall)+".png",toGray(ret));
-            }
-        }
+    for(int i = 0; i <5; i++){
+        cv::Mat Img = cv::imread("/home/falko/Uni/Master/Bilder/Learn/lena.jpg",-1);
+        cv::imwrite("Lena"+std::to_string(i)+".png",toGray(Img,i));//getFarbKarte(),i));
+//        cv::imwrite("Auge_"+std::to_string(i)+"Gray.png",toGray(Img(resizeRect(mBoxes[0])),i));
     }
+    cv::imwrite("Farbtafel2.png",getFarbKarte());
     return 0;
-    */
 
-    std::ofstream myfileGes;
-    myfileGes.open ("solution/Auge_ges.txt", std::ios::in | std::ios::app);
-//    for(double scall = 1.0; scall > 0.0; scall -= 0.02){
-    for(double scall = 2.0; scall < 100.0; scall += 1.0){
-        std::cout<<"Skalierung "<<scall<<std::endl;
-        std::ofstream myfile;
-        myfile.open ("solution/Auge_R_"+std::to_string(scall)+".txt", std::ios::in | std::ios::app);
-        size_t countGes = 0;
-        double QualityGes = 0.0;
-        for(size_t i = 0; i < mImagePaths.size(); i += 4){
-            float quality[] = {-1.0, -1.0, -1.0, -1.0};
-            bool blob[] = {false, false, false, false};
-            cv::RotatedRect ellipse[4];
-            //for(int j = 0; j < 4; j++){
-            tbb::parallel_for(0, 4, [&](int j){
-                if(i+j < mImagePaths.size()){
-                    cv::Mat Img = cv::imread(mImagePaths.at(i+j));
-                    if(Img.data && mBoxes[i+j].height*scall > 0.5){
-                        //cv::Mat ret;
-                        //cv::resize(Img(resizeRect(mBoxes[i+j])),ret,cv::Size(0,0),scall,scall);
-                        //ellipse[j] = ELSE::run(ret, quality[j],blob[j]);
-                        ellipse[j] = ELSE::run(toGray(Img(resizeRect(mBoxes[i+j]))), quality[j],blob[j],scall);
+    int Radius[] = {8,11,18};
+    for(int Variante = 0; Variante < 5; Variante++){
+    for(int r = 1; r < 3; r++){
+        //      int Radius = 1;
+        std::ofstream myfileGes;
+        myfileGes.open ("solution/Auge_ges_"+std::to_string(Variante)
+                        +"_"+std::to_string(Radius[r])+".txt", std::ios::in | std::ios::app);
+        for(double scall = 1.0; scall > 0.0; scall -= 0.03){
+            //        double scall = 1.0;
+            size_t gesWidth = 0;
+            size_t gesHeight = 0;
+            std::cout<<"Skalierung "<<scall<<" "<<Variante<<" "<<Radius[r]<<std::endl;
+            std::ofstream myfile;
+            //        myfile.open ("solution/Auge_"+std::to_string(scall)+"_V"+std::to_string(Variante)+".txt", std::ios::in | std::ios::app);
+            myfile.open ("solution/Auge_"+std::to_string(scall)
+                         +"_"+std::to_string(Radius[r])
+                         +"_"+std::to_string(Variante)+".txt", std::ios::in | std::ios::app);
+            size_t countGes = 0;
+            double QualityGes = 0.0;
+            for(size_t i = 0; i < mImagePaths.size(); i += 4){
+                float quality[] = {-1.0, -1.0, -1.0, -1.0};
+                bool blob[] = {false, false, false, false};
+                cv::RotatedRect ellipse[4];
+                int retW[] = {0,0,0,0};
+                int retH[] = {0,0,0,0};
+                //for(int j = 0; j < 4; j++){
+                tbb::parallel_for(0, 4, [&](int j){
+                    if(i+j < mImagePaths.size()){
+                        cv::Mat Img = cv::imread(mImagePaths.at(i+j));
+                        if(Img.data && mBoxes[i+j].height*scall > 0.5){
+                            cv::Mat ret;
+                            cv::resize(Img(resizeRect(mBoxes[i+j])),ret,cv::Size(0,0),scall,scall);
+                            retW[j] = ret.cols;
+                            retH[j] = ret.rows;
+                            ellipse[j] = ELSE::run(toGray(ret,Variante), quality[j],blob[j],Radius[r]);
+                            //ellipse[j] = ELSE::run(toGray(Img(resizeRect(mBoxes[i+j])),3), quality[j],blob[j],15);
+                        }
+                        //cv::ellipse(Img(mBoxes[i+j]),ellipse[j],cv::Scalar(255,255,0),2);
+                        //cv::imshow("Ergebnis_"+std::to_string(j),Img);
                     }
-                    //cv::ellipse(Img(mBoxes[i+j]),ellipse[j],cv::Scalar(255,255,0),2);
-                    //cv::imshow("Ergebnis_"+std::to_string(j),Img);
-                }
-            });
-            //cv::waitKey(300);
-            for(int j = 0; j < 4; j++){
-                if(isEllipse(ellipse[j])){
-                    myfile<<quality[j]<<" "<<blob[j]<<" "
-                         <<compareEllipse(ellipse[j],mIris[i+j],scall,mBoxes[i+j])<<" "
-                        <<compareEllipse(ellipse[j],mPupils[i+j],scall,mBoxes[i+j])<<std::endl;
-                    countGes++;
-                    QualityGes += quality[j];
+                });
+                //cv::waitKey(300);
+                for(int j = 0; j < 4; j++){
+                    if(isEllipse(ellipse[j])){
+                        gesHeight += retH[j];
+                        gesWidth += retW[j];
+                        myfile<<quality[j]<<" "<<blob[j]<<" "
+                             <<compareEllipse(ellipse[j],mIris[i+j],scall,mBoxes[i+j])<<" " // <---
+                             <<compareEllipse(ellipse[j],mPupils[i+j],scall,mBoxes[i+j])<<std::endl;
+                        countGes++;
+                        QualityGes += quality[j];
+                    }
                 }
             }
+            myfile.close();
+            if(countGes == 0){
+                std::cout<<"Abbruch"<<std::endl;
+                break;
+            }else{
+                std::cout<<"Gefunden "<<countGes<<" mit "<<QualityGes/countGes<<" "<<gesWidth/countGes<<" "<<gesHeight/countGes<<std::endl;
+                myfileGes<<scall<<" Gefunden "<<countGes<<"/"<<mImagePaths.size()<<" "<<gesWidth/countGes<<" "<<gesHeight/countGes<<std::endl;
+            }
+            sleep(20);// Vermeidung von überhitzung
         }
-        myfile.close();
-        std::cout<<"Gefunden "<<countGes<<" mit "<<QualityGes/countGes<<std::endl;
-        myfileGes<<scall<<" Gefunden "<<countGes<<"/"<<mImagePaths.size()<<std::endl;
-        if(countGes == 0){
-            std::cout<<"Abbruch"<<std::endl;
-            break;
-        }
+        myfileGes.close();
+        std::cout<<"Ende "<<Radius[r]<<std::endl;
     }
-    myfileGes.close();
-    std::cout<<"Ende"<<std::endl;
+    std::cout<<"Variante "<<Variante<<"Ende"<<std::endl;
+    }
+    std::cout<<"Fertig"<<std::endl;
     return a.exec();
 }
