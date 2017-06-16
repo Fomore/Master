@@ -2,15 +2,15 @@
 Die Gesichtserkennung ist Teil der Bildverarbeitung und wird ständig weiterentwickelt. Darunter fallen neben der Detektion des Gesichtes auch seine Analyse wie Orientierung oder das erkennen von Mimiken und Übereinstimmungen. 
 \subsection{Künstliches neuronales Netz}
 Ein künstliches neuronales Netz besteht aus miteinander verknüpften künstlichen Neuronen. Jedes Neuron erhält Eingangswerte, diese werden individuelle Gewichtet, mittels einer Übertragungsfunktion zusammengefasst und durch eine Schwellenwertfunktion das Ergebnis bestimmt.\\
-Um die Parameter der Neuronen zu bestimmen, werden sie zufällig initialisiert un dann so angepasst, dass sie zu einer gegebenen Eingabe das Gewünschte Ergebnis liefert und der Fehler über dem gesamten Trainingsdatensatzes minimal ist.
+Um die Parameter der Neuronen zu bestimmen, werden sie zufällig initialisiert und dann so angepasst, dass sie zu einer gegebenen Eingabe das Gewünschte Ergebnis liefert und der Fehler über dem gesamten Trainingsdatensatzes minimal ist.
 \subsubsection{To Do}
 Quelle
 \subsection{Convolutional Neural Network (CNN)}
-CNN ist eine Weiterentwicklung der neuronalen Netzen und werden zur Klassifizierung verwendet, unter anderem im Bereich Bild- und Spracherkennung. Dies wird durch eine gewichtete Faltung der eingabe erreicht und sind  state of the art bei vielen Anwendungen.\\
+CNN ist eine Weiterentwicklung der neuronalen Netzen und werden zur Klassifizierung verwendet, unter anderem im Bereich Bild- und Spracherkennung. Dies wird durch eine gewichtete Faltung der Eingabe erreicht und sind state of the art bei vielen Anwendungen.\\
 Durch die Faltung werden die Information aus den umliegenden Punkten eines Bereiches zusammengefasst und komprimiert an die nächste Schicht weitergegeben, um in der untersten Schicht alle vorhanden Informationen zusammenzuführen. 
 Der Faltungskern kann ja nach Anwendung beliebig gestaltet sein, so ist eine Glättung durch einen Gauß-Kernel oder Kantendetektion durch einen Kirsch-Operator möglich.\\
-Ein CNN kann in zwei Bereiche aufgeteilt werden, der Feature Extraktion in welcher durch verschiedene Kernel und Komprimierung die Eingabeinformationen zur Klassifizierung, dem zweiten Bereich, aufbereitet.
-Gelernt werden können die Kernel an sich und die jeweiligen Bewertungen.
+Ein CNN kann in zwei Bereiche aufgeteilt werden, der Feature Extraktion und der Klassifizierung. Bei der Feature Extraktion werden verschiedene Kernel und Komprimierung die Eingabeinformationen verwendet um sie für den zweiten Teil auf zu bereiten.
+Gelernt werden können jeder einzelne Kernel für sich und die jeweiligen Bewertungen der Kernel und den Neuronen.
 \subsubsection{To Do}
 Quelle\\
 Bild
@@ -20,8 +20,11 @@ Dieser Art der Bestimmung von Punkten mit Positionsabhängigkeiten ist ziemlich 
 Dies ist Wichtig, bei der Detektion von verschiedenen leicht verformbaren Objekten wie Gesichter und daher zuverlässiger als das Active Appearance Model (AAM).
 \subsubsection{To Do}
 Quelle\\
-AAM\\
 zur Detecton der Landmarks
+\subsection{Active Appearance Model (AAM)}
+Dies ist ein Verfahren der Bildverarbeitung um Übereinstimmungen zu einem Modell zu finden. Dazu wird aus dem Trainingsdatensatz eine typische einheitliche Form des Objektes generiert mit seinen signifikanten Landmarks.\\
+Soll nun zu einem Bild die Übereinstimmung bestimmt werden, wird versucht es bestmöglich in die typische Form zu überführen. Sind dennoch Unterschiede vorhanden, liegt diese an der Erscheinung des Objektes.\\
+\cite{wiki_AAM}
 \subsection{PDM \& GAVAM}
 Mit Point Distribution Model (PDM) können verformbare Objekte recht gut modelliert werden. Dabei wird die durchschnittliche Form $\overline{X}$ bestimmt und eine Matrix $P$ von Eigenvektoren ermittelt, um die möglichen Deformierungen darzustellen.
 \begin{align*}

@@ -16,6 +16,7 @@ f_x = 500\cdot \frac{I_x}{640}\\
 f_y = 500\cdot \frac{I_y}{480}
 \end{align*}
 \subsubsection{Bestimmung der Blickrichtung}
+\label{OpenFace_Blickrichtung}
 Durch die Landmarks der Augen werden die Augenlider, Iris und Pupille dargestellt und für jedes Auge separat bestimmt. Dabei wird der Augenbereich, basierend auf dem detektierten Gesicht, verwendet, um mit einem weiten CNN die 28 Landmarks des Auges zu bestimmen.\\
 Zur Bestimmung der Blickrichtung wird wie folgt vorgegeben. Zuerst wird der Strahl bestimmt der, ausgehend vom Zentrum der Kamera, durch das Zentrum der Pupille verläuft. Nun wir der Schnittpunkt zwischen diesem Strahl und einer Sphäre bestimmt, die das Auge repräsentiert. Nun wird ein Strahl bestimmt der vom Zentrum der Sphäre ausgehend durch den berechneten Schnittpunkt verläuft, dies ist die resultierende Blickrichtung.
 \subsubsection{Detection der Gesichtsmerkmale}
