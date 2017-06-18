@@ -211,6 +211,7 @@
      <addaction name="actionBeobachte_Gaze"/>
      <addaction name="actionShow_Image_Box"/>
      <addaction name="actionShow_Head_Box"/>
+     <addaction name="actionSave_Video_Solution"/>
     </widget>
     <addaction name="actionSelect_Camera"/>
     <addaction name="actionMax_Faces"/>
@@ -441,6 +442,17 @@
    </property>
    <property name="text">
     <string>Show Head Box</string>
+   </property>
+  </action>
+  <action name="actionSave_Video_Solution">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Save Video Solution</string>
    </property>
   </action>
  </widget>

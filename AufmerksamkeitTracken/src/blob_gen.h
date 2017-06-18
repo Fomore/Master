@@ -248,8 +248,8 @@ static cv::RotatedRect blob_finder(cv::Mat *pic, float border, float &quality){
 	cv::Mat blob_mat, blob_mat_neg;
 
 
-	int fak_mum=4;//4
-	int fakk=12;//12
+    int fak_mum=5;//4
+    int fakk=9;//12
 
 	cv::Mat img;
 	mum(pic, &img, fak_mum);

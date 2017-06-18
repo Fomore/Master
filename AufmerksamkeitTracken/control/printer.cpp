@@ -91,7 +91,7 @@ void Printer::getCLNFBox(const LandmarkDetector::CLNF &model, int pos, int step,
     Y = cvRound(shape2D.at<double>(pos + n));
     W = cvRound(shape2D.at<double>(pos));
     H = cvRound(shape2D.at<double>(pos + n));
-    for(int i = pos-1; i < min(pos-1+step,n); ++i)// Beginnt bei 0 das Output-Format
+    for(int i = std::max(0,pos-1); i < std::min(pos-1+step,n); ++i)// Beginnt bei 0 das Output-Format
     {
         double x = (shape2D.at<double>(i));
         double y = (shape2D.at<double>(i + n));
@@ -184,7 +184,7 @@ void Printer::setShowHeadBox(bool h)
 void Printer::printMatToQPainter(cv::Mat Img, QPainter &Paint, int Width, int Height, int Position)
 {
     QImage img = Image::MatToQImage(Img);
-    QImage img2 = img.scaled(Width,Height,Qt::KeepAspectRatio);
+    QImage img2 = img.scaled(Width,Height,Qt::KeepAspectRatio,Qt::SmoothTransformation);
     QPixmap pix = QPixmap::fromImage(img2);
     Paint.drawPixmap(0, Height*Position, pix);
 }

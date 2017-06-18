@@ -51,6 +51,66 @@ void Image::convert_to_grayscale(const cv::Mat& in, cv::Mat& out)
     }
 }
 
+void Image::toGrayGleam(const cv::Mat &Image, cv::Mat &Out)
+{
+    cv::Mat grayImage;
+    if(Image.channels() == 3 || Image.channels() == 4){
+        if(Image.depth() == CV_16U){
+            cv::Mat tmp = Image / 256;
+            tmp.convertTo(Image, CV_8U);
+        }
+        grayImage=cv::Mat::zeros(Image.size(),CV_8UC1);
+        for(int i=0;i<Image.rows;i++){
+            for(int j=0;j<Image.cols;j++){
+                if(Image.type() == CV_8UC4){
+                    cv::Vec4b pix = Image.at<cv::Vec4b>(i,j);
+                    if(pix[3] == 255){
+                        double faktor = (pow(pix[0]/255.0,1.0/2.2) + pow(pix[1]/255.0,1.0/2.2) + pow(pix[2]/255.0,1.0/2.2))/3.0;
+                        int colore = std::max(0,std::min(255,(int)(255.0*faktor + 0.5)));
+                        grayImage.at<uchar>(i,j) = colore;
+                    }else{
+                        grayImage.at<uchar>(i,j) = 255;
+                    }
+                }else if(Image.type() == CV_8UC3){
+                    cv::Vec3b pix = Image.at<cv::Vec3b>(i,j);
+                    double faktor = (pow(pix[0]/255.0,1.0/2.2) + pow(pix[1]/255.0,1.0/2.2) + pow(pix[2]/255.0,1.0/2.2))/3.0;
+                    int colore = std::max(0,std::min(255,(int)(255.0*faktor + 0.5)));
+                    grayImage.at<uchar>(i,j) = colore;
+                }
+            }
+        }
+    }else{
+        convert_to_grayscale(Image,grayImage);
+    }
+    Out = normalize(grayImage,Image);
+}
+
+cv::Mat Image::normalize(cv::Mat GrayImage, cv::Mat Image){
+    cv::Mat gaus;
+    cv::GaussianBlur(GrayImage, gaus, cv::Size(7,7), 1.5, 1.5);
+
+    int minGray = 255, maxGray = 0;
+    for(int i=0;i<Image.rows;i++){
+        for(int j=0;j<Image.cols;j++){
+            if(!(Image.type() == CV_8UC4 && Image.at<cv::Vec4b>(i,j)[3] != 255)){
+                int colore = gaus.at<uchar>(i,j);
+                maxGray = std::max(maxGray,colore);
+                minGray = std::min(minGray,colore);
+            }
+        }
+    }
+
+    cv::Mat out=cv::Mat::zeros(Image.size(),CV_8UC1);
+    double a = (255.0+minGray)/maxGray;
+    for(int i=0;i<Image.rows;i++){
+        for(int j=0;j<Image.cols;j++){
+            out.at<uchar>(i,j)= std::min(255,std::max((int)(GrayImage.at<uchar>(i,j)*a-minGray+0.5),0));
+        }
+    }
+    return out;
+}
+
+
 // Diese Methode stammt von http://www.qtcentre.org/threads/56482-efficient-way-to-display-opencv-image-into-Qt
 QImage Image::MatToQImage(const cv::Mat& mat)
 {

@@ -23,7 +23,7 @@ AtentionTracer::AtentionTracer(Ui::MainWindow *parent, Camera *cam, QString Targ
     loadFromFile(TargetFileName);
 
     mAttentionSumImage = cv::Mat(cv::Size(800,600), CV_8UC3, cv::Scalar(255,255,255));
-    printAllTarget(mAttentionSumImage,mAttentionCamPose,mAttentiondCamOri,400,400,300,cv::Scalar(0,0,0));
+    printAllTarget(mAttentionSumImage,mAttentionCamPose,mAttentiondCamOri,800,400,300,cv::Scalar(0,0,0));
 }
 
 AtentionTracer::~AtentionTracer()
@@ -53,7 +53,9 @@ void AtentionTracer::showSolution(QString name, const LandmarkDetector::CLNF &mo
     }
 
     if(mWriteToFile && write){
-        writeSolutionToFile(name,model.params_global,headPoseWorld,gazeDirection0,gazeDirection1);
+        cv::Rect2d box;
+        getCLNFBox(model,box);
+        writeSolutionToFile(name,model.params_global,headPoseWorld,gazeDirection0,gazeDirection1,box);
     }
 }
 
@@ -66,7 +68,7 @@ void AtentionTracer::newPosition(double colore, cv::Vec6d HeadPoseWorld, cv::Vec
     mGazeDirections1.push_back(GazeDirection1);
 }
 
-void AtentionTracer::writeSolutionToFile(QString name, cv::Vec6d Model, cv::Vec6d HeadPoseWorld, cv::Point3f GazeDirection0, cv::Point3f GazeDirection1)
+void AtentionTracer::writeSolutionToFile(QString name, cv::Vec6d Model, cv::Vec6d HeadPoseWorld, cv::Point3f GazeDirection0, cv::Point3f GazeDirection1, cv::Rect2d Box)
 {
     cv::Point2d worldAngle, rotatAngle;
     cv::Point3d worlPoint, target;
@@ -78,7 +80,7 @@ void AtentionTracer::writeSolutionToFile(QString name, cv::Vec6d Model, cv::Vec6
     std::ofstream myfile;
     myfile.open ("./data/Video_Analyse.txt", std::ios::in | std::ios::app);
     myfile <<worlPoint<<target<<Model<<"|"
-          <<HeadPoseWorld<<"|"<<calcAbweichung(HeadPoseWorld,target)
+          <<HeadPoseWorld<<GazeDirection0<<GazeDirection1<<Box<<"|"<<calcAbweichung(HeadPoseWorld,target)
          <<" "<<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection0,target)
         <<" "<<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection1,target)<<std::endl;
     myfile.close();
@@ -191,14 +193,18 @@ void AtentionTracer::printAttention(){
         cv::Vec3d contact;
         if(linePlaneIntersection(contact,ray,position,normale,center)){
             cv::circle(img,calcPose2Image(contact,mAttentionCamPose,mAttentiondCamOri,fx,fx,cy),cvRound(fx/50),color,-1);
-            cv::circle(mAttentionSumImage,calcPose2Image(contact,mAttentionCamPose,mAttentiondCamOri,400,400,300),5,cv::Scalar(255,0,0),-1);
+            if(mSaveVideoImage){
+            cv::circle(mAttentionSumImage,calcPose2Image(contact,mAttentionCamPose,mAttentiondCamOri,800,400,300),3,color,-1);
+            }
         }
     }
     if(!img.empty()){
         QPixmap pix = QPixmap::fromImage(Image::MatToQImage(img));
         mTheWindow->ImageBottomRight_label->setPixmap(pix);
     }
+    if(mSaveVideoImage){
     cv::imwrite("Summe.png",mAttentionSumImage);
+    }
 }
 
 void AtentionTracer::printTargets(cv::Mat &img, const cv::Vec3d &Pose, const cv::Matx33d Ori, double fx, double cx, double cy)
@@ -281,6 +287,27 @@ bool AtentionTracer::linePlaneIntersection(cv::Vec3d& contact, cv::Vec3d ray, cv
     return true;
 }
 
+void AtentionTracer::getCLNFBox(const LandmarkDetector::CLNF &model, cv::Rect2d &Box)
+{
+    cv::Mat_<double> shape2D = model.detected_landmarks;
+
+    int n = shape2D.rows/2;
+
+    Box.x = Box.width = shape2D.at<double>(0);
+    Box.y = Box.height= shape2D.at<double>(n);
+    for(int i = 1; i < n; i++)// Beginnt bei 0 das Output-Format
+    {
+        double x = (shape2D.at<double>(i));
+        double y = (shape2D.at<double>(i + n));
+        Box.x = min(Box.x,x);
+        Box.y = min(Box.y,y);
+        Box.width = max(Box.width ,x);
+        Box.height= max(Box.height,y);
+    }
+    Box.width -= Box.x;
+    Box.height-= Box.y;
+}
+
 double AtentionTracer::getScall(int size, double scall)
 {
     return max(size/10.0,min(50.0,size/5.0*scall));
@@ -304,6 +331,11 @@ bool AtentionTracer::getUseTime()
 void AtentionTracer::setUseTime(bool t)
 {
     mUseTime = t;
+}
+
+void AtentionTracer::setSaveVideoImage(bool v)
+{
+    mSaveVideoImage = v;
 }
 
 void AtentionTracer::setImageSize(int Width, int Height){

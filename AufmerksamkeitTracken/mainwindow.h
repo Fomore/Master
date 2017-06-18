@@ -70,6 +70,8 @@ private slots:
 
     void on_actionShow_Head_Box_triggered(bool checked);
 
+    void on_actionSave_Video_Solution_triggered(bool checked);
+
 private:
     Ui::MainWindow *ui;
 //    Image mImage;

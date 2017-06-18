@@ -186,3 +186,8 @@ void MainWindow::on_actionShow_Head_Box_triggered(bool checked)
 {
     mFaceDetection->setShowHeadBox(checked);
 }
+
+void MainWindow::on_actionSave_Video_Solution_triggered(bool checked)
+{
+
+}

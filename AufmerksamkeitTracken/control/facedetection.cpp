@@ -34,7 +34,7 @@ FaceDetection::~FaceDetection()
 
 void FaceDetection::FaceTracking(){
     if(mAtentionTracer->getUseTime()){
-        mKamera->setFrame(mEventHandler->mVideoAnalyseStart);
+        mKamera->setFrame(mEventHandler->mVideoObservationStart-15);
         mAtentionTracer->mVideoTimeShift = mKamera->getTimeSec();
     }
 
@@ -285,7 +285,7 @@ void FaceDetection::FaceTrackingNewVersion(){
                     mBoxHandlers[model].setOldRect(clnf_models[model].GetBoundingBox());
 
                     int used;
-                    CalcualteEyes(disp_image,model,used,mBoxHandlers[model].getImageScall());
+                    CalcualteEyes(frame_colore.clone(),model,used,mBoxHandlers[model].getImageScall());
                     std::string name;
 
                     bool isImageFrame = mEventHandler->isImageFrame(FrameID,name,mEventHandler->getName(model),mGaze);
@@ -415,7 +415,7 @@ void FaceDetection::FaceTrackingImage(){
                 mBoxHandlers[0].toImage(clnf_models[Model_Init]);
             }
             int used;
-            CalcualteEyes(disp_image,Model_Init,used,1.0);
+            CalcualteEyes(frame.clone(),Model_Init,used,1.0);
 
             mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[Model_Init],fx,fy,cx,cy, (double)Model_Init/num_faces_max, true);
 
@@ -560,8 +560,8 @@ void FaceDetection::CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used, double
        20  22
          21
      */
-    used = 0;
-    int hir_id[2] = {-1,-1};
+    int hir_id[] = {-1,-1};
+    int useCalc[] = {0,0};
 
     for (size_t part = 0; part < clnf_models[CLNF_ID].hierarchical_models.size(); ++part){
         if(clnf_models[CLNF_ID].hierarchical_models[part].detected_landmarks.rows == 56){
@@ -592,38 +592,39 @@ void FaceDetection::CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used, double
             }
             cv::RotatedRect min_eye = cv::fitEllipse(pos);
             cv::RotatedRect max_eye = cv::fitEllipse(pos2);
-            if((min_eye.size.width+min_eye.size.height)/2 > 4.5*fx){
+            if((min_eye.size.width+min_eye.size.height)/2 < 21/fx){
                 cv::Mat gray;
-                Image::convert_to_grayscale(img(rec), gray);
+                Image::toGrayGleam(img(rec), gray);
                 float quality;
                 cv::RotatedRect ellipse = ELSE::run(gray, quality);
                 if(ellipse.size.width > 0 && ellipse.size.height >0
                         && sqrt(pow(max_eye.center.x - (rec.x + ellipse.center.x),2.0) + pow(max_eye.center.y - (rec.y + ellipse.center.y),2.0))
                         < (max_eye.size.width+max_eye.size.height)/5.0){
-                    used += (int)pow(10,hir);
-                    if((min_eye.size.width+min_eye.size.height)/2 < 6.0){
-                        used += (int)pow(10,hir);
-                    }
-                    for( int i = 0; i < n; ++i){
-                        if( i < 8){
-                            if((min_eye.size.width+min_eye.size.height)/2 < 6.0){
-                                double x = (shape2D.at<double>(i) + ellipse.center.x+rec.x + cos((i-4)*M_PI/4.0)*ellipse.size.width/2*1.727)/2;
-                                double y = (shape2D.at<double>(i+n) + ellipse.center.y+rec.y + sin((i-4)*M_PI/4.0)*ellipse.size.height/2*1.727)/2;
+
+                    if((min_eye.size.width+min_eye.size.height)/2 > 15.0){
+                        useCalc[hir] = 2;
+                        for( int i = 0; i < n; ++i){
+                            if(i < 8){
+                                double x = (shape2D.at<double>(i) + ellipse.center.x+rec.x + cos((i-4)*M_PI/4.0)*ellipse.size.width/2*1.5)/2;
+                                double y = (shape2D.at<double>(i+n) + ellipse.center.y+rec.y + sin((i-4)*M_PI/4.0)*ellipse.size.height/2*1.5)/2;
                                 shape2D.at<double>(i)  = x;
                                 shape2D.at<double>(i+n)= y;
-                            }else{
-                                shape2D.at<double>(i)  = ellipse.center.x+rec.x + cos((i-4)*M_PI/4.0)*ellipse.size.width/2*1.727;
-                                shape2D.at<double>(i+n)= ellipse.center.y+rec.y + sin((i-4)*M_PI/4.0)*ellipse.size.height/2*1.727;
+                            }else if(i > 19){
+                                double x = (shape2D.at<double>(i) + ellipse.center.x+rec.x + cos((23-i)*M_PI/4.0)*ellipse.size.width/2*0.7)/2;
+                                double y = (shape2D.at<double>(i+n) + ellipse.center.y+rec.y + sin((23-i)*M_PI/4.0)*ellipse.size.height/2*0.7)/2;
+                                shape2D.at<double>(i)  = x;
+                                shape2D.at<double>(i+n)= y;
                             }
-                        }else if(i > 19){
-                            if((min_eye.size.width+min_eye.size.height)/2 < 6.0){
-                                double x = (shape2D.at<double>(i) + ellipse.center.x+rec.x + cos((23-i)*M_PI/4.0)*ellipse.size.width/2*0.738)/2;
-                                double y = (shape2D.at<double>(i+n) + ellipse.center.y+rec.y + sin((23-i)*M_PI/4.0)*ellipse.size.height/2*0.738)/2;
-                                shape2D.at<double>(i)  = x;
-                                shape2D.at<double>(i+n)= y;
-                            }else{
-                                shape2D.at<double>(i)  = ellipse.center.x+rec.x + cos((23-i)*M_PI/4.0)*ellipse.size.width/2*0.738;
-                                shape2D.at<double>(i+n)= ellipse.center.y+rec.y + sin((23-i)*M_PI/4.0)*ellipse.size.height/2*0.738;
+                        }
+                    }else{
+                        useCalc[hir] = 1;
+                        for( int i = 0; i < n; ++i){
+                            if( i < 8){
+                                shape2D.at<double>(i)  = ellipse.center.x+rec.x + cos((i-4)*M_PI/4.0)*ellipse.size.width/2*1.5;
+                                shape2D.at<double>(i+n)= ellipse.center.y+rec.y + sin((i-4)*M_PI/4.0)*ellipse.size.height/2*1.5;
+                            }else if(i > 19){
+                                shape2D.at<double>(i)  = ellipse.center.x+rec.x + cos((23-i)*M_PI/4.0)*ellipse.size.width/2*0.7;
+                                shape2D.at<double>(i+n)= ellipse.center.y+rec.y + sin((23-i)*M_PI/4.0)*ellipse.size.height/2*0.7;
                             }
                         }
                     }
@@ -632,6 +633,8 @@ void FaceDetection::CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used, double
             }
         }
     }
+
+    used = useCalc[0]*10+useCalc[1];
 
     if(mUseEye && hir_id[0] >= 0 && hir_id[1] >= 0){
         cv::Rect2d rec_0 = clnf_models[CLNF_ID].hierarchical_models[hir_id[0]].GetBoundingBox();
