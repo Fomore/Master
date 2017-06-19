@@ -189,6 +189,7 @@
      <addaction name="actionUse_Boxes"/>
      <addaction name="actionLearn_Model"/>
      <addaction name="actionUse_Video"/>
+     <addaction name="actionSet_Video_Skalierung"/>
     </widget>
     <widget class="QMenu" name="menuPositionsberechnung">
      <property name="title">
@@ -453,6 +454,11 @@
    </property>
    <property name="text">
     <string>Save Video Solution</string>
+   </property>
+  </action>
+  <action name="actionSet_Video_Skalierung">
+   <property name="text">
+    <string>Set Video-Skalierung</string>
    </property>
   </action>
  </widget>

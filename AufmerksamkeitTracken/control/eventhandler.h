@@ -56,8 +56,8 @@ public:
     void clearAll();
 
     //Falko
-    //size_t mVideoObservationStart = 48;//In Frames
-    //size_t mVideoObservationEnde = 1844;
+    size_t mVideoObservationStart = 48;//In Frames
+    size_t mVideoObservationEnde = 1844;
 
     //Falko - no glases
     //size_t mVideoObservationStart = 251;//In Frames
@@ -80,8 +80,8 @@ public:
     //size_t mVideoObservationEnde = 1920;
 
     //Thiago
-    size_t mVideoObservationStart = 409;//In Frames
-    size_t mVideoObservationEnde = 2203;
+    //size_t mVideoObservationStart = 409;//In Frames
+    //size_t mVideoObservationEnde = 2203;
 
     //Thiago - No Glasses
     //size_t mVideoObservationStart = 300;//In Frames

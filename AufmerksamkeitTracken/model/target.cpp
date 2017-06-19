@@ -133,10 +133,10 @@ void Target::getOrienation(double VideoTime, cv::Point2d &WAngle, cv::Point3d &W
     //WPosition = cv::Point3d(2680-1353,1490-429, 1483);//Askin
     //WPosition = cv::Point3d(2680-1367,1490-570, 1426);//Benedikt
     //WPosition = cv::Point3d(2680-1392,1490-620, 1466);//Davis
-    //WPosition = cv::Point3d(2680-1438,1490-582, 1476);//Falko
+    WPosition = cv::Point3d(2680-1438,1490-582, 1476);//Falko
     //WPosition = cv::Point3d(2680-1363,1490-509, 1556);//Thiago
     //WPosition = cv::Point3d(2680-1422,1490-528, 1505);//Shahram
-    WPosition = cv::Point3d(2680-1363,1490-509, 1556);//Thiago
+    //WPosition = cv::Point3d(2680-1363,1490-509, 1556);//Thiago
 
 
     getOrienation(WAngle,WPosition,RAngle,Target);

@@ -86,6 +86,7 @@ public:
 
     void setShowImageBox(bool b);
     void setShowHeadBox(bool h);
+    void setSaveVideoImage(bool v);
 
     size_t loadXML(QString path, bool clear = true);
 };

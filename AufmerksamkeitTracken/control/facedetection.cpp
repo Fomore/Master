@@ -34,8 +34,9 @@ FaceDetection::~FaceDetection()
 
 void FaceDetection::FaceTracking(){
     if(mAtentionTracer->getUseTime()){
-        mKamera->setFrame(mEventHandler->mVideoObservationStart-15);
+        mKamera->setFrame(mEventHandler->mVideoObservationStart);
         mAtentionTracer->mVideoTimeShift = mKamera->getTimeSec();
+        mKamera->setFrame(mEventHandler->mVideoObservationStart-15);
     }
 
     // Initialisiierung
@@ -205,6 +206,10 @@ void FaceDetection::FaceTrackingNewVersion(){
         mBoxHandlers[i].setImageSize(x,y);
         active_models[i] = false;
         clnf_models[i].Reset();
+    }
+    if(mAtentionTracer->getUseTime()){
+        mKamera->setFrame(mEventHandler->mVideoObservationStart);
+        mAtentionTracer->mVideoTimeShift = mKamera->getTimeSec();
     }
 
     // For measuring the timings
@@ -754,6 +759,11 @@ void FaceDetection::setShowImageBox(bool b)
 void FaceDetection::setShowHeadBox(bool h)
 {
     mPrinter.setShowHeadBox(h);
+}
+
+void FaceDetection::setSaveVideoImage(bool v)
+{
+    mAtentionTracer->setSaveVideoImage(v);
 }
 
 size_t FaceDetection::loadXML(QString path, bool clear)

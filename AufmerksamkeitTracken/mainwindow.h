@@ -72,6 +72,8 @@ private slots:
 
     void on_actionSave_Video_Solution_triggered(bool checked);
 
+    void on_actionSet_Video_Skalierung_triggered();
+
 private:
     Ui::MainWindow *ui;
 //    Image mImage;

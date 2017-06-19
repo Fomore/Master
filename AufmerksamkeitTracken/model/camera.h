@@ -18,6 +18,8 @@ private:
 
     cv::VideoCapture video;
 
+    double mVideoSkalierung = 1.0;
+
 public:
     Camera(int id = 0, QString VideoPath = "");
     ~Camera();
@@ -60,6 +62,7 @@ public:
     void setFxFy(double fx, double fy);
     double getFx();
     double getFy();
+    bool setVideoSkalierung(double s);
 };
 
 #endif // CAMERA_H

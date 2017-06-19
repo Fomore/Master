@@ -141,22 +141,25 @@ void Camera::correct_Image(cv::Mat img){
 cv::Rect Camera::correct_Rect(cv::Rect rec)
 {
     if(mUseCorrection){
-    std::vector<cv::Point2d> PointTestIn;
-    PointTestIn.push_back(cv::Point2d(rec.x,rec.y));
-    PointTestIn.push_back(cv::Point2d(rec.x+rec.width,rec.y+rec.height));
-    std::vector<cv::Point2d> PointTestOut;
+        std::vector<cv::Point2d> PointTestIn;
+        PointTestIn.push_back(cv::Point2d(rec.x,rec.y));
+        PointTestIn.push_back(cv::Point2d(rec.x+rec.width,rec.y+rec.height));
+        std::vector<cv::Point2d> PointTestOut;
 
-    cv::undistortPoints(PointTestIn,PointTestOut,cameraMatrix,distCoeffs,cv::noArray(), cameraMatrix);
+        cv::undistortPoints(PointTestIn,PointTestOut,cameraMatrix,distCoeffs,cv::noArray(), cameraMatrix);
 
-    cv::Rect ret;
-    ret.x = PointTestOut[0].x+0.5;
-    ret.y = PointTestOut[0].y+0.5;
-    ret.width = PointTestOut[1].x-PointTestOut[0].x+0.5;
-    ret.height= PointTestOut[1].y-PointTestOut[0].y+0.5;
+        cv::Rect ret;
+        ret.x = PointTestOut[0].x*mVideoSkalierung+0.5;
+        ret.y = PointTestOut[0].y*mVideoSkalierung+0.5;
+        ret.width = (PointTestOut[1].x-PointTestOut[0].x)*mVideoSkalierung+0.5;
+        ret.height= (PointTestOut[1].y-PointTestOut[0].y)*mVideoSkalierung+0.5;
 
-    return ret;
+        return ret;
     }else{
-        return rec;
+        return cv::Rect(rec.x*mVideoSkalierung,
+                        rec.y*mVideoSkalierung,
+                        rec.width*mVideoSkalierung,
+                        rec.height*mVideoSkalierung);
     }
 }
 
@@ -314,22 +317,32 @@ void Camera::setFxFy(double fx, double fy)
 
 double Camera::getFx()
 {
-    return mfx;
+    return mfx*mVideoSkalierung;
 }
 
 double Camera::getFy()
 {
-    return mfy;
+    return mfy*mVideoSkalierung;
+}
+
+bool Camera::setVideoSkalierung(double s)
+{
+    if(ImageWight*s >= 1 && ImageHeight*s >= 1){
+        mVideoSkalierung = s;
+        return true;
+    }else{
+        return false;
+    }
 }
 
 // Gibt die Werte der Kamera aus
 void Camera::get_camera_params(double &fx, double &fy, double &cx, double &cy, int &x, int &y){
-    fx = mfx;
-    fy = mfy;
-    cx = cameraMatrix.at<double>(0,2);
-    cy = cameraMatrix.at<double>(1,2);
-    x = ImageWight;
-    y = ImageHeight;
+    fx = mfx*mVideoSkalierung;
+    fy = mfy*mVideoSkalierung;
+    cx = cameraMatrix.at<double>(0,2)*mVideoSkalierung;
+    cy = cameraMatrix.at<double>(1,2)*mVideoSkalierung;
+    x = ImageWight*mVideoSkalierung;
+    y = ImageHeight*mVideoSkalierung;
 }
 
 int Camera::getCameraID()
@@ -341,8 +354,11 @@ bool Camera::getFrame(cv::Mat &img)
 {
     if(video.isOpened()){
         bool ret = video.read(img);
-        if(ret && mUseCorrection){
-            correct_Image(img);
+        if(ret){
+            if(mUseCorrection){
+                correct_Image(img);
+            }
+            cv::resize(img,img,cv::Size(0,0),mVideoSkalierung,mVideoSkalierung);
         }
         return ret;
     }else{

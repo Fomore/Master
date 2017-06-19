@@ -189,5 +189,13 @@ void MainWindow::on_actionShow_Head_Box_triggered(bool checked)
 
 void MainWindow::on_actionSave_Video_Solution_triggered(bool checked)
 {
+    mFaceDetection->setSaveVideoImage(checked);
+}
 
+void MainWindow::on_actionSet_Video_Skalierung_triggered()
+{
+    while(!mKamera->setVideoSkalierung(QInputDialog::getDouble(this,"Set Viede-Skalierung",
+                                                            "Um diesen Faktor wird die größe des Einagbebildes verändert.",
+                                                            1.0,0.0,1000.0,5))){
+    }
 }
