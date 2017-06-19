@@ -9,10 +9,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    mKamera = new Camera(8);
+    mKamera = new Camera(8,"/home/falko/Uni/Master/Film/VideoMessung/falko.avi");
+    //mKamera = new Camera(9,"/home/falko/Uni/Master/Film/Schulklasse/23100601S1.avi");
 
-    //mKamera->setPath("/home/falko/Uni/Master/Film/Schulklasse/23100601S1.avi");
-    mKamera->setPath("/home/falko/Uni/Master/Film/VideoMessung/falko_no_glasses.avi");
     //mKamera->setPath("/home/falko/Uni/Master/Film/Test_Positionen_1.mp4");
 
     /*
@@ -21,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     */
     mFaceDetection = new FaceDetection(ui,mKamera);
+    mFaceDetection->loadXML("/home/falko/Uni/Master/build-Auswertung-Desktop-Debug/Falko.xml", true);
     //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/23100601S1_Label.xml", true);
     //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/23100601S1_Gaze_3_Label.xml", true);
     //mFaceDetection->loadXML("/home/falko/Uni/Hiwi/build-VideoLabel-Desktop-Debug/data/Test_Positionen_1_Label.xml", true);

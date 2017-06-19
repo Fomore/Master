@@ -9,7 +9,6 @@ Einzelbilder::Einzelbilder()
 //    cv::glob("/home/falko/Uni/Master/Bilder/Learn/*.jpgg", mImagePaths, true);
 //    cv::glob("/home/falko/Uni/Master/Bilder/HeadPose/*.jpg", mImagePaths, true);
 //    cv::glob("/home/falko/Uni/Master/Bilder/Aufnahme2/*.JPG", mImagePaths, true);
-    cv::glob("/home/falko/Uni/Master/Bilder/HeadPose/*.jpg", mImagePaths, true);
 //    cv::glob("/home/falko/Uni/Master/Bilder/Test/*.*g", mImagePaths, true);
     for(size_t i = 0; i < mImagePaths.size(); i++){
         mFramePos.push_back(-1);

@@ -18,6 +18,7 @@ private:
     bool mShowAtention = true;
     bool mUseTime = true;
     bool mSaveVideoImage = true;
+    bool mUseAVGEye = true;
 
     std::vector<double> mColores;
     //Positives linkshändiges Koordinatensystem
@@ -55,17 +56,17 @@ private:
     double calcAbweichung(cv::Vec3d Start, cv::Point3f Orientierung, cv::Vec3d Target);
 
     void newPosition(double colore, cv::Vec6d HeadPoseWorld, cv::Vec6d HeadPose, cv::Point3f GazeDirection0, cv::Point3f GazeDirection1);
-    void writeSolutionToFile(QString name, cv::Vec6d Model, cv::Vec6d HeadPoseWorld, cv::Point3f GazeDirection0, cv::Point3f GazeDirection1, cv::Rect2d Box);
+    void writeSolutionToFile(QString name, int FrameNr, cv::Vec6d Model, cv::Vec6d HeadPoseWorld, cv::Vec4d Box, cv::Point3f GazeDirection0, cv::Point3f GazeDirection1);
     bool linePlaneIntersection(cv::Vec3d &contact, cv::Vec3d ray, cv::Vec3d rayOrigin, cv::Vec3d normal, cv::Vec3d coord);
 
-    void getCLNFBox(const LandmarkDetector::CLNF &model, cv::Rect2d &Box);
+    void getCLNFBox(const LandmarkDetector::CLNF &model, cv::Vec4d &Box);
 public:
     AtentionTracer(Ui::MainWindow *parent = 0, Camera *cam = 0, QString TargetFileName = "");
     ~AtentionTracer();
     void print();
     void reset();
     void setImageSize(int Width, int Height);
-    void showSolution(QString name, const LandmarkDetector::CLNF &model,
+    void showSolution(QString name, int FrameNr, const LandmarkDetector::CLNF &model,
                       double fx, double fy, double cx, double cy, double colore, bool write);
     void setWriteToFile(bool write);
     void setShowAtention(bool show);
@@ -76,6 +77,7 @@ public:
     double mVideoTimeShift = 0.0;
 
     void setSaveVideoImage(bool v);
+    void setUseAVGEye(bool e);
 };
 
 #endif // ATENTIONTRACER_H

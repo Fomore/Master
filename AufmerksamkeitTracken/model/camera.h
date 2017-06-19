@@ -19,7 +19,7 @@ private:
     cv::VideoCapture video;
 
 public:
-    Camera(int id = 0);
+    Camera(int id = 0, QString VideoPath = "");
     ~Camera();
     void get_camera_params(double &fx, double &fy, double &cx, double &cy, int &x, int &y);
 

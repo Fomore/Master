@@ -46,7 +46,22 @@ void Printer::print_CLNF(cv::Mat img,const LandmarkDetector::CLNF &model, double
         FaceAnalysis::EstimateGaze(model, gazeDirection0, fx, fy, cx, cy, true);
         FaceAnalysis::EstimateGaze(model, gazeDirection1, fx, fy, cx, cy, false);
 
-        FaceAnalysis::DrawGaze(img, model, gazeDirection0, gazeDirection1, fx, fy, cx, cy);
+        if(mUseAVGEye){
+            cv::Point3f Solution(gazeDirection0.x+gazeDirection1.x,
+                                 gazeDirection0.y+gazeDirection1.y,
+                                 gazeDirection0.z+gazeDirection1.z);
+            double n = sqrt(Solution.x*Solution.x
+                           +Solution.y*Solution.y
+                           +Solution.z*Solution.z);
+            if(n > 0){
+                Solution.x = Solution.x/n;
+                Solution.y = Solution.y/n;
+                Solution.z = Solution.z/n;
+            }
+            FaceAnalysis::DrawGaze(img, model, Solution, Solution, fx, fy, cx, cy);
+        }else{
+            FaceAnalysis::DrawGaze(img, model, gazeDirection0, gazeDirection1, fx, fy, cx, cy);
+        }
     }
 
     // Work out the pose of the head from the tracked model
@@ -179,6 +194,11 @@ bool Printer::isSaveImage()
 void Printer::setShowHeadBox(bool h)
 {
     mShowHeadBox = h;
+}
+
+void Printer::setUseAVGEye(bool e)
+{
+    mUseAVGEye = e;
 }
 
 void Printer::printMatToQPainter(cv::Mat Img, QPainter &Paint, int Width, int Height, int Position)

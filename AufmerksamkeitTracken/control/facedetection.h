@@ -41,13 +41,12 @@ private:
 
     void initCLNF();
 
-    int num_faces_max = 2;
+    int num_faces_max = 1;
 
     bool mAutoSize = false;
     bool mUseBox = false;
     bool mUseImage = false;
     bool mCLAHE = true;
-    bool mUseEye = true;
 
     bool mShowImageBox = true;
 

@@ -55,44 +55,37 @@ public:
 
     void clearAll();
 
-    /*
-    //Falko - no glases
-    size_t mVideoObservationStart = 48;//In Frames
-    size_t mVideoObservationEnde = 1844;
-    */
-    /*
     //Falko
-    size_t mVideoObservationStart = 251;//In Frames
-    size_t mVideoObservationEnde = 2043;
-    */
+    //size_t mVideoObservationStart = 48;//In Frames
+    //size_t mVideoObservationEnde = 1844;
+
+    //Falko - no glases
+    //size_t mVideoObservationStart = 251;//In Frames
+    //size_t mVideoObservationEnde = 2043;
+
     //Askin
-    size_t mVideoObservationStart = 134;//In Frames
-    size_t mVideoObservationEnde = 1930;
-    /*
+    //size_t mVideoObservationStart = 134;//In Frames
+    //size_t mVideoObservationEnde = 1930;
+
     //Benedikt
-    size_t mVideoObservationStart = 310;//In Frames
-    size_t mVideoObservationEnde = 2100;
-    */
-    /*
+    //size_t mVideoObservationStart = 310;//In Frames
+    //size_t mVideoObservationEnde = 2100;
+
     //David
-    size_t mVideoObservationStart = 101;//In Frames
-    size_t mVideoObservationEnde = 1897;
-    */
-    /*
+    //size_t mVideoObservationStart = 101;//In Frames
+    //size_t mVideoObservationEnde = 1897;
+
     //Shahram
-    size_t mVideoObservationStart = 123;//In Frames
-    size_t mVideoObservationEnde = 1920;
-    */
-    /*
+    //size_t mVideoObservationStart = 123;//In Frames
+    //size_t mVideoObservationEnde = 1920;
+
     //Thiago
     size_t mVideoObservationStart = 409;//In Frames
     size_t mVideoObservationEnde = 2203;
-    */
-    /*
+
     //Thiago - No Glasses
-    size_t mVideoObservationStart = 300;//In Frames
-    size_t mVideoObservationEnde = 2093;
-    */
+    //size_t mVideoObservationStart = 300;//In Frames
+    //size_t mVideoObservationEnde = 2093;
 };
 
 #endif // EVENTHANDLER_H

@@ -5,10 +5,10 @@
 
 #include "model/image.h"
 
-Camera::Camera(int id)
+Camera::Camera(int id, QString VideoPath)
 {
     setCameraParameter(id);
-    setPath("/home/falko/Uni/Master/Film/Test_Positionen_1.mp4");
+    setPath(VideoPath);
     /*
     //Innenaufnahme
     mRotMatrix = cv::Matx33d(0.9936581272313783, 0.03038307716496669, -0.1082607722539323,

@@ -13,6 +13,7 @@ private:
     bool mDrawLandmarks = true;
     bool mSaveImage = false;
     bool mShowHeadBox = true;
+    bool mUseAVGEye = true;
 
 public:
     Printer();
@@ -31,6 +32,7 @@ public:
     bool isSaveImage();
 
     void setShowHeadBox(bool h);
+    void setUseAVGEye(bool e);
 };
 
 #endif // PRINTER_H

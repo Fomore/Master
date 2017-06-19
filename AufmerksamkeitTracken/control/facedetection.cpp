@@ -58,6 +58,7 @@ void FaceDetection::FaceTracking(){
         cv::Mat disp_image = frame_col.clone();
 
         Image::convert_to_grayscale(frame_col,grayscale_image);
+        //Image::toGrayGleam(frame_col,grayscale_image);
 
         vector<cv::Rect_<double> > face_detections;
 
@@ -82,6 +83,12 @@ void FaceDetection::FaceTracking(){
         NonOverlapingDetections(clnf_models, face_detections);
 
         vector<tbb::atomic<bool> > face_detections_used(face_detections.size());
+
+        /*
+         * bei thiago.avi
+        bool manuelReset = mKamera->getFrameNr() == 784 || mKamera->getFrameNr() == 2137
+                || mKamera->getFrameNr() == 2143;
+        */
 
         // Go through every model and update the tracking
         tbb::parallel_for(0, (int)clnf_models.size(), [&](int model){
@@ -151,8 +158,11 @@ void FaceDetection::FaceTracking(){
 
                 double itens = (detection_certainty + 1)/(visualisation_boundary +1);
                 mPrinter.print_CLNF(disp_image,clnf_models[model],itens,fx,fy,cx,cy,colore);
-
-                mAtentionTracer->showSolution("",clnf_models[model],fx,fy,cx,cy, colore, true);
+                if(mAtentionTracer->getUseTime()){
+                    mAtentionTracer->showSolution("",mKamera->getFrameNr(),clnf_models[model],fx,fy,cx,cy, colore, true);
+                }else{
+                mAtentionTracer->showSolution("",FrameID,clnf_models[model],fx,fy,cx,cy, colore, true);
+                }
             }
         }
         painterL->end();
@@ -275,7 +285,6 @@ void FaceDetection::FaceTrackingNewVersion(){
                 // Only draw if the reliability is reasonable, the value is slightly ad-hoc
                 double itens = 0;
                 if(detection_certainty < visualisation_boundary){
-                    std::cout<<"Detection"<<std::endl;
                     if(detection_certainty > 1)
                         detection_certainty = 1;
                     if(detection_certainty < -1)
@@ -298,14 +307,14 @@ void FaceDetection::FaceTrackingNewVersion(){
 
                     // Estimate head pose and eye gaze
                     if(mAtentionTracer->getUseTime()){
-                        mAtentionTracer->showSolution(QString::number(mKamera->getTimeSec()),
+                        mAtentionTracer->showSolution(QString::number(mKamera->getTimeSec()),FrameID,
                                                       clnf_models[model],fx,fy,cx,cy, colore,
                                                       mKamera->getFrameNr() >= mEventHandler->mVideoObservationStart);
 
                     }else{
-                    mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[model],fx,fy,cx,cy, colore,
-                                                  isImageFrame || gaze > 1);
-
+                        mAtentionTracer->showSolution(QString::fromStdString(name),FrameID,
+                                                      clnf_models[model],fx,fy,cx,cy, colore,
+                                                      isImageFrame || gaze > 1);
                     }
 
                     mPrinter.print_CLNF(disp_image,clnf_models[model],0.5,fx,fy,cx,cy, colore);
@@ -417,7 +426,8 @@ void FaceDetection::FaceTrackingImage(){
             int used;
             CalcualteEyes(frame.clone(),Model_Init,used,1.0);
 
-            mAtentionTracer->showSolution(QString::fromStdString(name),clnf_models[Model_Init],fx,fy,cx,cy, (double)Model_Init/num_faces_max, true);
+            mAtentionTracer->showSolution(QString::fromStdString(name),frm,
+                                          clnf_models[Model_Init],fx,fy,cx,cy, (double)Model_Init/num_faces_max, true);
 
             mPrinter.printSmallImage(disp_image.clone(),clnf_models[Model_Init],*painterR,*painterL, "img/Head_"+name,
                                      mTheWindow->Right_Label->size().width(), mTheWindow->Right_Label->size().height()/num_faces_max, Model_Init);
@@ -633,46 +643,7 @@ void FaceDetection::CalcualteEyes(cv::Mat img, size_t CLNF_ID, int &used, double
             }
         }
     }
-
     used = useCalc[0]*10+useCalc[1];
-
-    if(mUseEye && hir_id[0] >= 0 && hir_id[1] >= 0){
-        cv::Rect2d rec_0 = clnf_models[CLNF_ID].hierarchical_models[hir_id[0]].GetBoundingBox();
-        cv::Rect2d rec_1 = clnf_models[CLNF_ID].hierarchical_models[hir_id[1]].GetBoundingBox();
-        cv::Mat_<double> shape2D_0 = clnf_models[CLNF_ID].hierarchical_models[hir_id[0]].detected_landmarks;
-        cv::Mat_<double> shape2D_1 = clnf_models[CLNF_ID].hierarchical_models[hir_id[1]].detected_landmarks;
-        int n = shape2D_0.rows/2;
-        for(size_t i = 20; i < 28; i++){
-            cv::Point2d pos0G(shape2D_0.at<double>(i),shape2D_0.at<double>(i+n));
-            cv::Point2d pos0S(shape2D_0.at<double>(i-20),shape2D_0.at<double>(i-20+n));
-            cv::Point2d pos1G(shape2D_1.at<double>(i),shape2D_1.at<double>(i+n));
-            cv::Point2d pos1S(shape2D_1.at<double>(i-20),shape2D_1.at<double>(i-20+n));
-            pos0S.x -= rec_0.x; pos0S.y -= rec_0.y;
-            pos0G.x -= rec_0.x; pos0G.y -= rec_0.y;
-            pos1S.x -= rec_1.x; pos1S.y -= rec_1.y;
-            pos1G.x -= rec_1.x; pos1G.y -= rec_1.y;
-
-            double sxS = (pos0S.x/rec_0.width + pos1S.x/rec_1.width)/2.0;
-            double syS = (pos0S.y/rec_0.height+ pos1S.y/rec_1.height)/2.0;
-            double sxG = (pos0G.x/rec_0.width + pos1G.x/rec_1.width)/2.0;
-            double syG = (pos0G.y/rec_0.height+ pos1G.y/rec_1.height)/2.0;
-
-            //std::cout<<pos0S<<pos0G<<pos1S<<pos1G<<cv::Vec4d(sxS,syS,sxG,syG)<<std::endl;
-
-            shape2D_0.at<double>(i) = rec_0.x + rec_0.width * sxG;
-            shape2D_0.at<double>(i+n) = rec_0.y + rec_0.height * syG;
-            shape2D_0.at<double>(i-20) = rec_0.x + rec_0.width * sxS;
-            shape2D_0.at<double>(i-20+n) = rec_0.y + rec_0.height * syS;
-
-            shape2D_1.at<double>(i) = rec_1.x + rec_1.width * sxG;
-            shape2D_1.at<double>(i+n) = rec_1.y + rec_1.height * syG;
-            shape2D_1.at<double>(i-20) = rec_1.x + rec_1.width * sxS;
-            shape2D_1.at<double>(i-20+n) = rec_1.y + rec_1.height * syS;
-        }
-        //std::cout<<std::endl;
-        clnf_models[CLNF_ID].hierarchical_models[hir_id[0]].detected_landmarks = shape2D_0.clone();
-        clnf_models[CLNF_ID].hierarchical_models[hir_id[1]].detected_landmarks = shape2D_1.clone();
-    }
 }
 
 void FaceDetection::initCLNF()
@@ -812,7 +783,8 @@ void FaceDetection::setCLAHE(bool c)
 
 void FaceDetection::setUseEye(bool e)
 {
-    mUseEye = e;
+    mAtentionTracer->setUseAVGEye(e);
+    mPrinter.setUseAVGEye(e);
 }
 
 void FaceDetection::setShowEyes(bool show)

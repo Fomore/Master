@@ -39,7 +39,7 @@ void AtentionTracer::reset(){
     mGazeDirections1.clear();
 }
 
-void AtentionTracer::showSolution(QString name, const LandmarkDetector::CLNF &model, double fx, double fy, double cx, double cy, double colore, bool write)
+void AtentionTracer::showSolution(QString name,int FrameNr, const LandmarkDetector::CLNF &model, double fx, double fy, double cx, double cy, double colore, bool write)
 {
     // Gaze tracking, absolute gaze direction
     cv::Point3f gazeDirection0(0, 0, -1);
@@ -53,9 +53,9 @@ void AtentionTracer::showSolution(QString name, const LandmarkDetector::CLNF &mo
     }
 
     if(mWriteToFile && write){
-        cv::Rect2d box;
+        cv::Vec4d box;
         getCLNFBox(model,box);
-        writeSolutionToFile(name,model.params_global,headPoseWorld,gazeDirection0,gazeDirection1,box);
+        writeSolutionToFile(name,FrameNr,model.params_global,headPoseWorld,box,gazeDirection0,gazeDirection1);
     }
 }
 
@@ -64,11 +64,30 @@ void AtentionTracer::newPosition(double colore, cv::Vec6d HeadPoseWorld, cv::Vec
     mColores.push_back(colore);
     mHeadWorld.push_back(HeadPoseWorld);
     mHeadPoses.push_back(HeadPose);
-    mGazeDirections0.push_back(GazeDirection0);
-    mGazeDirections1.push_back(GazeDirection1);
+
+    if(mUseAVGEye){
+        cv::Point3f Solution(GazeDirection0.x+GazeDirection1.x,
+                             GazeDirection0.y+GazeDirection1.y,
+                             GazeDirection0.z+GazeDirection1.z);
+        double n = sqrt(Solution.x*Solution.x
+                       +Solution.y*Solution.y
+                       +Solution.z*Solution.z);
+        if(n > 0){
+            Solution.x = Solution.x/n;
+            Solution.y = Solution.y/n;
+            Solution.z = Solution.z/n;
+        }
+        mGazeDirections0.push_back(Solution);
+        mGazeDirections1.push_back(Solution);
+    }else{
+        mGazeDirections0.push_back(GazeDirection0);
+        mGazeDirections1.push_back(GazeDirection1);
+    }
 }
 
-void AtentionTracer::writeSolutionToFile(QString name, cv::Vec6d Model, cv::Vec6d HeadPoseWorld, cv::Point3f GazeDirection0, cv::Point3f GazeDirection1, cv::Rect2d Box)
+void AtentionTracer::writeSolutionToFile(QString name,int FrameNr,
+                                         cv::Vec6d Model, cv::Vec6d HeadPoseWorld, cv::Vec4d Box,
+                                         cv::Point3f GazeDirection0, cv::Point3f GazeDirection1)
 {
     cv::Point2d worldAngle, rotatAngle;
     cv::Point3d worlPoint, target;
@@ -79,8 +98,8 @@ void AtentionTracer::writeSolutionToFile(QString name, cv::Vec6d Model, cv::Vec6
     }
     std::ofstream myfile;
     myfile.open ("./data/Video_Analyse.txt", std::ios::in | std::ios::app);
-    myfile <<worlPoint<<target<<Model<<"|"
-          <<HeadPoseWorld<<GazeDirection0<<GazeDirection1<<Box<<"|"<<calcAbweichung(HeadPoseWorld,target)
+    myfile <<FrameNr<<" "<<worlPoint<<" "<<target<<" "<<Model<<" |"
+          <<HeadPoseWorld<<" "<<GazeDirection0<<" "<<GazeDirection1<<" "<<Box<<"| "<<calcAbweichung(HeadPoseWorld,target)
          <<" "<<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection0,target)
         <<" "<<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection1,target)<<std::endl;
     myfile.close();
@@ -194,7 +213,7 @@ void AtentionTracer::printAttention(){
         if(linePlaneIntersection(contact,ray,position,normale,center)){
             cv::circle(img,calcPose2Image(contact,mAttentionCamPose,mAttentiondCamOri,fx,fx,cy),cvRound(fx/50),color,-1);
             if(mSaveVideoImage){
-            cv::circle(mAttentionSumImage,calcPose2Image(contact,mAttentionCamPose,mAttentiondCamOri,800,400,300),3,color,-1);
+                cv::circle(mAttentionSumImage,calcPose2Image(contact,mAttentionCamPose,mAttentiondCamOri,800,400,300),3,color,-1);
             }
         }
     }
@@ -213,12 +232,20 @@ void AtentionTracer::printTargets(cv::Mat &img, const cv::Vec3d &Pose, const cv:
         cv::circle(img,calcPose2Image(mKamera->rotateToCamera(getTimeTarget(mKamera->getTimeSec()-mVideoTimeShift)),
                                       Pose,Ori,fx,cx,cy),
                    cvRound(fx/50),cv::Scalar(255,0,0),-1);
-
     }else{
         for(size_t i = 0; i < mPoints.size() ; i++){
             cv::circle(img,calcPose2Image(mKamera->rotateToCamera(mPoints[i]),Pose,Ori,fx,cx,cy),
                        cvRound(fx/50),cv::Scalar(255,0,0),-1);
         }
+    }
+}
+
+void AtentionTracer::printAllTarget(cv::Mat &img, const cv::Vec3d &Pose, const cv::Matx33d Ori, double fx, double cx, double cy, cv::Scalar Colore)
+{
+    for(size_t i = 0; i+1 < mTimePoints.size(); i++){
+        cv::line(img,calcPose2Image(mKamera->rotateToCamera(mTimePoints[i]),Pose,Ori,fx,cx,cy),
+                     calcPose2Image(mKamera->rotateToCamera(mTimePoints[i+1]),Pose,Ori,fx,cx,cy),
+                Colore,2);
     }
 }
 
@@ -231,15 +258,6 @@ void AtentionTracer::printGrid(cv::Mat &img, cv::Point3d Point1, cv::Point3d Poi
                 cv::circle(img,calcPose2Image(cv::Vec3d(x,y,z),Cam,R,fx,cx,cy),cvRound(fx/200),cv::Scalar(255,255,255),-1);
             }
         }
-    }
-}
-
-void AtentionTracer::printAllTarget(cv::Mat &img, const cv::Vec3d &Pose, const cv::Matx33d Ori, double fx, double cx, double cy, cv::Scalar Colore)
-{
-    for(size_t i = 0; i+1 < mTimePoints.size(); i++){
-        cv::line(img,calcPose2Image(mKamera->rotateToCamera(mTimePoints[i]),Pose,Ori,fx,cx,cy),
-                     calcPose2Image(mKamera->rotateToCamera(mTimePoints[i+1]),Pose,Ori,fx,cx,cy),
-                Colore,2);
     }
 }
 
@@ -287,25 +305,25 @@ bool AtentionTracer::linePlaneIntersection(cv::Vec3d& contact, cv::Vec3d ray, cv
     return true;
 }
 
-void AtentionTracer::getCLNFBox(const LandmarkDetector::CLNF &model, cv::Rect2d &Box)
+void AtentionTracer::getCLNFBox(const LandmarkDetector::CLNF &model, cv::Vec4d &Box)
 {
     cv::Mat_<double> shape2D = model.detected_landmarks;
 
     int n = shape2D.rows/2;
 
-    Box.x = Box.width = shape2D.at<double>(0);
-    Box.y = Box.height= shape2D.at<double>(n);
+    Box[0] = Box[2] = shape2D.at<double>(0);
+    Box[1] = Box[3]= shape2D.at<double>(n);
     for(int i = 1; i < n; i++)// Beginnt bei 0 das Output-Format
     {
         double x = (shape2D.at<double>(i));
         double y = (shape2D.at<double>(i + n));
-        Box.x = min(Box.x,x);
-        Box.y = min(Box.y,y);
-        Box.width = max(Box.width ,x);
-        Box.height= max(Box.height,y);
+        Box[0] = min(Box[0],x);
+        Box[1] = min(Box[1],y);
+        Box[2] = max(Box[2] ,x);
+        Box[3]= max(Box[3],y);
     }
-    Box.width -= Box.x;
-    Box.height-= Box.y;
+    Box[2] -= Box[0];
+    Box[3]-= Box[1];
 }
 
 double AtentionTracer::getScall(int size, double scall)
@@ -336,6 +354,11 @@ void AtentionTracer::setUseTime(bool t)
 void AtentionTracer::setSaveVideoImage(bool v)
 {
     mSaveVideoImage = v;
+}
+
+void AtentionTracer::setUseAVGEye(bool e)
+{
+    mUseAVGEye = e;
 }
 
 void AtentionTracer::setImageSize(int Width, int Height){
