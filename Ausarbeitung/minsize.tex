@@ -1,6 +1,0 @@
-\section{Skalierung auf Mindestgröße}
-\label{skalierung}
-Da OpenFace optimiert ist auf Gesichtern von mindestens 100 Pixel zu arbeiten, werden die Bildbereiche auf diese Größe hochskalliert. \autoref{scale_Algos}\\
-Die von MTCNN gelieferten und vergrößerten Boxen werden nun auf mindestens $130 \times 180$ Pixel gebracht, sollte sie kleiner sein.  Neben der einfachen Skalierung, muss die Überführung von Bildkoordinaten des Bildausschnittes in die Koordinaten im Frame bekannt sein, damit dies bei späteren Berechnungen berücksichtigt werden können.\\
-Die Skallierung ist für jeden Bildausschnitt individuell und kann sich durchaus über die Zeit ändern, wenn sich z.B. die Distanz zwischen Person und Kamera verändert.\\
-Von einer zu starken Vergrößerung ist abzuraten, da sich dann der Rechenaufwand pro Gesicht erhöht und die Zuverlässigkeit der Berechnungen von OpenFace wieder sinkt, z.B. durch Falschdetektion des Gesichtes.
