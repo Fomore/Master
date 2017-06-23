@@ -11,35 +11,53 @@ Da auch in der späteren Anwendung der Augenbereich genauer bestimmt ist, bevor 
 Ein gutes Verfahren muss stabil gegenüber der Skalierung sein damit es auch auf kleinen Bereichen zuverlässig arbeitet. Da für die spätere Anwendung vor allem das Zentrum der Pupille von Interesse ist, wird der Abstand zum Zentrum als Qualitätsmaß verwendet.\\
 \begin{figure}
 	\centering
-	\includegraphics[width=0.49\linewidth]{Eye_Img/Normal_Abstand_P}
-	\includegraphics[width=0.49\linewidth]{Eye_Img/Gleam_Abstand_P}
-	\includegraphics[width=0.49\linewidth]{Eye_Img/New_Abstand_P}
-	\includegraphics[width=0.49\linewidth]{Eye_Img/Quadrat_Abstand_P}
-	\includegraphics[width=0.49\linewidth]{Eye_Img/Min_Abstand_P}
-	\includegraphics[width=0.49\linewidth]{Eye_Img/Max_Abstand_P}
-	\caption{Abstand des Zentrums der Landmark-Pupille und der Berechneten Ellipse in [Pixel/Skalierung] Oben-Links: Luminance, Oben-Rechts: Gleam, Mitte-Links: Gleam New, Mitte-Rechts: Quadrat, Unten-Links: Min-Wert, Unten-Rechts: Max-Wert}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Norm_Radius_A}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Gleam_Radius_A}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/New_Radius_A}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Qua_Radius_A}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Min_Radius_A}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Max_Radius_A}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/Normal_Abstand_P}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/Gleam_Abstand_P}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/New_Abstand_P}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/Quadrat_Abstand_P}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/Min_Abstand_P}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/Max_Abstand_P}
+	\caption{Abstand des Zentrums der Landmark-Pupille und der Berechneten Ellipse in [Pixel/Skalierung]\\Oben-Links: Luminance, Oben-Mitte: Gleam, Oben-Rechts: Gleam New, Unten-Links: Quadrat, Unten-Mitte: Min-Wert, Unten-Rechts: Max-Wert}
 	\label{ElSe_Gray_Zentrum}
 \end{figure}
 \begin{figure}
 	\centering
-	\includegraphics[width=0.49\linewidth]{Eye_Img/Normal_Width_P}
-	\includegraphics[width=0.49\linewidth]{Eye_Img/Gleam_Width_P}
-	\includegraphics[width=0.49\linewidth]{Eye_Img/New_Width_P}
-	\includegraphics[width=0.49\linewidth]{Eye_Img/Quadrat_Width_P}
-	\includegraphics[width=0.49\linewidth]{Eye_Img/Min_Width_P}
-	\includegraphics[width=0.49\linewidth]{Eye_Img/Max_Width_P}
-	\caption{Unterschied Zwischen den Radien der Landmark-Pupille und der Berechneten Ellipse in [Pixel/Skalierung] Oben-Links: Luminance, Oben-Rechts: Gleam, Mitte-Links: Gleam New, Mitte-Rechts: Quadrat, Unten-Links: Min-Wert, Unten-Rechts: Max-Wert}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Norm_Radius_P}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Gleam_Radius_P}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/New_Radius_P}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Qua_Radius_P}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Min_Radius_P}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Max_Radius_P}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/Normal_Width_P}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/Gleam_Width_P}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/New_Width_P}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/Quadrat_Width_P}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/Min_Width_P}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/Max_Width_P}
+	\caption{Unterschied Zwischen den Radien der Landmark-Pupille und der Berechneten Ellipse in [Pixel/Skalierung]\\Oben-Links: Luminance, Oben-Mitte: Gleam, Oben-Rechts: Gleam New, Unten-Links: Quadrat, Unten-Mitte: Min-Wert, Unten-Rechts: Max-Wert}
 	\label{ElSe_Gray_Pupille}
 \end{figure}
 \begin{figure}
 	\centering
-	\includegraphics[width=0.49\linewidth]{Eye_Img/Normal_Width_I}
-	\includegraphics[width=0.49\linewidth]{Eye_Img/Gleam_Width_I}
-	\includegraphics[width=0.49\linewidth]{Eye_Img/New_Width_I}
-	\includegraphics[width=0.49\linewidth]{Eye_Img/Quadrat_Width_I}
-	\includegraphics[width=0.49\linewidth]{Eye_Img/Min_Width_I}
-	\includegraphics[width=0.49\linewidth]{Eye_Img/Max_Width_I}
-	\caption{Unterschied Zwischen den Radien der Landmark-Iris und der Berechneten Ellipse in [Pixel/Skalierung] gegen die Radius-Größe. Oben-Links: Luminance, Oben-Rechts: Gleam, Mitte-Links: Gleam New, Mitte-Rechts: Quadrat, Unten-Links: Min-Wert, Unten-Rechts: Max-Wert}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Norm_Radius_I}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Gleam_Radius_I}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/New_Radius_I}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Qua_Radius_I}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Min_Radius_I}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Max_Radius_I}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/Normal_Width_I}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/Gleam_Width_I}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/New_Width_I}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/Quadrat_Width_I}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/Min_Width_I}
+	%\includegraphics[width=0.49\linewidth]{Eye_Img/Max_Width_I}
+	\caption{Unterschied Zwischen den Radien der Landmark-Iris und der Berechneten Ellipse in [Pixel/Skalierung] gegen die Radius-Größe.\\ Oben-Links: Luminance, Oben-Mitte: Gleam, Oben-Rechts: Gleam New, Unten-Links: Quadrat, Unten-Mitte: Min-Wert, Unten-Rechts: Max-Wert}
 	\label{ElSe_Gray_Iris}
 \end{figure}
 Es Zeigt sich, dass das Verfahren um den Farbwert in einen Grauwert zu überführen durchaus Auswirkungen vor allem auf die Positionsbestimmung hat.\\
@@ -48,13 +66,19 @@ Im Vergleich liefert das Quadratische-Verfahren \autoref{gray_Quadrat} im Test d
 Das beste Ergebnis wurde mit Geam erreicht, eine mittlere Abweichung von 5.89 Pixel. Durch die Gamma-Korrektur ist zwar die Kontur der Iris deutlich schlechter zu detektieren, dies wird allerdings durch die Genauigkeit bei weiten wett gemacht.\\
 \begin{figure}
 	\centering
-	\includegraphics[width=0.33\linewidth]{Eye_Img/Normal_Width_P_8}
-	\includegraphics[width=0.33\linewidth]{Eye_Img/Normal_Abstand_P_11}
-	\includegraphics[width=0.33\linewidth]{Eye_Img/Normal_Width_I_18}\\
-	\includegraphics[width=0.33\linewidth]{Eye_Img/Gleam_Width_P_8}
-	\includegraphics[width=0.33\linewidth]{Eye_Img/Gleam_Abstand_P_11}
-	\includegraphics[width=0.33\linewidth]{Eye_Img/Gleam_Width_I_18}
-	\caption{Auswirkung von der Bildgröße auf die Qualität der Berechnung. Oben: Luminance, Unten Gleam}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Norm_Radius_P_8}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Norm_Radius_A_10}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Norm_Radius_I_18}\\
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Gleam_Radius_P_8}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Gleam_Radius_A_10}
+	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Gleam_Radius_I_18}
+	%\includegraphics[width=0.32\linewidth]{Eye_Img/Normal_Width_P_8}
+	%\includegraphics[width=0.32\linewidth]{Eye_Img/Normal_Abstand_P_11}
+	%\includegraphics[width=0.32\linewidth]{Eye_Img/Normal_Width_I_18}\\
+	%\includegraphics[width=0.32\linewidth]{Eye_Img/Gleam_Width_P_8}
+	%\includegraphics[width=0.32\linewidth]{Eye_Img/Gleam_Abstand_P_11}
+	%\includegraphics[width=0.32\linewidth]{Eye_Img/Gleam_Width_I_18}
+	\caption{Auswirkung von der Bildgröße auf die Qualität der Berechnung.\\ Oben: Luminance, Unten Gleam}
 	\label{ElSe_scall}
 \end{figure}
 Da die Abweichung von ElSe konstant bei etwa 5.9 Pixel bei Glean liegt, arbeitet ElSe stabil bei den Skalierungen, siehe \autoref{ElSe_scall}, womit es vor allem bei kleinen Bildern zuverlässig Ergebnisse liefern kann als OpenFace.\\
@@ -68,8 +92,10 @@ Im Versuch hat sich ein Radius von etwa einem Zwölftel des zu erwartetem Durchm
 Als Referenz wird das Ergebnis von OpenFace für die zusätzlich bestimmten Landmarks der Augen verwendet. Dies wurde auch auf dem Augendatensatz \cite{database_Eye} angewendet um vergleichbare Ergebnisse zu erhalten.\\
 \begin{figure}
 	\centering
-	\includegraphics[width=0.45\linewidth]{Eye_Img/OpenFace_Zentrum_P}
-	\includegraphics[width=0.45\linewidth]{Eye_Img/OpenFace_Width_P}
+	\includegraphics[width=0.45\linewidth]{Eye_Img_Box/Openface_PC}
+	\includegraphics[width=0.45\linewidth]{Eye_Img_Box/Openface_PW}
+	%\includegraphics[width=0.45\linewidth]{Eye_Img/OpenFace_Zentrum_P}
+	%\includegraphics[width=0.45\linewidth]{Eye_Img/OpenFace_Width_P}
 	\caption{Auswirkung von Skalierung auf die Qualität der Augendetektion von ObenFace}
 	\label{OpenFace_Eye}
 \end{figure}
@@ -77,10 +103,14 @@ Es ist zu erkennen dass dieses Verfahren im Schnitt oft schlechtere Ergebnisse l
 Da die hohe Qualität von ElSe nur erreicht werden kann, wenn es auf den passenden Bildausschnitt angewendet wird, ist auch die Detektion des Auge von Interesse.\\
 \begin{figure}
 	\centering
-	\includegraphics[width=0.245\linewidth]{Eye_Img/Box_X}
-	\includegraphics[width=0.245\linewidth]{Eye_Img/Box_Y}
-	\includegraphics[width=0.245\linewidth]{Eye_Img/Box_W}
-	\includegraphics[width=0.245\linewidth]{Eye_Img/Box_H}
+	\includegraphics[width=0.245\linewidth]{Eye_Img_Box/Openface_BoxX}
+	\includegraphics[width=0.245\linewidth]{Eye_Img_Box/Openface_BoxY}
+	\includegraphics[width=0.245\linewidth]{Eye_Img_Box/Openface_BoxW}
+	\includegraphics[width=0.245\linewidth]{Eye_Img_Box/Openface_BoxH}
+	%\includegraphics[width=0.245\linewidth]{Eye_Img/Box_X}
+	%\includegraphics[width=0.245\linewidth]{Eye_Img/Box_Y}
+	%\includegraphics[width=0.245\linewidth]{Eye_Img/Box_W}
+	%\includegraphics[width=0.245\linewidth]{Eye_Img/Box_H}
 	\caption{Bestimmung der Box ums Auge}
 	\label{OpenFace_Eye_Box}
 \end{figure}

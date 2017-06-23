@@ -17,13 +17,48 @@ Während der Aufnahme wurde auf weitere Messung der exakten Position verzichtet.
 Die 6 Probanden (5 Männlich, 1 Weiblich, 3 Brille, 5 Ohne) verfolgten das Ziel $2m$ und $1s$ auf natürlicher weise.\\
 Um die Bewegung des Punktes mit der Aufgezeichneten Kopfbewegung zu Synchronisieren, war im Kamerabild der duplizierte Bildschirm zum Projektor zusehen.\\
 Die Aufnahme wurde mit $15Fps$ in Farbe mit einer Auflösung von $1600\times 896$ Pixel aufgezeichnet. Die Kamera besitzt einen horizontalen Blickwinkel von etwa $70^\circ$.
-\subsection{Ergebnis - To Do}
-Dargestellt sind alle Auftreffpunkte der Blickrichtung auf die Leinwand währen der gesamten Aufnahme.
-\begin{itemize}
-	\item Graphik mit den Blickverfolgung
-	\item Plot Winkel gegen Winkel und Abweichung
-	\item 
-\end{itemize}
+\subsection{Ergebnis}
+Die Auswertung des Versuches hat die Erwartungen und Problematiken bestätigt. Eine Verarbeitung des Videomaterials ist sogar bei sehr niedriger Auflösung noch möglich, wobei die Qualität besser sein könnte.
+\subsubsection{Erster Eindruck}
+Dargestellt in \autoref{img_videosumme} sind alle Auftreffpunkte der Blickrichtung auf die Leinwand währen der gesamten Aufnahme.\\
+\begin{figure}
+	\centering
+	\includegraphics[width=0.7\linewidth]{OpenFace_Img/VideoSumme}
+	\caption{Dargestellt sind alle gemessene Auftreffpunkte der Gesichtsorientierung auf die Leinwand (Rosa) und des Targets (Schwarz)}
+	\label{img_videosumme}
+\end{figure}
+Es ist zu erkennen, dass die eigentlichen Bewegungen erkennbar sind, es aber vor allem in den Randbereichen zu einer großen Differenz kommt.\\
+Da nur der Unterschied zwischen Target und Auftreffpunkt der gemessenen Gesichtsorientierung aufgezeigt werden kann, kommt es zu verschiedenen Fehlern, vor allem wird dem Target mit den Augen gefolgt.
+\subsubsection{Qualität}
+Durch die begrenzte Auflösung der Kamera und dem großen Distanzbereich auf dem gearbeitet werden muss, ist vor allem die Stabilität bei der Skalierung wichtig.
+\begin{figure}
+	\centering
+	\includegraphics[width=0.3\linewidth]{OpenFace_Img/Head_x_S1}
+	\includegraphics[width=0.3\linewidth]{OpenFace_Img/Head_y_S1}
+	\includegraphics[width=0.3\linewidth]{OpenFace_Img/EyeAVG_x_S1}\\
+	\includegraphics[width=0.3\linewidth]{OpenFace_Img/Head_x_S05}
+	\includegraphics[width=0.3\linewidth]{OpenFace_Img/Head_y_S05}
+	\includegraphics[width=0.3\linewidth]{OpenFace_Img/EyeAVG_x_S05}\\
+	\includegraphics[width=0.3\linewidth]{OpenFace_Img/Head_x_S025}
+	\includegraphics[width=0.3\linewidth]{OpenFace_Img/Head_y_S025}
+	\includegraphics[width=0.3\linewidth]{OpenFace_Img/EyeAVG_x_S025}\\
+	\includegraphics[width=0.3\linewidth]{OpenFace_Img/Head_x_S01}
+	\includegraphics[width=0.3\linewidth]{OpenFace_Img/Head_y_S01}
+	\includegraphics[width=0.3\linewidth]{OpenFace_Img/EyeAVG_x_S01}\\
+	\includegraphics[width=0.3\linewidth]{OpenFace_Img/Head_x_S005}
+	\includegraphics[width=0.3\linewidth]{OpenFace_Img/Head_y_S005}
+	\includegraphics[width=0.3\linewidth]{OpenFace_Img/EyeAVG_x_S005}
+	\caption{Dargestellt ist Auswertung der Videoaufnahme mit der Kopfausrichtung Horizontal (Links), Kopforientierung Vertikal (Mitte) und die X-Ausrichtung der Augen (Rechts)\\Skalierungsfaktor von oben nach unten (1/0.5/0.25/0.1/0.05)}
+	\label{graph_VideoSkalierung}
+\end{figure}
+Bei der Bestimmung des horizontalen Winkels der Kopforientierung zeig sich das die bestimmten Werte im schnitt etwas zu gering ist. Der Richtung zur Kamera kann zuverlässig bestimmt werden, je größer der zu messende Winkel ist, desto  stärker wird auch der Fehler.\\
+Betrachtet man die jeweiligen Quartale, so sind die Grenzen etwa $5^\circ$ auseinander in der Originalgröße. Genug um einzelne Bereiche differenzieren zu können, jedoch zu ungenau für Berechnungen.\\
+Bei der Bestimmung des vertikalen Winkels zeigt sich das dieser Wert nur sehr ungenau bestimmt werden konnte, vor allem der Winkel nach Oben ist fast nicht messbar. Jener Richtung Boden wird besser erfasst, allerdings ist, bedingt durch den Versuchsausbau, der Wertebereich geringer.\\
+Die bestimmte Blickrichtung ist trotz Verbesserung durch ElSe und Mittlung beider Augen, schon in der Originalgröße nicht verwendbar. Die Mittelwerte liegen selbst bei den Maximal Werten sehr eng beieinander und die Bereiche überschneiden sich stark. Die Differenz der Mittelwerte von den Extremar sind nur etwa $20^\circ$ auseinander liegen, bei einer eigentlichen Differenz von etwa $90^\circ$.\\
+Die Auswirkung der Skalierung ist annehmbar gering, allgemein steigt die Abweichung und der Bereich sinkt. Bei einem Skalierungsfaktor von 0.01 können die einzelnen Bereiche noch gut getrennt werden, dies entspricht eine Distanz von etwa $14m$. So liegt der Abstand der Quartale etwa $9^\circ$ weit auseinander auf der horizontalen Achse.\\
+Bei der Bestimmung des vertikalen Winkels ergibt sich ein ähnliches Verhalten, wobei vor allem der Wertebereich auch $30^\circ$ sinkt.\\
+Das Ergebnis der Blickrichtung kann nicht verwendet werden, da die Differenz zwischen dem Rechten und Linken Maximalwert nur $8^\circ$ beträgt und die Quartale sich fast vollständig überschneiden.\\
+Überraschend ist das Ergebnis bei dem Skalierungsfaktor von 0.05 (ca $24m$). Die Ausrichtungen sind, zumindest horizontal, noch erkennbar und soweit differenzierbar um grobe Richtungsänderungen zu erkennen. 
 \subsection{Fehleranalyse}
 Eine Betrachtung der Fehlerquellen die Bei der Messung entstanden sind bzw. die durch den Aufbau Entstehen. Außerdem eine weitere bei der Berechnung.
 \subsubsection{Messung}
