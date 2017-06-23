@@ -1,0 +1,33 @@
+\section{OpenFace}
+Die Aufgaben von OpenFace ist die Analyse der Gesichtes basierend auf Bildern. Dabei sind für die Anwendung nur Kameraparameter bekannt und keinerlei Zusätze wie eine Tiefenbild oder Infrarotbeleuchtung der Szene vorhanden. Dabei ist für die Anwendung die Kopfposition (Translation und Orientierung) und Blickrichtung von Interesse, da mit ihnen zurückrechnet werden kann wohin die Person schaut.\\
+OpenFace kann neben den Landmarks auch die Position, Blickrichtung und Gesichtsmerkmale bestimmen, basierend auf einem einfachen Bild. Sollte ein Video als Quelle fungieren, so kann OpenFace auch lernen. Somit sind die Resultate basierend auf Videos besser als auf einfachen Bildern.
+\subsection{Verarbeitungsschritte}
+Der Rechenaufwand ist so ausgelegt, dass alle Berechnungen auf einer Webcam in Echtzeit ausgeführt werden können, dies ist im aktuellen Fall nicht notwendig, da es sich um eine nachträgliche Auswertung handelt. Durch den Aufbau sind nur recht kleine Farbbilder der Gesichter in einem Video vorhanden wodurch eine Auswertung erschwert wird.
+\subsubsection{Gesichts-Landmarks: Detektion und Verfolgung}
+Für die Bestimmung und Tracking der Landmarks wird ein Conditional Local Neural Fields (CLNF) eingesetzt. Dabei Handels es sich im Grunde um ein Constrained Local Model (CLM) nur mit verbesserter Patch Experts und Optimierungsfunktionen.\\
+Zu Beginn werden verschiedene initiale Hypothesen aus der dlib-Bibliothek verwendet und die Passende ausgewählt. Bei den initiale Hypothesen handelt es sich um verschiedene Gesichtsorientierungen auf denen verschiedene Netze gelernt wurden. Dies ist zwar langsamer, aber auch exakter als eine einfache Hypothese. Wird ein Tracing auf Videos durchgeführt, so wird als initiale Hypothese das Ergebnis aus dem letzten Frame verwendet. Sollte das Tracing scheitern, so wird das CNN reseted um Neu zu beginnen.\\
+Die beiden Hauptkomponenten ist das Point Distribution Model (PDM) zur Erfassung der Anordnung der Landmarks und patch experts zum Erfassen der Variante der einzelnen Landmarks.\\
+Auf diese Weise werden 68 Gesichts-Landmarks und  weitere 28 pro Auge erfasst. Zur Brechung auf den Gesichtern sollten sie eine Mindestbreite von 100 Pixeln für eine zuverlässige Detektion Originalgröße besitzt.
+\subsubsection{Bestimmung der Gesichtsposition}
+Zur Bestimmung der Translation und Orientierung des Gesichtes wird ein CLNF bzw. PDM eingesetzt. Dabei wurde es mit der Kameraabbildung der 3D-Landmarks eines Kopfes in verschiedenen Positionen initialisiert. Womit auf eine Normierte Abbildung gerechnet wird, diese kann mit den passenden Kameraparameter für die Aufnahme angepasst werden um die reale Position zu bestimmen. Sind keine Parameter bekannt, so können diese anhand der Bildauflösung geschätzt werden.\\
+Bei der Schätzung der Brennweite für ein Bild mit einer Dimension $I_x\times I_y$ wird das Standardobjektiv mit 50 mm und einer Auflösung von $640 \times 480$ Pixel angenommen, somit ergibt sich die Brennweiten $f_x$ und $f_y$ wie folgt:
+\begin{align*}
+f_x = 500\cdot \frac{I_x}{640}\\
+f_y = 500\cdot \frac{I_y}{480}
+\end{align*}
+\subsubsection{Bestimmung der Blickrichtung}
+\label{OpenFace_Blickrichtung}
+Durch die Landmarks der Augen werden die Augenlider, Iris und Pupille dargestellt und für jedes Auge separat bestimmt. Dabei wird der Augenbereich, basierend auf dem detektierten Gesicht, verwendet, um mit einem weiten CNN die 28 Landmarks des Auges zu bestimmen.\\
+Zur Bestimmung der Blickrichtung wird wie folgt vorgegeben. Zuerst wird der Strahl bestimmt der, ausgehend vom Zentrum der Kamera, durch das Zentrum der Pupille verläuft. Nun wir der Schnittpunkt zwischen diesem Strahl und einer Sphäre bestimmt, die das Auge repräsentiert. Nun wird ein Strahl bestimmt der vom Zentrum der Sphäre ausgehend durch den berechneten Schnittpunkt verläuft, dies ist die resultierende Blickrichtung.
+\subsubsection{Detection der Gesichtsmerkmale}
+Dieser Schritt kann von OpenFace ausgeführt werden, ist aber  im aktuellen Fall nicht von Relevanz.
+\subsection{Veröffentlichte Genauigkeit}
+Die Messung wurde auf dem Biwi Kinect head pose und BU Datensatz ausgeführt. Für die Genauigkeit der Kopfposition haben sich folgend Werte ergeben in Grad:\\
+\begin{tabular}{|l|c|c|c||c|c|}
+	\hline
+	&Yaw&Pitch&Roll&Mean&Median\\\hline
+	Biwi Kinect \cite{BIWI_database}&7.9&5.6&4.5&6.0&2.6\\\hline
+	BU dataset \cite{BU_database}&2.8&3.3&2.3&2.8&2.0\\\hline
+	ICT-3DHP \cite{ICT_database} &3.6&3.6&3.6&3.6&-\\\hline
+\end{tabular}\\\\
+Für die Qualität zur Bestimmung der Blickrichtung ergab sich ein durchschnittlichen Fehler von 9.96 Grad.
