@@ -1,14 +1,15 @@
-\section{Verbesserung der Augen}
+\section{Aufbereitung der Bildinformation in der Augenregion}
 \label{verbesserung_ElSe}
-Zusätzlich zu den 64 Landmarks, die ein Gesicht beschreiben, kann von OpenFace weitere 28 Landmarks für ein Auge bestimmt werden, aus denen dann die Blickrichtung ermittelt wird.\\
-Um die Position der Landmarks zu verbessern, kann auf dem Bildausschnitt der Augen der ElSe-Algotithmus eingesetzt werden. Dieser Algorithmus arbeitet auf einem Farbbild um so die Umrisse der Pupille zu berechnen.\\
-Da unter den 28 Landmarks die Umrisse von Pupille und Iris beschreiben wird, müssen diese aus dem Ergebnis von ElSe abgeleitet werden. Dabei hat sich eine Veränderung des Radius mit ?? für Pupille und ?? für die Iris bewährt.\\
-Allerdings muss das Auge für die Berechnung aus entsprechend vielen Pixeln bestehen, wodurch es im Originalbild mindestens mit 10 Pixeln dargestellt wird, um sinnvolle Ergebnisse zu erhalten. Da diese Berechnung unabhängig der Landmarks ausgeführt wird, empfiehlt sich das Ergebnis zu überprüfen, damit die bestimmte Ellipse auch innerhalb der Augenhöhle liegt.\\
-Dabei wird jedes Auge unabhängig vom anderen betrachtet, wodurch sich verschiedene Blickrichtung ergeben. Ab einer Distanz von mehr als ??cm kann die Blickrichtung beider Augen als parallel angesehen und kann entsprechend behandelt werden. Eine Verbesserung ergibt sich, wenn beide Augen anhängig von einander bestimmt werden, damit sich der Fehler minimiert.
+Zur Bestimmung der Blickrichtung ist die Augenregion natürlich von besonderer Bedeutung. Aus diesem Grund werden die Landmarks der Augenregion nochmals gesondert betrachtet. Aufgrund der besonderen Bedeutung existiert eine große Anzahl an Algorithmen, die speziell auf eine hochgenaue Bestimmung von Augenmerkmalen optimiert sind, wie Beispielsweise ElSe \cite{ElSe}, Goutam \cite{Eye_FastCorner}, Starburst \cite{Starburst}, Swirski \cite{Swirski2012}.\\
+Daher bestimmt OpenFace zusätzlich zu den 64 Landmarks, die das Gesicht beschreiben, weitere 28 Landmarks pro Auge, aus denen die Blickrichtung ermittelt wird. Dazu kommt ein weiteres CLNF zum Einsatz, das auf Augen Trainiert wurde. Dabei zeigten die Vorabtests, dass die Detektionsgenauigkeit bei den getesteten kleinen Gesichtern unzureichend ausfällt.\\
+Um die Position der Landmarks zu verbessern, kann auf dem Bildausschnitt der Augen der ElSe-Algotithmus eingesetzt werden. Dieser Algorithmus arbeitet auf einem Farbbild um so die Umrisse der Pupille zu berechnen. Dieses Verfahren wurde gewählt, da es im Test \cite{ElSe} am besten abgeschnitten hat und direkt das Zentrum der Pupille liefert.\\
+Da für die Bestimmung der Blickrichtung die Umrisse und vor allem das Zentrum von Pupille und Iris ausschlaggebend sind, müssen diese aus dem Ergebnis von ElSe abgeleitet werden.\\
+Der ElSe Algorithmus wurde für Eye-Tracking Brillen entwickelt, die die Augenregion hochauflösend abbilden. Entsprechend nimmt die Detektionsleistung bei niedriger auflösenden Bildern rasch ab und da diese Berechnung unabhängig der Landmarks ausgeführt wird, empfiehlt sich das Ergebnis zu überprüfen, damit sich bestimmte Ellipse auch innerhalb der Augenhöhle befindet.\\
+Bei der Berechnung wird jedes Auge unabhängig vom anderen ausgeführt. Durch die Messungenauigkeit und bei nahe an der Person befindlichen Blickzielen können die Blickrichtungen beider Augen verschieden sein. Wird ein weiter entfernterer Punkt von beiden Augen fokussiert, so kann die Blickrichtung beider Augen als parallel angenommen werden, da der unterschied zwischen Beiden minimal ausfällt. Um den Fehler zu Minimieren wird als Ergebnis die durchschnittliche Blickrichtung beider Augen verwendet.
 \subsection{Auswirkung der verschiedenen Verfahren}
-Um die einzelnen Verfahren besser Vergleichen zu können wurden künstliche Augen aus dem Datensatz \cite{database_Eye} verwendet, da die Exakte Position der Landmarks bekannt sind.
-Da auch in der späteren Anwendung der Augenbereich genauer bestimmt ist, bevor ElSe zum Einsatz kommt wurde, nur der Bildbereich in dem alle Landmarks der Augenlider liegen, somit sind die Bilder etwa 64 auf 29 Pixel groß. Um die Qualität der Berechnung bei verschiedenen Größen zu simulieren, wurde das Bild um den angegebenen Faktor linear verkleinert.\\
+Um die einzelnen Verfahren besser Vergleichen zu können wurden künstliche Augen aus dem Datensatz \cite{database_Eye} verwendet, damit die exakte Position der Landmarks bekannt ist.\\
 Ein gutes Verfahren muss stabil gegenüber der Skalierung sein damit es auch auf kleinen Bereichen zuverlässig arbeitet. Da für die spätere Anwendung vor allem das Zentrum der Pupille von Interesse ist, wird der Abstand zum Zentrum als Qualitätsmaß verwendet.\\
+Da auch in der späteren Anwendung der Augenbereich genauer bestimmt ist, als in den Bildern dargestellt, wurde der Bildbereich soweit verkleinert damit noch alle Landmarks des Auges mit etwas Rand in diesem liegen. Somit sind die Bildausschnitten auf denen gerechnet wird etwa 64 auf 29 Pixel groß und werden für die Verarbeitung auf eine Breite von 384 Pixeln vergrößert. Um die Qualität der Berechnung bei verschiedenen Größen zu simulieren, wurde das Bild linear verkleinert.\\
 \begin{figure}
 	\centering
 	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Norm_Radius_A}
@@ -23,7 +24,7 @@ Ein gutes Verfahren muss stabil gegenüber der Skalierung sein damit es auch auf
 	%\includegraphics[width=0.49\linewidth]{Eye_Img/Quadrat_Abstand_P}
 	%\includegraphics[width=0.49\linewidth]{Eye_Img/Min_Abstand_P}
 	%\includegraphics[width=0.49\linewidth]{Eye_Img/Max_Abstand_P}
-	\caption{Abstand des Zentrums der Landmark-Pupille und der Berechneten Ellipse in [Pixel/Skalierung]\\Oben-Links: Luminance, Oben-Mitte: Gleam, Oben-Rechts: Gleam New, Unten-Links: Quadrat, Unten-Mitte: Min-Wert, Unten-Rechts: Max-Wert}
+	\caption{Abstand des Zentrums der Landmark-Pupille und der berechneten Ellipse in [Pixel/Skalierung]\\Oben-Links: Luminance, Oben-Mitte: Gleam, Oben-Rechts: Gleam New, Unten-Links: Quadrat, Unten-Mitte: Min-Wert, Unten-Rechts: Max-Wert}
 	\label{ElSe_Gray_Zentrum}
 \end{figure}
 \begin{figure}
@@ -60,10 +61,9 @@ Ein gutes Verfahren muss stabil gegenüber der Skalierung sein damit es auch auf
 	\caption{Unterschied Zwischen den Radien der Landmark-Iris und der Berechneten Ellipse in [Pixel/Skalierung] gegen die Radius-Größe.\\ Oben-Links: Luminance, Oben-Mitte: Gleam, Oben-Rechts: Gleam New, Unten-Links: Quadrat, Unten-Mitte: Min-Wert, Unten-Rechts: Max-Wert}
 	\label{ElSe_Gray_Iris}
 \end{figure}
-Es Zeigt sich, dass das Verfahren um den Farbwert in einen Grauwert zu überführen durchaus Auswirkungen vor allem auf die Positionsbestimmung hat.\\
-Als Bestes Verfahren stellte sich Geam heraus, siehe \autoref{ElSe_Gray_Zentrum}, da die Abweichung vom Zentrum minimal ist. Der Unterschied zwischen den einzelnen Verfahren ist signifikant. Ein Mittleres Ergebnis liefert das Luminance-Verfahren, \autoref{gray_Luminance}, mit welchem eine Abweichung auf dem Augen-Trainingsdatensatz \cite{database_Eye} von 6.42 Pixel erreicht wird.\\
-Im Vergleich liefert das Quadratische-Verfahren \autoref{gray_Quadrat} im Test die schlechtesten Ergebnis, da die durchschnittliche Abweichung bei 7.23 Pixel liegt. Diese Ungenauigkeit lässt sich wahrscheinlich auf den fehlenden Farbunterschied zwischen Iris und Pupille  zurück zu führen ist.\\
-Das beste Ergebnis wurde mit Geam erreicht, eine mittlere Abweichung von 5.89 Pixel. Durch die Gamma-Korrektur ist zwar die Kontur der Iris deutlich schlechter zu detektieren, dies wird allerdings durch die Genauigkeit bei weiten wett gemacht.\\
+Es zeigt sich, dass das Verfahren um den Farbwert in einen Grauwert zu überführen durchaus Auswirkungen auf die Berechnung hat.\\
+Es sind Unterschiede zwischen den einzelnen Verfahren zu erkennen. Das beste Ergebnis liefert das Gleab-Verfahren (Beschreiben in \autoref{gray_Gleam}) heraus mit einer Abweichung von 5.89 Pixeln, siehe \autoref{ElSe_Gray_Zentrum}, da die Abweichung vom Zentrum minimal ist. Ein mittleres Ergebnis liefert das Luminance-Verfahren, beschreiben in \autoref{gray_Luminance}, mit welchem eine Abweichung auf dem Augen-Trainingsdatensatz von 6.42 Pixel erreicht wird.\\
+Im Vergleich liefert das Quadratische-Verfahren, beschreiben in \autoref{gray_Quadrat} hat im Test die schlechtesten Ergebnis, da die durchschnittliche Abweichung bei 7.23 Pixel liegt.\\
 \begin{figure}
 	\centering
 	\includegraphics[width=0.32\linewidth]{Eye_Img_Box/Norm_Radius_P_8}
@@ -81,15 +81,19 @@ Das beste Ergebnis wurde mit Geam erreicht, eine mittlere Abweichung von 5.89 Pi
 	\caption{Auswirkung von der Bildgröße auf die Qualität der Berechnung.\\ Oben: Luminance, Unten Gleam}
 	\label{ElSe_scall}
 \end{figure}
-Da die Abweichung von ElSe konstant bei etwa 5.9 Pixel bei Glean liegt, arbeitet ElSe stabil bei den Skalierungen, siehe \autoref{ElSe_scall}, womit es vor allem bei kleinen Bildern zuverlässig Ergebnisse liefern kann als OpenFace.\\
-So ist im Test der Durchschnitt bei alles Skalierungen ElSe den Ergebnisse von OpenFace überlegen, durch die Verteilung ist allerdings eine Kombination beider Verfahren sinnvoll, so kann das Ergebnis von OpenFace bei Bilder in denen die Iris größer als 21 Pixel ist direkt als Lösung verwendet werden, da der mögliche Fehler von OpenFace geringer ist als von ElSe.\\
-Im Bereich zwischen 21 und 15 Pixel können beide Ergebnisse Kombiniert werden, beide Verfahren arbeiten ungefähr gleich gut. Sollte die Iris im Originalbild noch kleiner sein, so ist auf ElSe mehr verlass, da es noch bis zu einer Irisgröße von 3 Pixel noch stabil funktioniert.
+Bei der Berechnung auf verscheiden groß skalierten Bildern ist die Abweichung von ElSe bei Verwendung von Gleam konstant bei etwa 5.9 Pixel und arbeitet somit stabil, siehe \autoref{ElSe_scall}.\\
+So ist im Test der Durchschnitt bei allen Skalierungen ElSe den Ergebnisse von OpenFace überlegen, durch die Verteilung ist allerdings eine Kombination beider Verfahren sinnvoll, so kann das Ergebnis von OpenFace bei Bilder in denen die Iris größer als 21 Pixel ist direkt als Lösung verwendet werden, da der mögliche Fehler von OpenFace geringer ist als von ElSe.\\
+Im Bereich zwischen 21 und 15 Pixel können beide Ergebnisse Kombiniert werden, da sie ungefähr gleich gute Ergebnisse liefern.\\
+Sollte die Iris im Originalbild noch kleiner sein, so ist ElSe deutlich genauer, da es noch bis zu einer Irisgröße von 3 Pixel noch stabil funktioniert.
 \subsection{ElSe - Auswirkung des Radius}
-Ein weiter wichtiger Parameter des ElSe-Verfahrens ist der Radius des Filters. Wiederrum wurde der Augen-Datensatz \cite{database_Eye} verwendet und das Auge ausgeschnitten um diesen Bereich auf 384 Pixel als Eingabebild für ElSe zu vergrößern. Im Datensatz besitzen die abgebildeten Augen eine Durchschnittlich Pupille von 15 Pixel und eine Iris von 34 Pixel.\\
-In \autoref{ElSe_Gray_Iris} und \autoref{ElSe_Gray_Zentrum} ist zu erkennen, dass die Wahl des Radius signifikant für die Qualität der Berechnung ist. Da für die spätere Anwendung vor allem das Zentrum der Pupille von Interesse ist, siehe \autoref{OpenFace_Blickrichtung}, muss ElSe in diesem Aspekt zuverlässige Ergebnisse liefern.\\
-Im Versuch hat sich ein Radius von etwa einem Zwölftel des zu erwartetem Durchmesser der Iris bzw. Pupille als sinnvoll erwiesen, siehe \autoref{ElSe_Gray_Zentrum} und \autoref{ElSe_Gray_Pupille} um deren Dimension möglichst exakt zu bestimmen. Im Versuch entspricht dies 8 und 18 Pixel. Um die Position des Zentrums  der Iris und der Pupille möglichst gut zu bestimmen, erwies sich ein Radius von 11 am besten, siehe \autoref{ElSe_Gray_Zentrum}, wobei der Fehler nicht so sehr steigt bei Veränderung des Radius, als bei der Größenbestimmung von Pupille und Iris.
+Ein weiter wichtiger Parameter des ElSe-Verfahrens ist der Radius des Filters. Wiederrum wurde der Augen-Datensatz \cite{database_Eye} verwendet und die Augenpartie ausgeschnitten. Im Datensatz besitzen die abgebildeten Augen eine Durchschnittlich Pupille von 15 Pixel und eine Iris von 34 Pixel.\\
+In \autoref{ElSe_Gray_Iris} und \autoref{ElSe_Gray_Zentrum} ist zu erkennen, dass die Wahl des Radius signifikant für die Qualität der Berechnung ist. Da für die spätere Anwendung vor allem das Zentrum der Pupille von Interesse ist, siehe \autoref{OpenFace_Blickrichtung}, muss ElSe in diesem Aspekt zuverlässig Ergebnisse liefern.\\
+Im Versuch hat sich ein Radius von etwa einem Zwölftel des zu erwartetem Durchmesser der Iris bzw. Pupille als sinnvoll erwiesen, um deren Dimension möglichst exakt zu bestimmen. Im Versuch entspricht dies 8 und 18 Pixel. Um die Position des Zentrums  der Iris und der Pupille möglichst gut zu bestimmen, erwies sich ein Radius von 10 am besten, siehe \autoref{ElSe_Gray_Zentrum}, wobei dieser Fehler nicht so sehr steigt bei Veränderung des Radius, als bei der Größenbestimmung von Pupille und Iris.
 \subsection{OpenFace}
 Als Referenz wird das Ergebnis von OpenFace für die zusätzlich bestimmten Landmarks der Augen verwendet. Dies wurde auch auf dem Augendatensatz \cite{database_Eye} angewendet um vergleichbare Ergebnisse zu erhalten.\\
+Es ist zu erkennen dass dieses Verfahren im Schnitt oft schlechtere Ergebnisse liefert als das Ergebnis von ElSe, allerdings ohne das begehen von großen Fehlern und auch öfters genauere Ergebnisse.\\
+Da die hohe Qualität von ElSe nur erreicht werden kann, wenn es auf den passenden Bildausschnitt angewendet wird, ist auch die Detektion des Auge von Interesse.\\
+Nach \autoref{OpenFace_Eye_Box} wird der Bereich des Auges zwar nicht so exakt bestimmt, allerdings überdeckt er den relevanten Bereich ausreichend genau. Dargestellt sind Koordinaten, X- und Y-Position in Pixel sowie die Ausdehnung, Width und Hight bestenfalls in Pixel relativ zur umschließenden Box der Landmarks. Somit liegen die Landmarks der Augen im Bildausschnitt, wodurch diese Ausschnitt verwendet werden kann als Eingabe von ElSe.
 \begin{figure}
 	\centering
 	\includegraphics[width=0.45\linewidth]{Eye_Img_Box/Openface_PC}
@@ -99,8 +103,6 @@ Als Referenz wird das Ergebnis von OpenFace für die zusätzlich bestimmten Land
 	\caption{Auswirkung von Skalierung auf die Qualität der Augendetektion von ObenFace}
 	\label{OpenFace_Eye}
 \end{figure}
-Es ist zu erkennen dass dieses Verfahren im Schnitt oft schlechtere Ergebnisse liefert als das Ergebnis von ElSe, allerdings ohne das begehen von großen Fehlern und auch öfters genauere Ergebnisse.\\
-Da die hohe Qualität von ElSe nur erreicht werden kann, wenn es auf den passenden Bildausschnitt angewendet wird, ist auch die Detektion des Auge von Interesse.\\
 \begin{figure}
 	\centering
 	\includegraphics[width=0.245\linewidth]{Eye_Img_Box/Openface_BoxX}
@@ -114,4 +116,4 @@ Da die hohe Qualität von ElSe nur erreicht werden kann, wenn es auf den passend
 	\caption{Bestimmung der Box ums Auge}
 	\label{OpenFace_Eye_Box}
 \end{figure}
-Nach \autoref{OpenFace_Eye_Box} wird der Bereich des Auges zwar nicht so exakt bestimmt, allerdings überdeckt er den relevanten Bereich. Dargestellt sind Koordinaten, X- und Y-Position in Pixel sowie die Ausdehnung, Width und Hight bestenfalls in Pixel relativ zur umschließenden Box der Landmarks. Somit liegen die Landmarks im Bildausschnitt, wodurch er verwendet werden kann als Eingabe von ElSe.\\
+
