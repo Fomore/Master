@@ -11,9 +11,22 @@
 \usepackage{amssymb}
 \usepackage{caption}
 
+
+% %Für die Graphen
+\usepackage {amsmath, amssymb,mathtools}
+\usepackage {graphicx}
+\usepackage {tikz}
+\usetikzlibrary {positioning, shadows, arrows, automata}
+
 \usepackage{scrpage2}\pagestyle{scrheadings}
 \ohead{\today}
 \begin{document}
+
+\tableofcontents		% Inhaltsverzeichnis
+% \cleardoublepage		% Erzeugt neue Leerseite. Muss ggf. auskommentiert werden.
+\newpage
+\pagenumbering{arabic}	% Ab hier mit arabischen Zahlen numerieren
+
 \chapter{Einführung}
 \input{Abstract}
 \input{Intension}
@@ -23,27 +36,21 @@
 \input{Hardware}
 \input{Software}
 \input{Ziele}
-\input{CNN}
-\input{NMS}
+\input{Grundlagen}
+\chapter{Umsetzung}
+\input{Ablauf}
 \input{Face_MTCNN}
 \input{Skalierung}
-\input{Grau}
 \input{OpenFace}
-\input{Berechnung}
-\input{bestimmung_Pos}
+\input{Grau}
 \input{ELSE}
-\input{tafel}
-
-\chapter{Implementierung}
-\input{Ablauf}
-\input{detect_Face}
-\input{minsize}
-\input{bestimmung_Landmarks}
-\input{verbesserung_ElSe}
-\chapter{Ergebnisse}
-\input{Parameter}
+\input{Position}
+\input{Vorversuche}
 \input{Video}
+\chapter{Ergebnisse}
 \input{Fehler}
+\input{Zusammenfassung}
+\input{Verbesserung}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Das Literaturverzeichnis      %

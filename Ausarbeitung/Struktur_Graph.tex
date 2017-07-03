@@ -1,0 +1,26 @@
+\begin{center}
+\begin {tikzpicture}
+	\node[circle,draw,align=center] (C) at(0,0) {Kamera};
+	\node[draw,align=center] (F) at(0,-2.5)  {Gesichtserkennung\\\autoref{MTCNN}};
+	\node[draw,align=center] (S) at(0,-4.5)  {Skalierung\\\autoref{scale_Algos}};
+	\node[draw,align=center] (G) at(6,-6.5)  {Graubild\\\autoref{Graubild}};
+	\node[draw,align=center] (A) at(0,-6.5)  {Gesichtsanalyse\\\autoref{OpenFace}};
+	\node[draw,align=center] (E) at(6,-8.5)  {ElSe\\\autoref{ElSe}};
+	
+	\node (outA) at(0,-11.3)  {};
+	\node (outB) at(6,-11.3)  {};
+	
+	\draw[->] (E)to node[right,align=center]{Blickrichtung\\\autoref{OpenFace_Blickrichtung} }(outB);
+	\draw[->] (A)to[out=-45,in=90] node[right]{}(outB);
+	
+	\draw[->] (C)to node[right]{Frame}(F);
+	\draw[->] (F)to node[right]{Bildausschnitt}(S);
+	\draw[->] (S)to node[right]{Eingabebild}(A);
+	\draw[->] (A)to node[left,align=center]{Gesichtsorientierung\\\autoref{OpenFace_Pos_Ori} }(outA);
+	
+	\draw[->] (A)to node[above]{Augenbereich}(G);
+	\draw[->] (C)to[out=-45,in=90] node[left]{}(G);
+	\draw[->] (G)to node[right]{Eingabebild}(E);
+	
+\end{tikzpicture}
+\end{center}
