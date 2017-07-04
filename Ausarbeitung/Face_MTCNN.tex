@@ -19,11 +19,32 @@ Anschließend werden die möglichen Bereiche mittels eines weiten CNN analysiert
 Der letzte Schritt wird von einem deutlich genaueren CNN übernommen, um ein Gesicht zu detektieren, dem sogenannten Output Network (O-Net). Womit die resultierenden exakten Boxen mit ihren jeweiligen 5 Landmarks ermittelt werden.
 \subsection{Qualität}
 MTCNN Face Detection ist bei der Zuverlässigkeit im Verglich zu anderen bekannten Verfahren überlegen, siehe \autoref{img_MTCNN_quality}, und zudem Echtzeit fähig auf $640\times 480$ Großen Bilder. Dabei können auch Gesichter mit einer Größe von $20\times 20$ Pixel erfolgreich erkannt werden.\\
-Somit sind alle Anforderungen erfüllt um mit diesem Verfahren den vorhanden Frame für die nachfolgenden Berechnungen vorzubereiten.
+Somit sind alle Anforderungen erfüllt um mit diesem Verfahren den vorhanden Frame für die nachfolgenden Berechnungen vorzubereiten. Ein Test bestätigt diese Annahme, siehe \autoref{img_bereich_MTCNN}.
 \begin{figure}
 	\centering
 	\includegraphics[width=0.7\linewidth]{img/MTCNN_quality}
 	\caption{Qualität der Detektion der verscheiden Verfahren im Vergleich \cite{MTCCN}}
 	\label{img_MTCNN_quality}
+\end{figure}
+\begin{figure}
+	\centering
+	\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+		\hline
+		\includegraphics[width=1.1cm]{img_MTCNN/Img1-4_pupil1}&
+		\includegraphics[width=1.1cm]{img_MTCNN/Img2-4_pupil1}&
+		\includegraphics[width=1.1cm]{img_MTCNN/Img3-4_pupil1}&
+		\includegraphics[width=1.1cm]{img_MTCNN/Img4-4_pupil1}&
+		\includegraphics[width=1.1cm]{img_MTCNN/Img5-4_pupil1}&
+		\includegraphics[width=1.1cm]{img_MTCNN/Img6-4_pupil1}&
+		\includegraphics[width=1.1cm]{img_MTCNN/Img7-4_pupil1}&
+		\includegraphics[width=1.1cm]{img_MTCNN/Img8-4_pupil1}&
+		\includegraphics[width=1.1cm]{img_MTCNN/Img9-4_pupil1}&
+		\includegraphics[width=1.1cm]{img_MTCNN/Img10-4_pupil1}&
+		\includegraphics[width=1.1cm]{img_MTCNN/Img11-4_pupil1}\\
+		\hline
+		$1m$& $2m$& $3m$& $4m$& $5m$& $6m$& $7m$& $8m$& $9m$& $10m$& $11m$\\\hline
+	\end{tabular}
+	\caption{Dargestellt ist die Box und die 5 Landmarks von MTCNN-Face bei verschiedenen Distanzen des Probanden zur Kamera}
+	\label{img_bereich_MTCNN}
 \end{figure}
 %Joint Face Detection and Alignment using Multi-task Cascaded Convolutional Networks

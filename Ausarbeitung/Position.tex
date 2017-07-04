@@ -40,7 +40,7 @@ Als Ausgangspunkt werden die Ergebnisse des CNN verwendet um die Position zu bes
 \begin{align*}
 euler_x &= \tan^{-1}(\frac{\sqrt{X^2+Z^2}}{Z^2})\\
 euler_y &= \tan^{-1}(\frac{\sqrt{Y^2+Z^2}}{Z^2})\\
-R_{pos} &= R(euler_x,euler_y,0)&\text{Umwandlung zur Rotationsmatrix}\\
+R_{pos} &= R(euler_x,euler_y,0)\text{ Umwandlung zur Rotationsmatrix}\\
 R &= R_{CNN}\cdot R{pos}
 \end{align*}
 Eine weitere Verbesserung kann erreicht werden, indem die gefunden 2D-Landmarks mit Hilfe des PDM in 3D zu überführen. Um anschließend die Überführung von 2D nach 3D-Koordinaten erneut zu bestimmen um die Orientierung und Position zu ermitteln. Auch bei diesem Verfahren muss die Pixelorientierung beachtete werden. Allerdings ist auch ein Tiefendbild nötig, da ansonsten die Fehler weiter verstärkt werden. Daher ist es in der aktuellen Anwendung nicht sinnvoll einsetzbar.
