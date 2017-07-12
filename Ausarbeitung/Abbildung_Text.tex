@@ -1,0 +1,90 @@
+\label{Abbildungen}
+In diesem Abschnitt werden weitere Diagramme dargestellt um einen besseren Eindruck über die Messergebnisse zu erhalten.
+\subsection*{Boxplot}
+Folgende Angaben gelten für alle dargestellten Boxplots.
+\begin{itemize}
+	\item Die schwarze Mittellinie in der Box zeigt den Median der Messwerte an.
+	\item Die Box beschreibt das Ober und untere Quartal der Messwerte, also jene Stellen an denen $25\%$ der Messwerte größer bzw. kleiner sind als der gewählte dargestellte Wert.
+	\item \glqq Die Whiskers (gestrichelte Linie) zeigen das Maximum bzw. Minimum einer Verteilung, sofern diese nicht mehr als das 1,5-fache des Interquartilabstands vom Median abweichen\grqq 
+	\cite{wiki_Boxplot}
+	\item Alle Ausreißer wurden zwecks Übersichtlichkeit weggelassen
+	\item Die eingezeichnete horizontale Linie stellt den Median der Messwerte aus Skalierung 1 dar, die Beschriftung gibt den Median an.
+\end{itemize}
+\subsection*{Anzahl der Messwerte}
+Um eine Übersicht über die Anzahl der Messwerte zu erhalten ein Überblick:
+\subsubsection*{Biwi Kinect Head Pose Database}
+Alle Darstellungen und Auswertungen bezüglich der verschiedenen Skalierungsverfahren haben folgende Anzahl an Messwerten bei den angegebenen Skalierungen.\\
+$[$\autoref{img_Rot_Max}, \autoref{img_X_Pos_Skal}, \autoref{img_Y_Pos_Skal}, \autoref{img_Z_Pos_Skal}, \autoref{img_X_Rot_Skal}, \autoref{img_Y_Rot_Skal}, \autoref{img_Z_Rot_Skal}$]$\\
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|}
+	\hline 
+	&0,04&0,07&0,1&0,13&0,16&0,19&0,22&0,25&0,28&0,31-1\\
+	\hline 
+	Bicubic&3&1190&4545&5888&7147&8329&8991&9439&9561&$9600-9800$\\
+	\hline 
+	Lanczos&3&1224&4206&5696&6941&8224&8958&9400&9548&$9700-9800$\\
+	\hline 
+	Linear&1&776&3935&5439&6851&8019&8625&9107&9313&$9400-9800$\\
+	\hline 
+	Nearest-Neighbor&0&0&0&193&2081&4374&5976&7825&8595&$9200-9800$\\ 
+	\hline 
+\end{tabular} 
+\subsubsection*{Augen-Datensatz \cite{database_Eye}}
+Die einzelnen abgebildeten Boxplots basierend auf dem Augen-Datensatz \cite{database_Eye} besitze mindestens 10000 Messwerte.\\
+$[$\autoref{ElSe_Gray_Zentrum}, \autoref{ElSe_Gray_Pupille}, \autoref{ElSe_Gray_Iris}, \autoref{ElSe_scall}$]$
+\subsubsection*{Aufmerksamkeitsmessung - Werte im Versuch}
+Für diese Auswertung ergeben sich folgende Werteverteilung (\autoref{graph_VideoSkalierung}, \autoref{graph_VideoSkalierung_Err})\\
+Skalierung 1:\\
+X-Mean-Error = 8,971; Y-Mean-Error = 10.08; EyeAVG-X-Mean-Error = 17,49\\
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
+	\hline 
+	Winkel&-40&-30&-20&-10&0&10&20&30&40\\
+	\hline 
+	X-Rotation: Anzahl&3115&1363&1278&1297&4142&1189&1343&1304&3449\\ 
+	\hline 
+	Y-Rotation: Anzahl&444&3328&1920&5692&2215&1804&3077&&\\
+	\hline
+\end{tabular}\\\\
+Skalierung 0.5:\\
+X-Mean-Error = 8,927; Y-Mean-Error = 10,07; EyeAVG-X-Mean-Error = 17,07\\
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
+	\hline 
+	Winkel&-40&-30&-20&-10&0&10&20&30&40\\
+	\hline 
+	X-Rotation: Anzahl&2420&1068&1002&1002&3217&932&1070&1023&2720\\ 
+	\hline 
+	Y-Rotation: Anzahl&222&2649&1506&4372&1819&1415&2471&&\\
+	\hline
+\end{tabular}\\\\
+Skalierung 0.25:\\
+X-Mean-Error = 8,742; Y-Mean-Error = 9,772; EyeAVG-X-Mean-Error = 17,07\\
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
+\hline 
+Winkel&-40&-30&-20&-10&0&10&20&30&40\\
+\hline 
+X-Rotation: Anzahl&2471&1074&1012&1018&3283&950&1077&1047&2749\\ 
+\hline 
+Y-Rotation: Anzahl&222&2753&1536&4452&1831&1417&2470&&\\
+\hline
+\end{tabular}\\\\
+Skalierung 0.1:\\
+X-Mean-Error = 9,899; Y-Mean-Error = 10,14; EyeAVG-X-Mean-Error = 21.31\\
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
+\hline 
+Winkel&-40&-30&-20&-10&0&10&20&30&40\\
+\hline 
+X-Rotation: Anzahl&2466&1064&1002&1018&3283&950&1074&1047&2727\\ 
+\hline 
+Y-Rotation: Anzahl&222&2734&1517&4451&1829&1417&2461&&\\
+\hline
+\end{tabular}\\\\
+Skalierung 0.05:\\
+X-Mean-Error = 12.48 Y-Mean-Error = 12.48; EyeAVG-X-Mean-Error = 21.48\\
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
+\hline 
+Winkel&-40&-30&-20&-10&0&10&20&30&40\\
+\hline 
+X-Rotation: Anzahl&1231&575&550&589&1859&557&607&530&1335\\ 
+\hline 
+Y-Rotation: Anzahl&&1151&661&2419&1217&817&1568&&\\
+\hline
+\end{tabular}

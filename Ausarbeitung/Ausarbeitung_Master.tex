@@ -1,14 +1,22 @@
-\documentclass{scrreprt}
+\documentclass[twoside,12pt,a4paper]{scrreprt}
+\usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[english,ngerman]{babel}
+\usepackage[ngerman]{babel}
+\usepackage{babelbib}
+\usepackage{parskip}
+\usepackage{microtype}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[colorlinks=true,linkcolor=Black,citecolor=Black,urlcolor=Black]{hyperref}
+\usepackage[all]{hypcap}
+\usepackage{pgfplots} \pgfplotsset{compat=1.9}
+\usepackage{helvet} % Schönere SansSerif-Schrift
+\usepackage{times}  % Schönere Serif-Schrift
+
 \usepackage{lscape}
 \usepackage{eurosym}
-\usepackage{amsmath}
 \usepackage{graphicx} 
-\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm,includeheadfoot]{geometry} 
 \usepackage{enumerate}
 \usepackage{hyperref}
-\usepackage{amssymb}
 \usepackage{caption}
 
 % %Für die Graphen
@@ -17,46 +25,117 @@
 \usepackage {tikz}
 \usetikzlibrary {positioning, shadows, arrows, automata}
 
-\usepackage{scrpage2}\pagestyle{scrheadings}
-\ohead{\today}
+\pagestyle{headings}
+
+\setkomafont{disposition}{\normalcolor\bfseries} % überall Serifen verwenden
+% oder
+%\renewcommand{\familydefault}{\sfdefault} % überall Sans-Serif verwenden
+
+% PDF-Optionen (werden in den Dateieigenschaften angezeigt)
+\hypersetup{
+	pdftitle={Exploring crowd gaze tracking techniques \& applications: Measuring attention within a calssroom},
+	pdfauthor={Falko Benezan},
+	pdfsubject={Masterarbeit Informatik},
+	pdfpagelayout=TwoColumnRight
+}
+
 \begin{document}
+%%% Titelseite
+\begin{titlepage}
+	\begin{center}
+		\LARGE Eberhard Karls Universität Tübingen\\
+		\large Mathematisch-Naturwissenschaftliche Fakultät \\
+		Wilhelm-Schickard-Institut für Informatik\\
+		[3cm]
+		\huge Masterarbeit Informatik\\
+		[2cm]
+		\Large\textbf{Exploring crowd gaze tracking techniques \& applications:\\Measuring attention within a calssroom}\\
+		[1.5cm]
+		\large Falko Benezan\\
+		[0.5cm]
+		\today\\
+		\vfill
+		\small\textbf{Gutachter}\\[0.3cm]
+		\large Name Gutachter\\
+		\footnotesize Wilhelm-Schickard-Institut für Informatik\\Universität Tübingen\\
+		[1cm]
+		\small\textbf{Betreuer}\\[0.3cm]
+		\large Thomas Kübler\\
+		\footnotesize Adresse\\
+		Universität Tübingen
+	\end{center}
+\end{titlepage}
 
-\tableofcontents		% Inhaltsverzeichnis
-% \cleardoublepage		% Erzeugt neue Leerseite. Muss ggf. auskommentiert werden.
+%%% Titelrückseite: Bibliographische Angaben
+\thispagestyle{empty}
+\vspace*{\fill}
+\textbf{Benezan, Falko:}\\
+\emph{Exploring crowd gaze tracking techniques \& applications:\\Measuring attention within a calssroom}\\
+Masterarbeit Informatik\\
+Eberhard Karls Universität Tübingen\\
+Bearbeitungszeitraum: 18.01.2017 -- 18.07.2017
 \newpage
-\pagenumbering{arabic}	% Ab hier mit arabischen Zahlen numerieren
 
-\chapter{Einführung}
+%%% Zusammenfassung (Abstract), hier aus externer Datei eingebunden
 \input{Abstract}
+\newpage
+
+%%% Inhaltsverzeichnis
+\KOMAoption{toc}{bib} % Abbildungs-/Tabellenverzeichnis, Literaturverzeichnis aufnehmen
+\tableofcontents
+\cleardoublepage
+
+%%% Hauptteil (mit \input{dateiname} wird die Datei 'dateiname' eingebunden)
+\chapter{Einführung}
 \input{Intension}
 \input{Problemstellung}
+\cleardoublepage
 
-\chapter{Grundlagen}
-\input{Hardware}
-\input{Software}
-\input{Ziele}
+\chapter{Stand der Forschung}
 \input{Grundlagen}
-\chapter{Umsetzung}
+\input{Ziele}
+\cleardoublepage
+
+\chapter{Herangehensweise}
 \input{Ablauf}
+\input{Hardware}
+%\input{Software}
 \input{Face_MTCNN}
 \input{Skalierung}
 \input{OpenFace}
 \input{Grau}
 \input{ELSE}
 \input{Position}
+\cleardoublepage
+
+\chapter{Evaluation}
+\input{Schulvideo}
 \input{Vorversuche}
 \input{Video}
-\chapter{Ergebnisse}
 \input{Fehler}
 \input{Zusammenfassung}
+\cleardoublepage
+
+\chapter{Diskusion}
 \input{Verbesserung}
+\cleardoublepage
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Das Literaturverzeichnis      %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Abbildungen}
+\input{Abbildung_Text}
+\input{Abbildungen}
 
-\addcontentsline{toc}{chapter}{Literaturverzeichnis}
-% Dadurch werden die Zitate mit abgekürzten Namen der Autoren generiert.
-\bibliographystyle{alpha}
+%%% Literaturverzeichnis, lädt die Datei literatur.bib
+\bibliographystyle{babplain} % "babplain" benötigt das Paket babelbib
 \bibliography{Quellenverzeichnis}
+\cleardoublepage
+
+%%% Selbständigkeitserklärung
+\thispagestyle{empty}
+\section*{Erklärung}
+Hiermit erkläre ich, dass ich diese schriftliche Abschlussarbeit selbständig 
+verfasst habe, keine anderen als die angegebenen Hilfsmittel und Quellen benutzt 
+habe und alle wörtlich oder sinngemäß aus anderen Werken übernommenen Aussagen als 
+solche gekennzeichnet habe.
+\\[2cm]
+Ort, Datum \hfil Unterschrift 
 \end{document}

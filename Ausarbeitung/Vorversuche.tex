@@ -1,10 +1,11 @@
 \section{Vorversuche}
+\label{Vorversuche}
 Um einen Eindruck über den zu erwartenden Datensatz und Schwierigkeiten zu erhalten, wurde einige Testdatensätze mit der Actioncam erstellt.\\
 \subsection{Arbeitsbereich der Verfahren - Versuch 1}
 Mit diesem Versuch soll der Zusammenhang zwischen Standort der Probanden und Targets untersucht werden. Dazu wird ein Klassenzimmer simuliert mit weit verteilten Schüler, die den gesamten frontalen Betrachten.
 \subsubsection{Versuchsaufbau}
 In einem Raum wurde die Kamera in $2.06m$ Höhe $31cm$ hinter den Targets so montiert, das der gesamte Raum im Fokus liegt. Als Targets wurden 9 Punkte auf einer Ebene markiert mit der Kamera im Zentrum. Die Anordnung der Targets ist in \autoref{img_aufbau_target_Test} dargestellt.\\
-Als Position wurde ein Rastfeld mit $1m$ Kantenlänge im Raum eingezeichnet auf einer Fläche von $7 \times 11m$. Die Probanden stellten sich auf diesen Positionen um nacheinander alle Targets zu betrachten. 
+Als Position der Probanden wurde ein Rastfeld mit $1m$ Kantenlänge im Raum eingezeichnet auf einer Fläche von $7 \times 11m$. Die Probanden stellten sich auf diesen Positionen auf um nacheinander alle Targets zu Betrachten. 
 \begin{figure}
 	\centering
 	\includegraphics[width=0.7\linewidth]{PositionWinkel/Target}
@@ -55,9 +56,7 @@ Das Fehlen von Ergebnissen in Spalte $-3m$ liegt an der unzureichenden Detektion
 \begin{figure}
 	\centering
 	\begin{tabular}{|c|c|c|c|c|c|c|}
-		\hline 
-		$+6m$ & & & & & \includegraphics[width=1.4cm]{PosWinkelVideo/Winkel_V_-200_600.png}& \\ 
-		\hline 
+		\hline
 		$+5m$ &
 		\includegraphics[width=1.4cm]{PosWinkelVideo/Winkel_V_200_500.png}&
 		\includegraphics[width=1.4cm]{PosWinkelVideo/Winkel_V_100_500.png}&
@@ -101,7 +100,7 @@ Das Fehlen von Ergebnissen in Spalte $-3m$ liegt an der unzureichenden Detektion
 \end{figure}
 \subsubsection{Ergebnis}
 Es zeigt sich, dass eine Auswertung auf einem Video deutlich zuverlässiger arbeitet als auf Einzelbilder, vor allem der größere Rotationsbereich ist von Vorteil.\\
-Durch die Verwendung des Weitwinkelobjektivs, kann die gesamte Breite eines Klassenzimmers erfasse werden und der Winkelbereich für eine erfolgreiche Detektion ist breit genug um Schüler erfassen zu können, sie selbst die fordern Eckpunkte eines Klassenzimmers betrachten.\\
+Durch die Verwendung des Weitwinkelobjektivs, kann die gesamte Breite eines Klassenzimmers erfasse werden und der Winkelbereich für eine erfolgreiche Detektion ist breit genug um Schüler erfassen zu können, die selbst die fordern Eckpunkte eines Klassenzimmers betrachten.\\
 Bei der Distanz zur Kamera (Tiefe) ist Handlungsbedarf, als Ziel wurde $8m$ angesetzt und das aktuelle Verfahren endet bei $5m$.\\
 Eine signifikante Aussage bezüglich des vertikalen Winkel kann aus diesem Aufbau nicht getroffen werden, da die Neigungswinkel zu ähnlich ausfallen bei stehenden Personen und beide einem geradeaus Blick ähneln.
 \subsection{Arbeitsbereich der Verfahren - Versuch 2}
@@ -117,48 +116,41 @@ ToDo
 Es zeigt sich, das eine Videoanalyse auch bei starke Neigung nach unten möglich ist. Die Einzelbildauswertung liefert erneut deutlich schlechter Ergebnisse als des Videos.\\
 Dabei funktioniert das Traking nur, wenn die Versuchsperson zuerst in die Kamera geschaut hat, um es zu beginnen. Auch die stärkere gleichmäßige Beleuchtung ist hilfreich, da die Problematik mit Gegenlicht und Schatten entsteht.
 \subsection{Auswertung der Augenpartie - Versuch 3}
-Um einen Eindruck von ElSe zu erhalten mit hochauflösenden Aufnahmen , wurde mit einer Fotokamera (Sony ILCE-6000, Farbbild $6000\times 4000$ Pixel, Brennweite $16mm$) an den selben Positionen wie in Versuch 1 ein weiterer Datensatz von Einzelbilder erstellt, dabei wurden nur Aufnahmen mit der Kamera als Target gemacht. Von Interesse ist die Augenpartie vor allem OpenFace Eye-Detektor im Vergleich zu ElSe. Dabei wurde ElSe in der Basis Konfiguration eingesetzt, dies bedeutet das Luminance-Verfahren, siehe \autoref{gray_Luminance} als Graukonvertierer und einem Radius der Maske von 12 Pixel.
+Um einen Eindruck von ElSe mit hochauflösenden Aufnahmen zu erhalten, wurde mit einer Fotokamera (Sony ILCE-6000, Farbbild $6000\times 4000$ Pixel, Brennweite $16mm$) an den selben Positionen wie in Versuch 1 ein weiterer Datensatz von Einzelbilder erstellt, dabei wurden nur Aufnahmen mit der Kamera als Target gemacht. Von Interesse ist die Augenpartie und die Ergebnisse des OpenFace Eye-Detektor im Vergleich zu ElSe.\\
+Dabei wurde ElSe in der Basis Konfiguration eingesetzt, dies bedeutet das Luminance-Verfahren, siehe \autoref{gray_Luminance} als Graukonvertierer und einem Radius der Maske von 12 Pixel.
 \subsubsection{Auswertung}
-Für die Analyse wurde zuerst mit OpenFace das Gesicht soweit analysiert um die Augenpartie zu bestimmen. Ganz oben in \autoref{img_Versuch_Auge} ist die Augenpartie dargestellt, darunter das Ergebnis von OpenFace mit seinen zusätzlichen 28 LAndmarks des Auges. Darunter die berechnete Ellipse auf diesem Bildausschnitt von ElSe in grün. Im untersten Bild wurde aus der berechneten Ellipse von Else die Landmarks der Pupille und Iris abgeleitet.
-Die einzelnen Augenpaare stammen von der selben Person, die sich bei der angegebenen Distanz befand.
+Für die Analyse wurde zuerst mit OpenFace das Gesicht soweit analysiert um die Augenpartie als Eingabebild zu bestimmen, siehe \autoref{graph_Auge_Verbesserung} und ein Beispiel in \autoref{img_Versuch_Auge} oben. Auf diesem Eingabebild wird nun der ElSe-Algorithmus angewendet um die Ellipse zu bestimmen, dargestellt in grün. Im Vergleich sind die zusätzlichen 28 Landmarks der Augen von OpenFace auch in \autoref{img_Versuch_Auge} Mitte oben. Als Ergebnis wurde aus den berechneten Ellipse von ElSe die Landmarks der Pupille und Iris abgeleitet und im selben Farbschema dargestellt.\\
+Die einzelnen Augenpaare stammen von der selben Person, die sich bei der angegebenen Distanz frontal vor der Kamera befand. Es ist zu erkennen, das selbst bei einer hohen Auflösung die Augenpartie sehr klein ausfällt und nur schwierig auszuwerten ist.
 \begin{figure}
 	\centering
-	\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|} 
+	\input{GraphAuge}
+	\caption{Dargestellt sind der Ablauf, um die Landmarks des Auges zu verbessern}
+	\label{graph_Auge_Verbesserung}
+\end{figure}
+\begin{figure}
+	\centering
+	\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|} 
 		\hline 
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_1}
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_2}&
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_3}
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_4}&
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_5}
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_6}&
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_7}
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_8}&
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_9}
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_10}&
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_11}
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_12}&
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_13}
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_14}&
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_15}
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_16}&
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_17}
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_18}&
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_19}
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_20}&
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_21}
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_22}&
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_23}
-		\includegraphics[width=0.48cm]{img_Versuch_Auge/Auge_24}\\
+		\includegraphics[width=0.07\linewidth]{img_Versuch_Auge/Auge_2}&
+		\includegraphics[width=0.07\linewidth]{img_Versuch_Auge/Auge_3}&
+		\includegraphics[width=0.07\linewidth]{img_Versuch_Auge/Auge_6}&
+		\includegraphics[width=0.07\linewidth]{img_Versuch_Auge/Auge_7}&
+		\includegraphics[width=0.07\linewidth]{img_Versuch_Auge/Auge_10}&
+		\includegraphics[width=0.07\linewidth]{img_Versuch_Auge/Auge_11}&	
+		\includegraphics[width=0.07\linewidth]{img_Versuch_Auge/Auge_14}&
+		\includegraphics[width=0.07\linewidth]{img_Versuch_Auge/Auge_15}&
+		\includegraphics[width=0.07\linewidth]{img_Versuch_Auge/Auge_17}&
+		\includegraphics[width=0.07\linewidth]{img_Versuch_Auge/Auge_19}&
+		\includegraphics[width=0.07\linewidth]{img_Versuch_Auge/Auge_22}\\
 		\hline 
-		$1m$&$2m$&$3m$&$4m$&$5m$&$6m$&$7m$&$8m$&$9m$&$10m$&$11m$&$12m$\\ 
+		$1m$&$2m$&$3m$&$4m$&$5m$&$6m$&$7m$&$8m$&$9m$&$10m$&$11m$\\ 
 		\hline 
 	\end{tabular}
-	\caption{Dargestellt sind die Ergebnisse von OpenFace und Else abhängig von der Distanz.\\ Von Oben nach Unten: Augenparie, Ergebnis OpenFace, Ergebnis ElSe, ElSe Ergebnis als Landmarks}
+	\caption{Ergebnisse von OpenFace und ElSe bei verschiedenen Distanz.\\ Von Oben nach Unten: Augenparie, Ergebnis OpenFace, Ergebnis ElSe, ElSe Ergebnis als Landmarks}
 	\label{img_Versuch_Auge}
 \end{figure}
 \subsubsection{Ergebnis}
-Es zeigen sich zwei Problematiken, die schnelle Abnahme an Bildinformationen trotz hoher Auflösung, so wie die deutliche Einschränkung der Detektionswahrscheinlichkeit auf Einzelbilder.\\
-Als Ergebnis ist zu erkennen, das ElSe oft bessere Ergebnisse liefert als OpenFace, wobei auch grobe Fehler auftreten können.
+Es zeigt sich das trotz einer hohen Bildauflösung der Informationsgehalt auf größere Distanzen deutlich abnimmt, wenn mit einer einzigen Kamera der gesamte Bereich einer Klasse erfasst werden soll. Außerdem ist auch gut zu erkennen das eine ausreichende Beleuchtung gebracht wird, da die Augenregion sehr dunkel ausfällt.
 \subsection{Ergebnis der Vorversuche}
 Es zeigt sich das der Arbeitsbereich in Hinblick auf Rotationen ausreichend ist um alle üblichen Bewegungen eines Schülers zu erfassen. Auch die Fläche auf dem sich die Schüler verteilen können ist vielversprechend, nur die Distanz muss noch verbessert werden.\\
-Auch MTCNN-Face ist als Detektor geeignet, er findet zuverlässige alle Gesichter im Frame, unabhängig ihrer Größe und Orientierung. Sogar jene die von OpenFAce auch bei der Videoanalyse nicht verwendbar sind. Einzige Anmerkung ist die etwas ungenaue Box, dies kann aber mit einer einfachen Verschiebung der Boxränder korrigiert werden.
+Auch MTCNN-Face ist als Detektor geeignet, er findet zuverlässige alle Gesichter im Frame, unabhängig ihrer Größe und Orientierung. Sogar jene die von OpenFace auch bei der Videoanalyse nicht verwendbar sind. Einzige Anmerkung ist die etwas ungenaue Box, dies kann aber mit einer einfachen Verschiebung der Boxränder korrigiert werden.
