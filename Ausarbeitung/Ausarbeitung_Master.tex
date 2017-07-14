@@ -1,7 +1,7 @@
 \documentclass[twoside,12pt,a4paper]{scrreprt}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[ngerman]{babel}
+\usepackage[ngerman,english]{babel}
 \usepackage{babelbib}
 \usepackage{parskip}
 \usepackage{microtype}
@@ -11,6 +11,8 @@
 \usepackage{pgfplots} \pgfplotsset{compat=1.9}
 \usepackage{helvet} % Schönere SansSerif-Schrift
 \usepackage{times}  % Schönere Serif-Schrift
+
+%\usepackage{icomma}
 
 \usepackage{lscape}
 \usepackage{eurosym}
@@ -55,14 +57,13 @@
 		[0.5cm]
 		\today\\
 		\vfill
-		\small\textbf{Gutachter}\\[0.3cm]
-		\large Name Gutachter\\
+		\small\textbf{Erstprüfer}\\[0.3cm]
+		\large Jun.-Prof. Enkelejda Kasneci\\
 		\footnotesize Wilhelm-Schickard-Institut für Informatik\\Universität Tübingen\\
 		[1cm]
 		\small\textbf{Betreuer}\\[0.3cm]
-		\large Thomas Kübler\\
-		\footnotesize Adresse\\
-		Universität Tübingen
+		\large Prof. Ulrich Trautwein\\
+		\footnotesize Hector-Institut für Empirische Bildungsforschung\\ Universität Tübingen
 	\end{center}
 \end{titlepage}
 
@@ -70,10 +71,11 @@
 \thispagestyle{empty}
 \vspace*{\fill}
 \textbf{Benezan, Falko:}\\
-\emph{Exploring crowd gaze tracking techniques \& applications:\\Measuring attention within a calssroom}\\
+\emph{Untersuchung zur Machbarkeit von simultanem Eye-Tracking bei Menschengruppen mit Anwendungen im Klassenzimmer}\\
 Masterarbeit Informatik\\
 Eberhard Karls Universität Tübingen\\
-Bearbeitungszeitraum: 18.01.2017 -- 18.07.2017
+Bearbeitungszeitraum: 18.01.2017 -- 18.07.2017\\
+Betreuer: Thomas Kübler
 \newpage
 
 %%% Zusammenfassung (Abstract), hier aus externer Datei eingebunden
@@ -88,35 +90,39 @@ Bearbeitungszeitraum: 18.01.2017 -- 18.07.2017
 %%% Hauptteil (mit \input{dateiname} wird die Datei 'dateiname' eingebunden)
 \chapter{Einführung}
 \input{Intension}
-\input{Problemstellung}
 \cleardoublepage
 
 \chapter{Stand der Forschung}
+\input{Aufmerksamkeitsstudie}
+\input{Andere_Messverfahren}
 \input{Grundlagen}
-\input{Ziele}
-\cleardoublepage
-
-\chapter{Herangehensweise}
-\input{Ablauf}
-\input{Hardware}
-%\input{Software}
 \input{Face_MTCNN}
 \input{Skalierung}
 \input{OpenFace}
 \input{Grau}
 \input{ELSE}
 \input{Position}
+\input{Schulvideo}
+\input{Software}
+\cleardoublepage
+
+\chapter{Herangehensweise}
+\input{Ziele}
+\input{Ablauf}
+%\input{Hardware}
 \cleardoublepage
 
 \chapter{Evaluation}
-\input{Schulvideo}
+\input{OpenFaceTest}
+\input{ElSeTest}
+\input{PositionTest}
 \input{Vorversuche}
 \input{Video}
 \input{Fehler}
 \input{Zusammenfassung}
 \cleardoublepage
 
-\chapter{Diskusion}
+\chapter{Diskussion}
 \input{Verbesserung}
 \cleardoublepage
 

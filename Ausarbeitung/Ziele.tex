@@ -1,18 +1,18 @@
 \section{Eye-Tracking in der Klassenzimmer-Umgebung}
-Die Anwendung ist für den Unterricht ausgelegt, wie in der \autoref{Problemstellung} beschrieben. Ein deutsches Klassenzimmer soll laut Baden-Württembergischen Schulbauempfehlungen eine Grundfläche von $54-66m^2$ aufweisen für maximal 28-32 Schüler \cite{bauordung}.\\ Soll mit einer einzigen Kamera alle Schüler auf einmal beobachtet werden, dann muss diese den gesamten Bereich, in dem sich Schüler aufhalten können, erfassen. Abgeleitet aus der Grundfläche und Abzüglich der Bereiche für Tafel, Schränke und weitere Einrichtung beginnt dieser etwa $2,5m$ vor der Kamera und geht bis zu $8m$, auf einer Breite von $6m$, wenn sich die Kamera zentral an der Wand der Tafel befinden. Somit muss der Linsenwinkel mindestens $100^\circ$ betragen mit entsprechender Schärfentiefe, damit ab einer Distanz von $2,5m$ ein Bereich von $6m$ Breite erfasst werden kann.\\
-Der Unterricht soll durch die Messung möglichst wenig beeinflusst werden, somit ergeben sich folgende Randbedingungen:
+Die Anwendung ist für den Unterricht ausgelegt, wie in \autoref{Problemstellung} beschrieben. Ein deutsches Klassenzimmer soll laut Baden-Württembergischen Schulbauempfehlungen eine Grundfläche von $54-66m^2$ aufweisen und ist damit für maximal 28-32 Schüler geeignet \cite{bauordung}.\\
+Sollen mit einer einzigen Kamera alle Schüler auf einmal beobachtet werden, so lassen sich bereits hieraus Implikationen für die Kamera ableiten, da diese den kompletten Bereich erfassen muss, indem sich Schüler aufhalten können. Abgeleitet aus der Grundfläche und abzüglich der Bereiche für Tafel, Schränke und weitere Einrichtung beginnt dieser etwa $2,5m$ vor der Kamera und geht bis zu $8m$ in die Tiefe, bei einer Breite von $6m$, wenn sich die Kamera zentral an der Wand der Tafel befindet. Somit muss der Linsenwinkel mindestens $100^\circ$ betragen mit entsprechender Schärfentiefe, damit ab einer Distanz von $2,5m$ ein Bereich von $6m$ Breite erfasst werden kann.\\
+Der Unterricht soll durch die Messung möglichst wenig beeinflusst werden, womit sich folgende Randbedingungen ergeben:
 \begin{itemize}
-\item Brillen, Kontaktlinsen und ähnliches sind bei den Probanden erlaubt, ebenso beliebige Frisuren, Make-up usw.
-\item Die üblichen Bewegungen im Unterricht wie Sprechen, Kopfdrehungen usw. der Schüler sind gestattet.
+\item Brillen, Kontaktlinsen und Schmuck müssen nicht abgenommen werden, ebenso sind beliebige Frisuren, Make-up usw. möglich, solange sie das Gesicht nicht zu sehr verdecken.
+\item Die üblichen Bewegungen im Unterricht wie Sprechen, Kopfdrehungen usw. der Schüler sind möglich. Idealerweise ist eine freie Bewegung der Schüler im gesamten Klassenzimmer möglich.
 \item Das Verfahren soll gleichzeitig auf Distanzen von $2,5 - 8m$ zur Kamera auf einer Breite von $6m$ funktionieren.
-\item Es werden keine Markierungen oder ähnliches an den Schülern angebracht, noch werden die Probanden exakt ausgemessen.
+\item Es werden keine Markierungen oder ähnliches an den Schülern angebracht, noch werden die Probanden einer aufwändigen Kalibrierung oder Vermessung unterzogen.
 \end{itemize}
-Für die Anwendung werden zusätzlich folgende Annahmen gemacht, die sich vor allem auf die Sitzrodung der Schüler sowie die Umgebung beziehen.
+Für die Anwendung werden zusätzlich folgende Annahmen gemacht, die sich vor allem auf die Sitzordnung der Schüler sowie die Umgebung beziehen.
 \begin{itemize}
-\item Die Szene ist innerhalb eines Gebäudes, mit ausreichend gleichmäßiger Beleuchtung.
-\item Aus messtechnischer Sicht wäre die ideale Position der Kamera im Zentrum vor der Klasse, so dass die Hauptblickrichtung der Schüler in Richtung Kamera verläuft.\\
-Diese Stelle kann jedoch nicht verwendet werden da diese Position für den Unterricht (Tafel/Lehrer) benötigt wird.
-\item Die Gesichter sind komplett sichtbar und nicht verdeckt durch andere Schüler oder von der Kamera abgewannt. Eine Sitzrodung, wie sie hauptsächlich im Frontalunterricht vorkommt.
-\item Möglichst alle Blickrichtungen bzw. die Gesichtsorientierung der Schüler sollen so exakt wie möglich erfasst werden.
-\item Die Überführung zwischen Welt- und Kamerakoordinatensystem ist bekannt.
+\item Die Aufnahme erfolgt innerhalb eines Gebäudes, sodass einigermaßen kontrollierte Beleuchtungsbedingungen gewährleistet werden können.
+\item Die Gesichter der Schüler sind die meiste Zeit über komplett sichtbar und nicht verdeckt durch andere Schüler oder von der Kamera abgewandt.
+\item Blickrichtung und Gesichtsorientierung der Schüler sollen so exakt wie möglich erfasst werden.
+\item Die Überführung zwischen Welt- und Kamerakoordinatensystem ist bekannt.\\
+(Beispielsweise die Position der Kamera im Klassenzimmer und relativ zur Tafel)
 \end{itemize}
