@@ -1,7 +1,7 @@
-\section{Ablauf der Implementierung}
+\label{Implementierung_Ablauf}
 \input{Struktur_Graph}
 Zur Bestimmung der Blickrichtung sowie Kopfposition und Orientierung wird ein mehrstufiges Verfahren eingesetzt:\\
-Zuerst müssen alle Gesichter, die im aktuellen Videobild vorhanden sind, detektiert werden, siehe \autoref{MTCNN}. Dabei machen die relevanten Bereiche nur einen sehr geringen Anteil des gesamten Bildes aus.\\
+Zuerst müssen alle Gesichter, die im aktuellen Videobild (Frame) vorhanden sind, detektiert werden, siehe \autoref{MTCNN}. Dabei machen die relevanten Bereiche nur einen sehr geringen Anteil des gesamten Bildes aus.\\
 Da Gesichtserkennung und Landmark Erkennung auf unterschiedlichen großen Gesichtsbereichen arbeiten (z.B. Haare und Kinn teilweise als Gesicht zählen, teilweise nicht) ist ein Zwischenschritt zur Vergrößerung der erkannten Bereiche notwendig, damit das gesamte Gesicht abgebildet ist.\\
 Ist ein Gesicht in mehreren Einzelnbildern des Videos abgebildet, so muss auch eine Identitätszuordnung vorgenommen werden, damit dem Computerprogramm bekannt ist welches Gesicht in Bild 1 welchem in Bild 2 entspricht. Für die Zuordnung reicht es meist aus, jene Box zu wählen, die am ehesten den selben Bildausschnitt repräsentiert entweder über ähnliche Positionierung im Videobild oder über die Bildähnlichkeit da ein Kopf zwischen zwei schnell aufeinanderfolgenden Einzelbildern nur limitiert bewegen kann.\\
 Damit sicher auf allen Gesichtern gerechnet werden kann, ist eine semiautomatische Korrektur erforderlich um Falsch-Detektionen zu entfernen und fehlende Boxen der Gesichter ergänzen zu können. Daher können alle bisher unternommenen Schritte auch von anderen Verfahren übernommen werden, da es sich hierbei nur um ein Vorverarbeitungsschritt handelt und zur Beschleunigung sowie Stabilität der späterer Berechnung beitragen soll.\\

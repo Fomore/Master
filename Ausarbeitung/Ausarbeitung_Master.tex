@@ -1,7 +1,7 @@
 \documentclass[twoside,12pt,a4paper]{scrreprt}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[ngerman,english]{babel}
+\usepackage[english, ngerman]{babel}
 \usepackage{babelbib}
 \usepackage{parskip}
 \usepackage{microtype}
@@ -35,7 +35,7 @@
 
 % PDF-Optionen (werden in den Dateieigenschaften angezeigt)
 \hypersetup{
-	pdftitle={Exploring crowd gaze tracking techniques \& applications: Measuring attention within a calssroom},
+	pdftitle={Untersuchung zur Machbarkeit von simultanem Eye-Tracking bei Menschengruppen mit Anwendungen im Klassenzimmer},
 	pdfauthor={Falko Benezan},
 	pdfsubject={Masterarbeit Informatik},
 	pdfpagelayout=TwoColumnRight
@@ -51,7 +51,7 @@
 		[3cm]
 		\huge Masterarbeit Informatik\\
 		[2cm]
-		\Large\textbf{Exploring crowd gaze tracking techniques \& applications:\\Measuring attention within a calssroom}\\
+		\Large\textbf{Untersuchung zur Machbarkeit von simultanem Eye-Tracking bei Menschengruppen mit Anwendungen im Klassenzimmer}\\
 		[1.5cm]
 		\large Falko Benezan\\
 		[0.5cm]
@@ -93,6 +93,7 @@ Betreuer: Thomas Kübler
 \cleardoublepage
 
 \chapter{Stand der Forschung}
+\input{SdF_Einleitung}
 \input{Aufmerksamkeitsstudie}
 \input{Andere_Messverfahren}
 \input{Grundlagen}
@@ -102,23 +103,23 @@ Betreuer: Thomas Kübler
 \input{Grau}
 \input{ELSE}
 \input{Position}
-\input{Schulvideo}
 \input{Software}
 \cleardoublepage
 
 \chapter{Herangehensweise}
-\input{Ziele}
 \input{Ablauf}
+\input{Ziele}
+\input{Schulvideo}
 %\input{Hardware}
 \cleardoublepage
 
 \chapter{Evaluation}
+\input{Evaluation_Einleitung}
 \input{OpenFaceTest}
 \input{ElSeTest}
 \input{PositionTest}
 \input{Vorversuche}
 \input{Video}
-\input{Fehler}
 \input{Zusammenfassung}
 \cleardoublepage
 

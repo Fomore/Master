@@ -1,6 +1,6 @@
-\section{Gesichtsanalyse}
+\section{Gesichtsanalyse mit OpenFace}
 \label{OpenFace}
-Ein Open-Source Echtzeitverfahren auf Basis von CLNF für die Bestimmung und Analyse von Gesichtsmerkmalen in Graubildern und Videos. Dabei stehen für diese Anwendung nur die Kameraparameter zur Verfügung und keinerlei Zusätze wie ein Tiefenbild (kann mitverwendet werden wenn es vorhanden ist) oder Infrarotbeleuchtung der Szene.\\
+OpenFace ist ein Open-Source Echtzeitverfahren auf Basis von CLNF für die Bestimmung und Analyse von Gesichtsmerkmalen in Graubildern und Videos. Dieses Verfahren wurde gewählt, da es zum aktuellen Stand der Technik gehört und viele Probleme der Gesichtsanalyse löst. Dazu gehört neben der zuverlässigen Bestimmung der Landmarks, auch die Fähigkeit zur bestimmung der 3D-Position, ermittlung der Blickrichtung und die Fähigkeit zu lernen. Dabei stehen in der aktuellen Anwendung neben dem Farbbild nur die Kameraparameter zur Verfügung und keinerlei Zusätze wie ein Tiefenbild (kann mitverwendet werden wenn es vorhanden ist) oder Infrarotbeleuchtung der Szene.\\
 OpenFace kann 68 Landmarks ermitteln, die das Gesicht beschreiben, und mit deren Hilfe Position, Blickrichtung und Gesichtsmerkmale zu bestimmen. Sollte ein Video als Quelle fungieren, kann OpenFace auch lernen, wodurch eine zuverlässigere Verarbeitung erzielt werden kann.\\
 Als Ergebnis ist die Kopfposition (Translation und Orientierung) sowie Blickrichtung von Interesse, da mit ihnen zurückrechnet werden kann wohin die Person schaut.\\
 Der Rechenaufwand zur Verarbeitung des Eingabebildes ist so ausgelegt, das ein Webcam-Video in Echtzeit ausgewertet werden kann, dies ist im aktuellen Fall nicht notwendig, da es sich um eine nachträgliche Auswertung handelt, bei der es vor allem um Genauigkeit geht.
@@ -13,7 +13,7 @@ Dennoch kann es passieren, dass trotz allem ein Gesicht falsch detektiert wird, 
 \subsubsection{Gesichts-Landmarks: Detektion und Verfolgung}
 Für die Bestimmung und Tracking der Landmarks wird ein Conditional Local Neural Fields (CLNF) eingesetzt. Dabei handelt es sich im Grunde um ein Constrained Local Model (CLM) nur mit verbesserter Patch Experts und Optimierungsfunktionen.\\
 Die beiden Hauptkomponenten des CLNF von OpenFace ist das Point Distribution Model (PDM) zur Erfassung der Anordnung der Landmarks und Patch Experts zum Erfassen der Variante der einzelnen Landmarks.\\
-Zu Beginn werden verschiedene initiale Hypothesen aus der dlib-Bibliothek verwendet und die Passende zur Eingabe ausgewählt. Bei den unterschiedlichen initial Hypothesen handelt es sich um die Darstellung verschiedener Gesichtsorientierungen auf denen unterschiedliche Netze trainiert wurden. Diese Herangehensweise ist langsam, aber auch exakter als eine einfache Hypothese. Wird ein Tracing, das Verfolgen der Landmarks über mehrere Frames, durchgeführt wird als initiale Hypothese das Ergebnis aus der letzten Eingabe verwendet. Sollte das Tracing scheitern, wird das CNN reseted um Neu zu beginnen mit den ursprünglichen Hypothesen.\\
+Zu Beginn werden verschiedene initiale Hypothesen aus der dlib-Bibliothek verwendet und die Passende zur Eingabe ausgewählt. Bei den unterschiedlichen initial Hypothesen handelt es sich um die Darstellung verschiedener Gesichtsorientierungen auf denen unterschiedliche Netze trainiert wurden. Diese Herangehensweise ist langsam, aber auch exakter als eine einfache Hypothese. Wird ein Tracking, das Verfolgen der Landmarks über mehrere Frames, durchgeführt wird als initiale Hypothese das Ergebnis aus der letzten Eingabe verwendet. Sollte das Tracking scheitern, wird das CNN reseted um Neu zu beginnen mit den ursprünglichen Hypothesen.\\
 Auf diese Weise werden 68 Gesichts-Landmarks und  weitere 28 pro Auge erfasst. Zur Berechnung auf den Gesichtern sollten diese laut Paper \cite{OpenFace} eine Optimalgröße von 100 Pixeln für eine zuverlässige Detektion aufweisen.
 \subsubsection{Erkennen der Gesichtsmerkmale}
 Dieser Schritt kann von OpenFace ausgeführt werden, ist aber im aktuellen Fall nicht von Relevanz, da die Blickrichtung von Interesse ist und nicht die Mimik der Probanden.
@@ -25,7 +25,7 @@ Für die Qualität zur Bestimmung der Blickrichtung wurde der Augendatensatz \gl
 	\begin{tabular}{|l|c|c|c||c|c|}
 		\hline
 		&Yaw&Pitch&Roll&Mean&Median\\\hline
-		Biwi Kinect&7.9&5.6&4.5&6.0&2.6\\\hline
+		BIWI&7.9&5.6&4.5&6.0&2.6\\\hline
 		BU dataset&2.8&3.3&2.3&2.8&2.0\\\hline
 		ICT-3DHP&3.6&3.6&3.6&3.6&-\\\hline
 	\end{tabular}

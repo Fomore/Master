@@ -12,7 +12,7 @@ Folgende Angaben gelten für alle dargestellten Boxplots.
 \end{itemize}
 \subsection*{Anzahl der Messwerte}
 Um eine Übersicht über die Anzahl der Messwerte zu erhalten ein Überblick:
-\subsubsection*{Biwi Kinect Head Pose Database}
+\subsubsection*{Biwi Random Forests for Real Time 3D Face Analysis \cite{database_Face_Ori}}
 Alle Darstellungen und Auswertungen bezüglich der verschiedenen Skalierungsverfahren haben folgende Anzahl an Messwerten bei den angegebenen Skalierungen.\\
 $[$\autoref{img_Rot_Max}, \autoref{img_X_Pos_Skal}, \autoref{img_Y_Pos_Skal}, \autoref{img_Z_Pos_Skal}, \autoref{img_X_Rot_Skal}, \autoref{img_Y_Rot_Skal}, \autoref{img_Z_Rot_Skal}$]$\\
 \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|}
@@ -32,45 +32,46 @@ $[$\autoref{img_Rot_Max}, \autoref{img_X_Pos_Skal}, \autoref{img_Y_Pos_Skal}, \a
 Die einzelnen abgebildeten Boxplots basierend auf dem Augen-Datensatz \cite{database_Eye} besitzen mindestens 10.000 Messwerte.\\
 $[$\autoref{ElSe_Gray_Zentrum}, \autoref{ElSe_Gray_Pupille}, \autoref{ElSe_Gray_Iris}, \autoref{ElSe_scall}$]$
 \subsubsection*{Aufmerksamkeitsmessung - Werte im Versuch}
-Für diese Auswertung ergeben sich folgende Werteverteilungen (\autoref{graph_VideoSkalierung}, \autoref{graph_VideoSkalierung_Err})\\
+Für diese Auswertung ergeben sich folgende Werteverteilungen, dabei wurde der durchschnittliche Fehler (Mean-Error) über den gesamten Datensatz bestimmt. Die Einteilung der Boxplots erfolgte durch das natürliche Runden auf die Zehnerstelle der wahren X bzw. Y Werte. Die ungleichmäßige Verteilung der Messwerte liegt am Versuchsaufbau und ein gewisser Teil des Rauschens kann auf den Wertebereich zurückgeführt werden, die in einer Box zusammengefasst wurden ($\pm 5^\circ$)\\
+Dies Angaben bezeihen sich auch  \autoref{graph_VideoSkalierung} und \autoref{graph_VideoSkalierung_Err})\\
 Skalierung 1:\\
-X-Mean-Error = 8,971; Y-Mean-Error = 10,08; EyeAVG-X-Mean-Error = 17,49\\
+X-Mean-Error = $8,971^\circ$; Y-Mean-Error = $10,08^\circ$; EyeAVG-X-Mean-Error = $17,49^\circ$\\
 \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
 	\hline 
-	Winkel&-40&-30&-20&-10&0&10&20&30&40\\
+	Winkel [Grad]&-40&-30&-20&-10&0&10&20&30&40\\
 	\hline 
 	X-Rotation: Anzahl&3115&1363&1278&1297&4142&1189&1343&1304&3449\\ 
 	\hline 
 	Y-Rotation: Anzahl&444&3328&1920&5692&2215&1804&3077&&\\
 	\hline
 \end{tabular}\\\\
-Skalierung 0.5:\\
-X-Mean-Error = 8,927; Y-Mean-Error = 10,07; EyeAVG-X-Mean-Error = 17,07\\
+Skalierung $0,5$:\\
+X-Mean-Error = $8,927^\circ$; Y-Mean-Error = $10,07^\circ$; EyeAVG-X-Mean-Error = $17,07^\circ$\\
 \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
 	\hline 
-	Winkel&-40&-30&-20&-10&0&10&20&30&40\\
+	Winkel [Grad]&-40&-30&-20&-10&0&10&20&30&40\\
 	\hline 
 	X-Rotation: Anzahl&2420&1068&1002&1002&3217&932&1070&1023&2720\\ 
 	\hline 
 	Y-Rotation: Anzahl&222&2649&1506&4372&1819&1415&2471&&\\
 	\hline
 \end{tabular}\\\\
-Skalierung 0.25:\\
-X-Mean-Error = 8,742; Y-Mean-Error = 9,772; EyeAVG-X-Mean-Error = 17,07\\
+Skalierung $0,25$:\\
+X-Mean-Error = $8,742^\circ$; Y-Mean-Error = $9,772^\circ$; EyeAVG-X-Mean-Error = $17,07^\circ$\\
 \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
 \hline 
-Winkel&-40&-30&-20&-10&0&10&20&30&40\\
+Winkel [Grad]&-40&-30&-20&-10&0&10&20&30&40\\
 \hline 
 X-Rotation: Anzahl&2471&1074&1012&1018&3283&950&1077&1047&2749\\ 
 \hline 
 Y-Rotation: Anzahl&222&2753&1536&4452&1831&1417&2470&&\\
 \hline
 \end{tabular}\\\\
-Skalierung 0.1:\\
-X-Mean-Error = 9,899; Y-Mean-Error = 10,14; EyeAVG-X-Mean-Error = 21.31\\
+Skalierung $0,1$:\\
+X-Mean-Error = $9,899^\circ$; Y-Mean-Error = $10,14^\circ$; EyeAVG-X-Mean-Error = $21,31^\circ$\\
 \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
 \hline 
-Winkel&-40&-30&-20&-10&0&10&20&30&40\\
+Winkel [Grad]&-40&-30&-20&-10&0&10&20&30&40\\
 \hline 
 X-Rotation: Anzahl&2466&1064&1002&1018&3283&950&1074&1047&2727\\ 
 \hline 
@@ -78,10 +79,10 @@ Y-Rotation: Anzahl&222&2734&1517&4451&1829&1417&2461&&\\
 \hline
 \end{tabular}\\\\
 Skalierung 0.05:\\
-X-Mean-Error = 12.48 Y-Mean-Error = 12.48; EyeAVG-X-Mean-Error = 21.48\\
+X-Mean-Error = $12,48^\circ$ Y-Mean-Error = $12,48$; EyeAVG-X-Mean-Error = $21,48^\circ$\\
 \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
 \hline 
-Winkel&-40&-30&-20&-10&0&10&20&30&40\\
+Winkel [Grad]&-40&-30&-20&-10&0&10&20&30&40\\
 \hline 
 X-Rotation: Anzahl&1231&575&550&589&1859&557&607&530&1335\\ 
 \hline 

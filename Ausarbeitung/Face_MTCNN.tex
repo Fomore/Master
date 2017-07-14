@@ -1,11 +1,7 @@
 \section{Gesichtserkennung}
 \label{MTCNN}
-Dieses Verfahren machte im Vorabtests auf Probebildern einen sehr guten Eindruck und konnte die meisten Gesichter mit verschieden Größen und Blickrichtungen finden.
-
-Multi-task Cascaded Convolutional Networks (MTCNN) ist ein Algorithmus zur Detektion von Gesichtern und Bestimmung von 5 Gesichts-Landmarks in Farbbildern. Dabei werden drei CNN auf einer Bildpyramide angewendet um zuverlässig Gesichter verschiedenster Größe zu erkennen. Außerdem wird für die Detektion der Gesichter auch deren Ausrichtung berücksichtigt, um bessere Ergebnisse zu erzielen. Laut Beschreibung des Verfahrens sollen sogar recht kleine Gesichter mit $20\times 20$ Pixeln erfassbar sein.\\
+Multi-task Cascaded Convolutional Networks (MTCNN) ist ein Algorithmus zur Detektion von Gesichtern und Bestimmung von 5 Gesichts-Landmarks in Farbbildern. Es machte im Vorabtests auf Probebildern einen sehr guten Eindruck und konnte die meisten Gesichter mit verschieden Größen und Blickrichtungen finden. Für die Detektion werden drei CNN auf einer Bildpyramide angewendet um zuverlässig Gesichter verschiedenster Größe zu erkennen. Außerdem wird für die Detektion der Gesichter auch deren Ausrichtung berücksichtigt, um bessere Ergebnisse zu erzielen. Laut Beschreibung des Verfahrens sollen sogar recht kleine Gesichter mit $20\times 20$ Pixeln erfassbar sein.\\
 Sein Einsatzgebiet ist die Vorverarbeitung eines Frames für die spätere Auswertung. Somit soll dieser Schritt von einem möglichst robusten Verfahren durchgeführt werden. Dabei wird im aktuellen Fall auf einem hochauflösenden Bild gearbeitet mit verhältnismäßig kleinen, verschieden großen und weit verteilten Gesichtern.
-
-MTCNN-Face Detection liefert außerdem bereits 5 Landmarks, die allerdings gerade bei sehr kleinen Bildbereichen ungenau sind und deshalb im Folgenden nicht weiter verwendet werden.
 \subsection{Die 3 Stufen der Verarbeitung}
 Für die gute Detektionsqualität sorgt die dreistufige Verarbeitung mit verschiedenen CNN auf einer Bildpyramide. Bei der Bildpyramide handelt es sich um ein in verschiedenen Größen skaliertes Bild, damit der gesuchte Inhalt in der gewünschten Auflösung abgebildet ist, ohne etwas über den Inhalt zu wissen.\\
 Dies ist von Vorteil, damit das CNN auf eine feste Größe von Gesichtern optimiert werden kann, um das Lernen nicht zusätzlich zu erschweren. So werden nur die Farbverläufe gelernt und nicht weiter durch die Skalierung erschwert, wodurch das CNN auf seine jeweilige Aufgabe besser optimiert werden kann.
@@ -24,3 +20,4 @@ Der letzte Schritt wird von einem deutlich genaueren CNN übernommen, um ein Ges
 \subsection{Zuverlässigkeit bei der Detektion}
 MTCNN Face Detection ist bei der Zuverlässigkeit im Verglich zu anderen bekannten Verfahren laut ihrem Paper \cite{MTCCN} überlegen. Zudem auf $640\times 480$ großen Bildern echtzeitfähig, dabei können vor allem auch sehr kleine Gesichter erfolgreich erkannt werden.\\
 Somit sind alle Anforderungen erfüllt um mit diesem Verfahren den vorhanden Frame für die nachfolgenden Berechnungen vorzubereiten. Ein Test bestätigt diese Annahme, siehe \autoref{img_bereich_MTCNN}.
+Die 5 bestimmten Landmarks von MTCNN-Face sind allerdings gerade bei sehr kleinen Bildbereichen zu ungenau und deshalb im Folgenden nicht weiter verwendbar.
