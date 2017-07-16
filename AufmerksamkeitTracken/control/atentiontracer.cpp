@@ -66,17 +66,7 @@ void AtentionTracer::newPosition(double colore, cv::Vec6d HeadPoseWorld, cv::Vec
     mHeadPoses.push_back(HeadPose);
 
     if(mUseAVGEye){
-        cv::Point3f Solution(GazeDirection0.x+GazeDirection1.x,
-                             GazeDirection0.y+GazeDirection1.y,
-                             GazeDirection0.z+GazeDirection1.z);
-        double n = sqrt(Solution.x*Solution.x
-                       +Solution.y*Solution.y
-                       +Solution.z*Solution.z);
-        if(n > 0){
-            Solution.x = Solution.x/n;
-            Solution.y = Solution.y/n;
-            Solution.z = Solution.z/n;
-        }
+        cv::Point3f Solution = calcVectorAVG(GazeDirection0,GazeDirection1);
         mGazeDirections0.push_back(Solution);
         mGazeDirections1.push_back(Solution);
     }else{
@@ -96,16 +86,20 @@ void AtentionTracer::writeSolutionToFile(QString name,int FrameNr,
     }else{
         getOrienation(name,worldAngle,worlPoint, rotatAngle, target);
     }
+
     std::ofstream myfile;
-    myfile.open ("./data/Video_Analyse.txt", std::ios::in | std::ios::app);
+    myfile.open ("./data/Test_Versuch_1_video_resize.txt", std::ios::in | std::ios::app);
     myfile <<FrameNr<<" "<<worlPoint<<" "<<target<<" "<<Model<<" |"
-          <<HeadPoseWorld<<" "<<GazeDirection0<<" "<<GazeDirection1<<" "<<Box<<"| "<<calcAbweichung(HeadPoseWorld,target)
-         <<" "<<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection0,target)
-        <<" "<<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection1,target)<<std::endl;
+          <<HeadPoseWorld<<" "<<GazeDirection0<<" "<<GazeDirection1<<" "<<Box<<"| "
+         <<calcWinkel(worlPoint,target)
+        <<" "<<calcAbweichung(HeadPoseWorld,target)
+       <<" "<<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection0,target)
+      <<" "<<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),GazeDirection1,target)
+     <<" "<<calcAbweichung(cv::Vec3d(HeadPoseWorld[0],HeadPoseWorld[1],HeadPoseWorld[2]),calcVectorAVG(GazeDirection0,GazeDirection1),target)<<std::endl;
     myfile.close();
 }
 
-double AtentionTracer::calcAbweichung(cv::Vec6d Params,cv::Point3d Target)
+cv::Vec4d AtentionTracer::calcAbweichung(cv::Vec6d Params,cv::Point3d Target)
 {
     cv::Matx33d R = LandmarkDetector::Euler2RotationMatrix(cv::Vec3d(Params[3],Params[4],Params[5]));
     cv::Vec3d Pos(Params[0],Params[1],Params[2]);
@@ -115,12 +109,29 @@ double AtentionTracer::calcAbweichung(cv::Vec6d Params,cv::Point3d Target)
     return calcAbweichung(Pos,ori,Target);
 }
 
-double AtentionTracer::calcAbweichung(cv::Vec3d Start, cv::Point3f Orientierung, cv::Vec3d Target){
+cv::Vec4d AtentionTracer::calcAbweichung(cv::Vec3d Start, cv::Point3f Orientierung, cv::Vec3d Target){
     return calcAbweichung(Start,cv::Vec3d(Orientierung.x,Orientierung.y,Orientierung.z),Target);
 }
 
-double AtentionTracer::calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target)
+cv::Vec3d AtentionTracer::calcWinkel(cv::Point3d B, cv::Point3d A)
 {
+    cv::Point3d p(B.x-A.x, B.y-A.y, B.z-A.z);
+    cv::Vec3d tmp = calcWinkel(p);
+    std::cout<<A<<B<<p<<tmp*180/M_PI<<std::endl;
+    return tmp;
+}
+
+cv::Vec3d AtentionTracer::calcWinkel(cv::Point3d P)
+{
+    return cv::Vec3d(atan((P.x)/abs(P.z)),
+                     atan((P.y)/abs(P.z)),
+                     atan(P.y/sqrt(pow((P.x),2)+pow((P.z),2))));
+}
+
+cv::Vec4d AtentionTracer::calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target)
+{
+    cv::Vec3d ori = calcWinkel(Orientierung);
+    cv::Vec4d retVec(ori[0],ori[1],ori[2],0.0);
     cv::Vec3d normale = mKamera->getRotationMatrix() * cv::Vec3d(0,0,1);
     cv::Vec3d contact;
     if(linePlaneIntersection(contact,Orientierung,Start,normale,cv::Vec3d(0,0,0))){
@@ -128,10 +139,11 @@ double AtentionTracer::calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, c
         contact *= 0.01;
         double di = sqrt(contact[0]*contact[0]+contact[1]*contact[1]+contact[2]*contact[2])
                 *sqrt(TargetRot[0]*TargetRot[0]+TargetRot[1]*TargetRot[1]+TargetRot[2]*TargetRot[2]);
-        return acos(TargetRot.dot(contact) / di);
+        retVec[3] =  acos(TargetRot.dot(contact) / di);
     }else{
-        return -1.0;
+        retVec[3] =  -1.0;
     }
+    return retVec;
 }
 
 void AtentionTracer::print(){
@@ -359,6 +371,22 @@ void AtentionTracer::setSaveVideoImage(bool v)
 void AtentionTracer::setUseAVGEye(bool e)
 {
     mUseAVGEye = e;
+}
+
+cv::Point3f AtentionTracer::calcVectorAVG(cv::Point3f A, cv::Point3f B)
+{
+    cv::Point3f Solution(A.x+B.x,
+                         A.y+B.y,
+                         A.z+B.z);
+    double n = sqrt(Solution.x*Solution.x
+                   +Solution.y*Solution.y
+                   +Solution.z*Solution.z);
+    if(n > 0){
+        Solution.x = Solution.x/n;
+        Solution.y = Solution.y/n;
+        Solution.z = Solution.z/n;
+    }
+    return Solution;
 }
 
 void AtentionTracer::setImageSize(int Width, int Height){

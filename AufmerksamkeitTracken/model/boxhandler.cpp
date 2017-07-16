@@ -35,7 +35,7 @@ cv::Rect BoxHandler::getRect()
 
 void BoxHandler::getImage(cv::Mat Image,cv::Mat &Part)
 {
-    if(fx > 1.0){
+    if(mAutoSize && fx > 1.0){
         cv::resize(Image(Rec_new),Part,cv::Size(0,0),fx,fx);
     }else{
         Part = Image(Rec_new);
@@ -139,16 +139,21 @@ void BoxHandler::toImage(LandmarkDetector::CLNF &clnf)
     }
     clnf.detected_landmarks = shape2D.clone();
 
-    clnf.params_global[0] = clnf.params_global[0]/fx;
-    clnf.params_global[4] = clnf.params_global[4]/fx + Rec_new.x;
-    clnf.params_global[5] = clnf.params_global[5]/fx + Rec_new.y;
+    if(mAutoSize){
+        clnf.params_global[0] = clnf.params_global[0]/fx;
+        clnf.params_global[4] = clnf.params_global[4]/fx + Rec_new.x;
+        clnf.params_global[5] = clnf.params_global[5]/fx + Rec_new.y;
+    }else{
+        clnf.params_global[4] += Rec_new.x;
+        clnf.params_global[5] += Rec_new.y;
+    }
 
     for (size_t part = 0; part < clnf.hierarchical_models.size(); ++part){
         cv::Mat_<double> shape2D = clnf.hierarchical_models[part].detected_landmarks;
 
         int n = shape2D.rows/2;
         for(int pos = 0; pos < n; pos++){
-            if(fx != 1.0){
+            if(mAutoSize &&fx != 1.0){
                 double x = shape2D.at<double>(pos);
                 double y = shape2D.at<double>(pos + n);
                 shape2D.at<double>(pos) = Rec_new.x + x/fx;
@@ -161,15 +166,20 @@ void BoxHandler::toImage(LandmarkDetector::CLNF &clnf)
 
         clnf.hierarchical_models[part].detected_landmarks = shape2D.clone();
 
-        clnf.hierarchical_models[part].params_global[0] = clnf.hierarchical_models[part].params_global[0]/fx;
-        clnf.hierarchical_models[part].params_global[4] = clnf.hierarchical_models[part].params_global[4]/fx + Rec_new.x;
-        clnf.hierarchical_models[part].params_global[5] = clnf.hierarchical_models[part].params_global[5]/fx + Rec_new.y;
+        if(mAutoSize){
+            clnf.hierarchical_models[part].params_global[0] = clnf.hierarchical_models[part].params_global[0]/fx;
+            clnf.hierarchical_models[part].params_global[4] = clnf.hierarchical_models[part].params_global[4]/fx + Rec_new.x;
+            clnf.hierarchical_models[part].params_global[5] = clnf.hierarchical_models[part].params_global[5]/fx + Rec_new.y;
+        }else{
+            clnf.hierarchical_models[part].params_global[4] += Rec_new.x;
+            clnf.hierarchical_models[part].params_global[5] += Rec_new.y;
+        }
     }
 }
 
 void BoxHandler::setAutoSize(bool use)
 {
-    mAutoSize = true;
+    mAutoSize = use;
 }
 
 double BoxHandler::getImageScall()
@@ -195,16 +205,21 @@ void BoxHandler::toSection(LandmarkDetector::CLNF &clnf)
     }
     clnf.detected_landmarks = shape2D.clone();
 
-    clnf.params_global[0] = clnf.params_global[0]*fx;
-    clnf.params_global[4] = (clnf.params_global[4]- Rec_new.x)*fx;
-    clnf.params_global[5] = (clnf.params_global[5]- Rec_new.y)*fx;
+    if(mAutoSize){
+        clnf.params_global[0] = clnf.params_global[0]*fx;
+        clnf.params_global[4] = (clnf.params_global[4]- Rec_new.x)*fx;
+        clnf.params_global[5] = (clnf.params_global[5]- Rec_new.y)*fx;
+    }else{
+        clnf.params_global[4] -= Rec_new.x;
+        clnf.params_global[5] -= Rec_new.y;
+    }
 
     for (size_t part = 0; part < clnf.hierarchical_models.size(); ++part){
         cv::Mat_<double> shape2D = clnf.hierarchical_models[part].detected_landmarks;
 
         int n = shape2D.rows/2;
         for(int pos = 0; pos < n; pos++){
-            if(fx != 1.0){
+            if(mAutoSize && fx != 1.0){
                 double x = shape2D.at<double>(pos);
                 double y = shape2D.at<double>(pos + n);
                 shape2D.at<double>(pos) = (x-Rec_new.x)*fx;
@@ -217,8 +232,13 @@ void BoxHandler::toSection(LandmarkDetector::CLNF &clnf)
 
         clnf.hierarchical_models[part].detected_landmarks = shape2D.clone();
 
-        clnf.hierarchical_models[part].params_global[0] = clnf.hierarchical_models[part].params_global[0]*fx;
-        clnf.hierarchical_models[part].params_global[4] = (clnf.hierarchical_models[part].params_global[4]- Rec_new.x)*fx;
-        clnf.hierarchical_models[part].params_global[5] = (clnf.hierarchical_models[part].params_global[5]- Rec_new.y)*fx;
+        if(mAutoSize){
+            clnf.hierarchical_models[part].params_global[0] = clnf.hierarchical_models[part].params_global[0]*fx;
+            clnf.hierarchical_models[part].params_global[4] = (clnf.hierarchical_models[part].params_global[4]- Rec_new.x)*fx;
+            clnf.hierarchical_models[part].params_global[5] = (clnf.hierarchical_models[part].params_global[5]- Rec_new.y)*fx;
+        }else{
+            clnf.hierarchical_models[part].params_global[4] -= Rec_new.x;
+            clnf.hierarchical_models[part].params_global[5] -= Rec_new.y;
+        }
     }
 }

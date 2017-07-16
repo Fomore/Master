@@ -56,12 +56,12 @@ public:
     void clearAll();
 
     //Falko
-    size_t mVideoObservationStart = 48;//In Frames
-    size_t mVideoObservationEnde = 1844;
+    //size_t mVideoObservationStart = 48;//In Frames
+    //size_t mVideoObservationEnde = 1844;
 
     //Falko - no glases
-    //size_t mVideoObservationStart = 251;//In Frames
-    //size_t mVideoObservationEnde = 2043;
+    size_t mVideoObservationStart = 251;//In Frames
+    size_t mVideoObservationEnde = 2043;
 
     //Askin
     //size_t mVideoObservationStart = 134;//In Frames

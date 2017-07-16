@@ -51,7 +51,11 @@ bool EventHandler::getFrame(size_t &frame, size_t frameID)
 
 size_t EventHandler::getBoxSizeInFrame(size_t frameID)
 {
-    return mFrames[frameID].getSize();
+    if(frameID < mFrames.size()){
+        return mFrames[frameID].getSize();
+    }else{
+        return 0;
+    }
 }
 
 size_t EventHandler::getNameSize()
@@ -93,8 +97,7 @@ bool EventHandler::isFrameUsed(size_t frame)
 
 bool EventHandler::getNextImageFrame(size_t &frame, cv::Rect &rec, std::string &name, int &id, int gaze)
 {
-    for(int i = getFramePos(frame)+1;
-        i <= (int)mFrames.size(); i++){
+    for(int i = getFramePos(frame)+1; i <= (int)mFrames.size(); i++){
         size_t pos;
         if(isImageFrame(i,name,pos,gaze)){
             cv::Rect r = mFrames[i].getBox(pos);
@@ -126,7 +129,7 @@ bool EventHandler::isImageFrame(size_t frameID, std::string &name, size_t &pos, 
         name = mFrames[frameID].getEvent(pos)+" "+mFrames[frameID].getName(pos);
         return true;
     }else{
-    return false;
+        return false;
     }
 }
 

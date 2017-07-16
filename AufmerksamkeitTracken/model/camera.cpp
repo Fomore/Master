@@ -9,15 +9,14 @@ Camera::Camera(int id, QString VideoPath)
 {
     setCameraParameter(id);
     setPath(VideoPath);
-    /*
     //Innenaufnahme
     mRotMatrix = cv::Matx33d(0.9936581272313783, 0.03038307716496669, -0.1082607722539323,
                              -0.06568480537591176, 0.9382912981081369, -0.3395510951790254,
                              0.09126353340605708, 0.3445087930902981, 0.9343364805859329);
     mTranslation = cv::Vec3d(0, 206, -31);
     //fx=1130.69 fy=1124.03
-    */
 
+    /*
     //Video Messung
     mRotMatrix = cv::Matx33d(0.9998900056918177, -0.01474785878659751, 0.001573905596829441,
                              0.01473015278795625, 0.9998339988008559, 0.01072368596769573,
@@ -25,6 +24,7 @@ Camera::Camera(int id, QString VideoPath)
 
     mTranslation = cv::Vec3d(1340,745+240, 125);
    //fx=1185.06 fy=1201.78
+    */
 
     /*
     // Außenaufnahme
@@ -34,7 +34,6 @@ Camera::Camera(int id, QString VideoPath)
     mTranslation = cv::Vec3d(0, 148+40, 0);
     //fx=1046.86 fy=974.971
     */
-
     //correctTest(cv::Scalar(255, 0, 0,255),"A");
 }
 
@@ -281,9 +280,19 @@ cv::Vec3d Camera::rotateToWorld(cv::Vec3d in)
     return mRotMatrix.t() * in + mTranslation;
 }
 
+cv::Matx33d Camera::rotateToWorld(cv::Matx33d in)
+{
+    return mRotMatrix.t() * in;
+}
+
 cv::Vec3d Camera::rotateToCamera(cv::Point3d in)
 {
     return rotateToCamera(cv::Vec3d(in.x, in.y, in.z));
+}
+
+cv::Matx33d Camera::rotateToCamera(cv::Matx33d in)
+{
+    return mRotMatrix * in;
 }
 
 cv::Vec3d Camera::rotateToCamera(cv::Vec3d in)

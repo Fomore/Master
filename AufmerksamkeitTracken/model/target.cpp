@@ -72,7 +72,7 @@ void Target::getWorldPosition(QStringList list, double &x, double &y, double &z)
 
         if(b >= 0 && b <= 7){
             x = (b-4)*1000.0;//Innen
-            //x = (4-b)*100.0;//Außen
+            //x = (4-b)*1000.0;//Außen
         }else{
             x = 0.0;
         }
@@ -124,6 +124,7 @@ void Target::getOrienation(QString name, cv::Point2d &WAngle, cv::Point3d &WPosi
     getPoint(list[0],Target);
 
     getOrienation(WAngle,WPosition,RAngle,Target);
+    std::cout<<name.toStdString()<<WPosition<<Target<<std::endl;
 }
 
 void Target::getOrienation(double VideoTime, cv::Point2d &WAngle, cv::Point3d &WPosition, cv::Point2d &RAngle, cv::Point3d &Target)
@@ -132,11 +133,10 @@ void Target::getOrienation(double VideoTime, cv::Point2d &WAngle, cv::Point3d &W
     //To Do: Ursprung besser
     //WPosition = cv::Point3d(2680-1353,1490-429, 1483);//Askin
     //WPosition = cv::Point3d(2680-1367,1490-570, 1426);//Benedikt
-    //WPosition = cv::Point3d(2680-1392,1490-620, 1466);//Davis
+    //WPosition = cv::Point3d(2680-1392,1490-620, 1466);//David
     WPosition = cv::Point3d(2680-1438,1490-582, 1476);//Falko
     //WPosition = cv::Point3d(2680-1363,1490-509, 1556);//Thiago
     //WPosition = cv::Point3d(2680-1422,1490-528, 1505);//Shahram
-    //WPosition = cv::Point3d(2680-1363,1490-509, 1556);//Thiago
 
 
     getOrienation(WAngle,WPosition,RAngle,Target);

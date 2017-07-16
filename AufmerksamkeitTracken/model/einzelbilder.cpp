@@ -34,7 +34,7 @@ bool Einzelbilder::getImage(cv::Mat &Img, size_t &ImageID, std::string &name, in
 {
     Img.release();
     if(ImageID < mImagePaths.size()){
-        if(mFramePos[ImageID] >= 0){
+        if(ImageID < mFramePos.size() && mFramePos[ImageID] >= 0){
             FramePos = mFramePos[ImageID];
             QStringList list = QString::fromStdString(mImagePaths.at(ImageID)).split("&");
             int pos = list.last().toInt();

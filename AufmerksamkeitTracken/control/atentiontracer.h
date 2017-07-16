@@ -51,9 +51,11 @@ private:
 
     void printAllTarget(cv::Mat &img, const cv::Vec3d &Pose, const cv::Matx33d Ori, double fx, double cx, double cy, cv::Scalar Colore);
 
-    double calcAbweichung(cv::Vec6d Params, cv::Point3d Target);
-    double calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target);
-    double calcAbweichung(cv::Vec3d Start, cv::Point3f Orientierung, cv::Vec3d Target);
+    cv::Vec4d calcAbweichung(cv::Vec6d Params, cv::Point3d Target);
+    cv::Vec4d calcAbweichung(cv::Vec3d Start, cv::Vec3d Orientierung, cv::Vec3d Target);
+    cv::Vec4d calcAbweichung(cv::Vec3d Start, cv::Point3f Orientierung, cv::Vec3d Target);
+    cv::Vec3d calcWinkel(cv::Point3d A, cv::Point3d B);
+    cv::Vec3d calcWinkel(cv::Point3d P);
 
     void newPosition(double colore, cv::Vec6d HeadPoseWorld, cv::Vec6d HeadPose, cv::Point3f GazeDirection0, cv::Point3f GazeDirection1);
     void writeSolutionToFile(QString name, int FrameNr, cv::Vec6d Model, cv::Vec6d HeadPoseWorld, cv::Vec4d Box, cv::Point3f GazeDirection0, cv::Point3f GazeDirection1);
@@ -78,6 +80,8 @@ public:
 
     void setSaveVideoImage(bool v);
     void setUseAVGEye(bool e);
+
+    cv::Point3f calcVectorAVG(cv::Point3f A, cv::Point3f B);
 };
 
 #endif // ATENTIONTRACER_H

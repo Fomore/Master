@@ -51,6 +51,7 @@ void FaceDetection::FaceTracking(){
     mKamera->get_camera_params(fx,fy,cx,cy,x,y);
     mAtentionTracer->setImageSize(x,y);
 
+    std::cout<<"FaceTracking"<<std::endl;
     for(int FrameID = 0;getFrame(frame_col,FrameID);FrameID++){
         // Reading the images
 
@@ -90,7 +91,6 @@ void FaceDetection::FaceTracking(){
         bool manuelReset = mKamera->getFrameNr() == 784 || mKamera->getFrameNr() == 2137
                 || mKamera->getFrameNr() == 2143;
         */
-
         // Go through every model and update the tracking
         tbb::parallel_for(0, (int)clnf_models.size(), [&](int model){
             //for(unsigned int model = 0; model < clnf_models.size(); ++model){
@@ -220,7 +220,8 @@ void FaceDetection::FaceTrackingNewVersion(){
 
     cv::Mat frame_colore;
 
-    for(size_t FrameID = 0;getFrame(frame_colore, FrameID);FrameID++){
+    for(size_t FrameID = 0;getFrame(frame_colore, FrameID);FrameID++){//mEventHandler->getFramePos(1350)
+        //std::cout<<FrameID<<": "<<mKamera->getFrameNr()<<"["<<mKamera->getTimeSec()<<"]"<<std::endl;
         QPixmap *pixmapL=new QPixmap(mTheWindow->Left_Label->size());
         pixmapL->fill(Qt::transparent);
         QPainter *painterL=new QPainter(pixmapL);
@@ -232,6 +233,8 @@ void FaceDetection::FaceTrackingNewVersion(){
         cv::Mat disp_image = frame_colore.clone();
 
         int num_active_models = 0;
+
+        //bool manuelReset = mKamera->getFrameNr() == 784 || mKamera->getFrameNr() == 2137 || mKamera->getFrameNr() == 2143 || mKamera->getFrameNr() == 2150;
 
         for(int model = 0; model < num_faces_max; model++){
             int gaze;
@@ -445,7 +448,7 @@ void FaceDetection::FaceTrackingImage(){
             active_models[Model_Init] = false;
 
             std::ofstream myfile;
-            myfile.open ("./data/HeadPosition_Image.txt", std::ios::in | std::ios::app);
+            myfile.open ("./data/Test_Positionen_3_Label_Image.txt", std::ios::in | std::ios::app);
             myfile <<name<<std::endl;
             myfile.close();
 

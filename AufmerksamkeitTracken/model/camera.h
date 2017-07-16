@@ -51,9 +51,11 @@ public:
 
     cv::Vec3d rotateToWorld(cv::Point3f in);
     cv::Vec3d rotateToWorld(cv::Vec3d in);
+    cv::Matx33d rotateToWorld(cv::Matx33d in);
 
     cv::Vec3d rotateToCamera(cv::Vec3d in);
     cv::Vec3d rotateToCamera(cv::Point3d in);
+    cv::Matx33d rotateToCamera(cv::Matx33d in);
 
     cv::Matx33d getRotationMatrix();
 
