@@ -428,6 +428,7 @@ int main(int argc, char *argv[])
                             }else{
                                 grayScallImage = getResizeImage(gray,ImageSize, CV_INTER_LANCZOS4);
                             }
+                            */
                             /*
                             cv::imwrite("B"+std::to_string(j)+".png",Img);
                             cv::imwrite("B"+std::to_string(j)+"G.png",grayScallImage);
