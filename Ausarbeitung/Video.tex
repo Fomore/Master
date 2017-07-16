@@ -2,7 +2,7 @@
 \label{VideoAnalyse}
 Für den Versuch wurde ein Video verwendet, welches ein bewegtes Kreuz zeigt, das als Ziel der Aufmerksamkeit dient. Dieses Kreuz sollten die Probanden normal im Auge behalten, damit für jeden Zeitpunkt bekannt ist wo das Ziel der Aufmerksamkeit liegt.\\
 Die Anordnung der Eckpunkte des bewegten Zieles sind in \autoref{img_targets} dargestellt und wurden mittels eines Projektors auf eine Größe von $2,88 \times 1,49 m$ gebracht.\\
-Das Ziel welches betrachtet werden soll (Target) beginnt immer in der Mitte und bleibt dort $1s$ stehen, bewegt sich innerhalb von 4 Sekunden zu einen der Randpunkte, verweilt dort für eine Sekunde und begibt sich in $4s$ zu einem nächstgelegenen Randpunkt, bleibt dort $1s$ und geht zurück zum Zentrum, dies wiederholt sich für alle Eckpunkte. Ein gesamter Durchlauf dauert 2min und 1s.\\
+Das Ziel welches betrachtet werden soll (Target) beginnt immer in der Mitte und bleibt dort $1s$ stehen, bewegt sich innerhalb von 4 Sekunden zu einen der Randpunkte, verweilt dort für eine Sekunde und begibt sich in $4s$ zu einem nächstgelegenen Randpunkt, bleibt dort $1s$ und geht zurück zum Zentrum, dies wiederholt sich für alle Eckpunkte. Ein gesamter Durchlauf dauert $2min$ und $1s$.\\
 Die Versuchspersonen befinden sich etwa $1,5m$ vor der Leinwand, die Kamera befand sich $24cm$ unterhalb und $12,5cm$ vor dem zentralen Punkt des Targets mit Blickrichtung zum Projektor und Personen, siehe \autoref{img_Versuchsaufbau}.\\
 Als Aufnahmegerät wurde die Logitech c920 HD Pro Webcam verwendet, diese liefert ein $15FPS$ Video mit einer Auflösung von $1600\times 896$ Pixel und besitzt einen horizontalen Blickwinkel von etwa $70^\circ$.\\
 \begin{figure}
@@ -40,8 +40,7 @@ Das Ergebnis der Blickrichtung kann bei der $0.01$ Skalierung nicht verwendet we
 Überraschend ist das Ergebnis bei dem Skalierungsfaktor von $0,05$ (ca $24m$). Die Ausrichtungen sind, zumindest horizontal, noch erkennbar und soweit differenzierbar um grobe Richtungsänderungen zu erkennen. Allerdings ist die Detektionsrate sehr gering und kann als Obergrenze angenommen werden.\\
 Die Auswertung des Versuches hat die Erwartungen und Problematiken aus den Vorversuchen bestätigt. Eine Verarbeitung des Videomaterials ist sogar bei sehr niedriger Auflösung noch möglich, wobei die Ergebnisse besser sein könnten.
 Die Abweichung der einzelnen Messungen ist in \autoref{graph_VideoSkalierung_Err} dargestellt.
-\begin{landscape}
-\begin{figure}
+	\begin{sidewaysfigure}
 	\centering
 	\includegraphics[width=0.192\linewidth]{OpenFace_Img/Head_x_S1}
 	\includegraphics[width=0.192\linewidth]{OpenFace_Img/Head_x_S05}
@@ -60,12 +59,11 @@ Die Abweichung der einzelnen Messungen ist in \autoref{graph_VideoSkalierung_Err
 	\includegraphics[width=0.192\linewidth]{OpenFace_Img/EyeAVG_x_S005}
 	\caption{Auswertung der Videoaufnahme mit der Kopfausrichtung Horizontal (Oben), Kopforientierung Vertikal (Mitte) und die X-Ausrichtung der Augen (Unten)\\Skalierungsfaktor von links nach rechts (1/0.5/0.25/0.1/0.05), Y-Achse: $[0-35]^\circ$}
 	\label{graph_VideoSkalierung}
-\end{figure}
-\end{landscape}
+\end{sidewaysfigure}
 \subsection{Fehleranalyse im Versuch}
 Da nur der Unterschied zwischen Target und Auftreffpunkt der gemessenen Gesichtsorientierung aufgezeigt werden kann, kommt es zu verschiedenen Fehlern, vor allem wird das Target mit den Augen gefolgt.
 So wird zu Beginn der Bewegung, dem Target nur mit den Augen verfolgt, bis sich der Kopf in Bewegung setzt. Dies wird so lange fortgeführt, bis die Kopfdehnung unangenehm und das Ende der Bewegung absehbar wird. So wird der letzte Teil der Bewegung nur noch von den Augen verfolgt.\\
-Die allgemeine Exkursionen beträgt etwa $20^\circ$ \cite{wiki_Gesichtsfeld}, der Winkelbereich der üblichen Augenbewegungen, und kann daher recht stark von der Kopforientierung abweichen.\\
+Die allgemeine Exkursionen beträgt etwa $20^\circ$, der Winkelbereich der üblichen Augenbewegungen, und kann daher recht stark von der Kopforientierung abweichen.\cite{wiki_Gesichtsfeld}\\
 \subsubsection{Bei der Messung}
 Die erste Ungenauigkeit liegt bei der Distanz zur Leinwand, diese wurde nur vor der eigentlichen Aufnahme bestimmt. Somit entsteht eine Abweichung, da die Kopfbewegung während der Aufnahme nicht erfasst wird.\\
 Die eigentliche Messung der Distanz  vom Kopf der Personen zur Leinwand ist ebenfalls ungenau, da sie eine Abweichung von etwa $1cm$ in alle Richtungen aufweist. Außerdem liegt der Ursprung des Kopfes in der Anwendung etwas tiefer und weiter hinten als der ausgemessene Nasenrücken.\\

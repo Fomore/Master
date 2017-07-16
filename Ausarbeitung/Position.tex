@@ -1,11 +1,11 @@
 \section{Bestimmung des Ziels der Aufmerksamkeit}
 \label{calc_Position}
 Um das Ziel der Aufmerksamkeit einer Person zu bestimmen, muss die 3D-Position ermittelt werden. Die Orientierung des Gesichtes und die Blickrichtung können als Verlauf einer Ursprungsgerade betrachtet werden, mit dem Ursprung an der Position des Gesichtes im Raum.\\
-Ist der Ursprung und die Gerade bekannt, so kann ermittelt werden, ob sie durch bestimmte Punkte im Raum verläuft. Ist dies der Fall, so wird dieser Punkt wahrscheinlich betrachtet und ist Ziel der Aufmerksamkeit der Person.
+Ist der Ursprung und die Gerade bekannt, so kann ermittelt werden, ob die Gerade durch bestimmte Punkte im Raum verläuft. Ist dies der Fall, so wird dieser Punkt wahrscheinlich betrachtet und ist Ziel der Aufmerksamkeit der Person.
 \subsection{Bestimmung der Position \& Orientierung des Gesichts}
-Zur Bestimmung der Translation und Orientierung des Gesichtes wird ein CLNF bzw. PDM eingesetzt. Dabei wurde es mit der Kameraabbildung von 3D-Landmarks eines normierten Kopfes in verschiedenen Ausrichtungen initialisiert. Das normierte Ergebnis kann mit den passenden Kameraparametern von der Aufnahme angepasst werden um die reale Position und Orientierung zu bestimmen.
+Zur Bestimmung der Translation und Orientierung des Gesichtes wird ein CLNF bzw. PDM eingesetzt. Dabei wurde es mit der Kameraabbildung von 3D-Landmarks eines normierten Kopfes in verschiedenen Ausrichtungen initialisiert. Das normierte Ergebnis kann mit den passenden Kameraparametern der Aufnahme angepasst werden, um die reale Position und Orientierung zu bestimmen.
 \subsubsection{Abschätzen der Kameraparameter}
-Sind keine Kameraparameter bekannt, so können diese anhand der Bildauflösung grob geschätzt werden. Bei der Schätzung der Brennweite für ein Bild mit einer Dimension $I_x\times I_y$ wird das Standardobjektiv mit einer Auflösung von $640 \times 480$ Pixel angenommen, somit ergebenen sich die Brennweiten $f_x$ und $f_y$ wie folgt:\cite{OpenFace}
+Sind keine Kameraparameter bekannt, so können diese anhand der Bildauflösung grob geschätzt werden. Bei der Schätzung der Brennweite für ein Bild mit einer Dimension $I_x\times I_y$ wird das Standardobjektiv mit einer Auflösung von $640 \times 480$ Pixel angenommen, somit ergebenen sich die Brennweiten $f_x$ und $f_y$ wie folgt \cite{OpenFace}:
 \begin{align*}
 f_x = 500\cdot \frac{I_x}{640}\\
 f_y = 500\cdot \frac{I_y}{480}
@@ -15,39 +15,41 @@ f_y = 500\cdot \frac{I_y}{480}
 Zur Bestimmung der Kopfposition $P= \begin{pmatrix}
 X_{avg} & Y_{avg} & Z_{avg}
 \end{pmatrix}^t$ im Kamerakoordinatensystem wird die Größe, ein Skalierungsfaktor der normierten Kopfgröße $S_G$, im Bild verwendet.\\
-Bei der Abbildung von Welt- nach Bild-Koordinaten gilt: $x=f\cdot \frac{X}{Z}$ und $ y=f\cdot \frac{Y}{Z}$, damit kann die Tiefe wie folgt abgeschätzt werden.\\
+Bei der Abbildung von Welt- nach Bild-Koordinaten gilt: $x=f\cdot \frac{X}{Z}$ und $ y=f\cdot \frac{Y}{Z}$, damit kann die Tiefe abgeschätzt werden.\\
 Sei $P_1 = \begin{pmatrix}
 X_1&Y_1&Z_1
 \end{pmatrix}^t, P_2= \begin{pmatrix}
 X_2&Y_2&Z_2
-\end{pmatrix}$ die Beschreibung der Größe $G$ eines Kopfes mit:\\
+\end{pmatrix}$ die Beschreibung der Größe $G$ eines Kopfes, somit ergibt sich die Position wie folgt:\\
 \begin{align*}
 a &= \frac{\sqrt{(X_1-X_2)^2+(Y_1+Y_2)^2}}{\frac{Z_1-Z_2}{2}} =\frac{G}{Z_{avg}}\\
 S &= \frac{S_G}{G}\\
 \Rightarrow a\cdot f &= f\cdot\frac{G}{Z_{avg}} = S_G\\
 Z_{avg} &= \frac{f}{S_G}\cdot G = \frac{f}{S}\\
 X_{avg} &= \frac{x \cdot Z_{avg}}{f}\\
-Y_{avg} &= \frac{y \cdot Z_{avg}}{f}\\
+Y_{avg} &= \frac{y \cdot Z_{avg}}{f}
 \end{align*}
-Dies beschreibt allerdings nur eine Annäherung an die tatsächliche Position, da die Distanz mit Hilfe einer durchschnittlichen Kopfgröße geschätzt wird.\cite{OpenFace}
+Dies beschreibt allerdings nur eine Annäherung an die tatsächliche Position, da die Distanz mit Hilfe einer durchschnittlichen Kopfgröße geschätzt wird.\\
+Die Orientierung kann anhand der Position der Landmarks mit einem PDM bestimmt werden. \cite{OpenFace}
 \subsubsection{Bestimmung der Blickrichtung}
 \label{OpenFace_Blickrichtung}
-Wird ein weiter entfernterer Punkt von beiden Augen fokussiert, so kann die Blickrichtung beider Augen als parallel angenommen werden, da der Unterschied zwischen Beiden minimal ausfällt. Um den Fehler zu minimieren wird als Ergebnis die durchschnittliche Blickrichtung beider Augen verwendet. Da die Berechnung für jedes Auge unabhängig vom anderen ausgeführt wird, können Messungenauigkeiten dazu führen, das die berechnete Blickrichtung der beiden Augen in verschiedene Richtung verlaufen. Diesem kann entgegengewirkt werden, indem zwischen beiden Berechnungen (rechts und linkes Auge) eine Abhängigkeit formuliert wird, z.B. Durchschnitt.\\
-Für möglichst genaue Ergebnisse wird für die Augenpartie ein weiteres CNN eingesetzt das nur auf diesem Bildaufschnitt arbeitet und weitere 28 Landmarks bestimmt. Durch diese werden die Lider, Iris und Pupille dargestellt und für jedes Auge separat bestimmt.\\
-Zur Bestimmung der Blickrichtung wird wie folgt vorgegangen: Zuerst wird der Strahl bestimmt der, ausgehend vom Zentrum der Kamera, durch das Zentrum der Pupille verläuft. Nun wird der Schnittpunkt zwischen diesem Strahl und einer Sphäre bestimmt, die das Auge repräsentiert. Anschließend wird ein Strahl bestimmt der vom Zentrum der Sphäre ausgehend durch den berechneten Schnittpunkt verläuft, dies ist die resultierende Blickrichtung.\cite{OpenFace}
+Zur Bestimmung der Blickrichtung wird wie folgt vorgegangen: Zuerst wird der Strahl bestimmt der, ausgehend vom Zentrum der Kamera, durch das Zentrum der Pupille verläuft. Nun wird der Schnittpunkt zwischen diesem Strahl und einer Sphäre bestimmt, die das Auge repräsentiert. Anschließend wird ein Strahl bestimmt der vom Zentrum der Sphäre ausgehend durch den berechneten Schnittpunkt verläuft, dies ist die resultierende Blickrichtung.\cite{OpenFace}\\
+Da die Berechnung für jedes Auge unabhängig vom anderen ausgeführt wird, können Messungenauigkeiten dazu führen, das die berechnete Blickrichtung der beiden Augen in verschiedene Richtung verlaufen.\\
+Diesem kann entgegengewirkt werden, indem zwischen beiden Berechnungen (rechts und linkes Auge) eine Abhängigkeit formuliert wird, z.B. Durchschnitt.\\
+Dieser Trick kann verwendet werden, da der Unterschied zwischen beiden Blickrichtungen minimal ausfällt (nahezu parallel), sollte ein weiter entfernterer Punkt fokussiert werden.
 \subsubsection{Auswirkung der Bildkoordinaten auf die Berechnung}
-Befinden sich die Bildpunkte nicht im Zentrum, so muss die Ausrichtung der Pixel beachtet werden um dies mit in die Berechnung einfließen zu lassen. Dieser zusätzliche Winkel muss beachtet werden, da die Abweichung immer stärker wird, je weiter der Punkt vom Zentrum entfernt ist.\\ 
-Als Ausgangspunkt werden die Ergebnisse des CNN verwendet um die Position zu bestimmen. Zur Bestimmung der Orientierung $R$ liefert auch das CNN ein Ergebnis $R_{CNN}$. Allerdings stimmt es nur im Zentrum des Bildes, da am Rand immer mehr die Orientierung der einzelnen Pixel mit berücksichtigt werden muss.\\
+Befinden sich die Bildpunkte nicht im Zentrum, so muss die Ausrichtung der Pixel beachtet werden, um diese mit in die Berechnung einfließen zu lassen. Dieser zusätzliche Winkel muss beachtet werden, da die Abweichung immer stärker wird, je weiter der Pixel vom Zentrum entfernt ist.\\ 
+Als Ausgangspunkt werden die Ergebnisse des CNN verwendet um die Position zu erhalten. Zur Bestimmung der Orientierung $R$ liefert auch das CNN ein Ergebnis $R_{CNN}$. Allerdings stimmt es nur im Zentrum des Bildes, da für de Berechnung die Anordnung der Landmarks relevant ist und die Position im Bild noch nicht beachtet wurde.\\
 \begin{align*}
 euler_x &= \tan^{-1}(\frac{\sqrt{X^2+Z^2}}{Z^2})\\
 euler_y &= \tan^{-1}(\frac{\sqrt{Y^2+Z^2}}{Z^2})\\
 R_{pos} &= R(euler_x,euler_y,0)\text{ Umwandlung zur Rotationsmatrix}\\
 R &= R_{CNN}\cdot R_{pos}
 \end{align*}
-Eine weitere Verbesserung kann erreicht werden, indem die gefundenen 2D-Landmarks mit Hilfe des PDM in 3D überführt werden. Anschließend werden die 3D nach 2D-Koordinaten wieder überführt um die Orientierung und Position zu ermitteln. Auch bei diesem Verfahren muss die Pixelorientierung beachtet werden. Allerdings ist auch ein Tiefenbild nötig, da ansonsten die Fehler weiter verstärkt werden. Daher ist es in der aktuellen Anwendung nicht sinnvoll einsetzbar.\cite{OpenFace}
+Eine weitere Verbesserung kann erreicht werden, indem die gefundenen 2D-Landmarks mit Hilfe des PDM in 3D überführt werden. Anschließend werden die 3D nach 2D-Koordinaten wieder überführt um die Orientierung und Position zu ermitteln. Auch bei diesem Verfahren muss die Pixelorientierung beachtet werden. Allerdings ist die Verwendung eins Tiefenbild sinnvoll, da ansonsten die Fehler weiter verstärkt werden. Daher ist es in der aktuellen Anwendung nicht sinnvoll einsetzbar.\cite{OpenFace}
 \subsection{Bestimmung eines Punktes, auf der die Aufmerksamkeit liegt}
 Von Interesse ist vor allem der Punkt auf dem der Blick ruht bzw. auf den das Gesicht ausgerichtet ist.\\
-Bestimmung des Richtungsvektors $V$ aus der Rotationsmatrix
+Bestimmung des Richtungsvektors $V$ aus der Rotationsmatrix:
 \[V= R\cdot (0,0,-1)^T\] 
 Aus der Blickrichtung mehrerer Probanden kann auch der reale Punkt der Aufmerksamkeit ermittelt werden. Dazu wird die Blickrichtung als Linie $L_i = s \cdot n_i+ p_i$ beschrieben mit $s\in \mathbb{R}$ und $n_i,p_i \in \mathbb{R}^3$ verwendet.
 \begin{align*}
@@ -55,7 +57,7 @@ c&=(\sum_{i} I -n_in_i^T)^{-1}
 (\sum_{i} (I -n_in_i^T)\cdot p_i)
 \end{align*}
 Bei Verwendung der Gesichtsorientierung ergibt sich das Problem den konkreten Blickpunkt zu ermitteln, da die Augenbewegung nicht erfasst werden kann.
-So muss ein Kegel, der den üblichen Bereich der Augenbewegung umfasst, um die Orientierung berücksichtigt werden als Fehlertoleranz und der gesamte Bereich kommt als Lösungen in Frage.
+So muss ein Kegel, der den üblichen Bereich der Augenbewegung umfasst, um die Orientierung als Fehlertoleranz berücksichtigt werden und der gesamte Bereich kommt als Lösungen in Frage.
 Außerdem liegt der Punkt der Aufmerksamkeit meist außerhalb des Bildbereiches der Kamera und muss entsprechend von einer Anwendung interpretiert werden.\\
-Soll die Position des Ziels auf nahezu parallel verlaufende oder stark verrausche Ergebnisse berechnet werden, so ist die Bestimmung des Schnittpunkts nach dem obigen Verfahren nicht möglich.\\
+Soll die Position des Ziels auf nahezu parallel verlaufende oder stark verrausche Ergebnisse berechnet werden, so ist die Bestimmung des Schnittpunkts nach dem obigen Verfahren nur schwer möglich.\\
 Eine einfache Variante ist das Verwenden des durchschnittlichen Richtungsvektors $V_{avg}$ und Position $P_{avg}$ der Probanden. Die Tiefe $a$ muss nun geschätzt werden um das Ziel $P=V\cdot a$ zu bestimmen.

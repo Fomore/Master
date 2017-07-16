@@ -1,7 +1,7 @@
 \section{Computer Vision Methoden zur Gesichtsanalyse}
 \label{Grundlagen}
 Gesichtserkennung ist eine der am weitesten fortgeschrittenen Verfahren in der maschinellen Bildverarbeitung und wird ständig weiterentwickelt. Neben dem Erkennen eines Gesichts fällt darunter auch dessen Analyse wie beispielsweise die Orientierung, Übereinstimmung oder das Erkennen von Mimik.\\
-Eine Standardmethode ist dabei die Verwendung eines Neuronalen Netzes.
+Eine Standardmethode bei der Gesichtserkennung ist die Verwendung eines Neuronalen Netzes.
 \subsection{Künstliches neuronales Netz}
 Ein künstliches neuronales Netz besteht aus miteinander verknüpften künstlichen Neuronen. Jedes Neuron besitzt Eingangswerte und einen Ausgabewert.\\
 Um die Ausgabe zu bestimmen, werden die einzelnen Eingangswerte des Neurons individuell gewichtet, mit einer Übertragungsfunktion zusammengefasst und mittels einer Schwellenwertfunktion das Ergebnis bestimmt.\\
@@ -10,19 +10,19 @@ Soll ein gesamtes Netz trainiert werden, so wird jedes einzelne Neuron zufällig
 \cite{Maschin_Neuron}
 \subsection{Convolutional Neural Network (CNN)}
 CNNs definieren in vielen Anwendungsbereichen den Stand der Technik. Sie sind eine Weiterentwicklung der neuronalen Netze und werden unter anderem bei der Bild- und Spracherkennung eingesetzt. Als Erweiterung wird eine gewichtete Faltungen der Eingabe als Eingabeparameter für das neuronale Netz verwendet.\\
-Durch die Faltung werden die Information aus den umliegenden Punkten eines Bereiches zusammengefasst und komprimiert an die nächste Schicht weitergegeben, um in der untersten Schicht alle vorhanden Informationen zusammenzuführen. Der Faltungskern kann je nach Anwendung beliebig gestaltet sein, so ist z.B. eine Glättung durch einen Gauß-Kernel oder Kantendetektion durch einen Kirsch-Operator möglich.\\
 Ein CNN kann in zwei Bereiche aufgeteilt werden, Feature Extraktion und Klassifizierung.\\
-Bei der Feature Extraktion werden verschiedene Kernel und Komprimierungen auf den Eingabeinformationen angewendet um sie für den zweiten Teil der Klassifizierung aufzubereiten. Dort wird nun die Eingabe ausgewertet um das Ergebnis zu erhalten.\\
+Bei der Feature Extraktion werden verschiedene Faltungskern und Komprimierungen auf den Eingabeinformationen angewendet um die Informationen für den zweiten Teil der Klassifizierung aufzubereiten. Durch die Faltung werden die Information aus den umliegenden Punkten eines Bereiches zusammengefasst und komprimiert an die nächste Schicht weitergegeben. Der Faltungskern kann je nach Anwendung beliebig gestaltet sein, so ist z.B. eine Glättung durch einen Gauß-Kernel oder Kantendetektion durch einen Kirsch-Operator möglich.\\
+Im zweiten Teil, der Klassifizierung, werden nun alle vorhanden und zusammenführten Informationen ausgewertet, um das Ergebnis für die Eingabe zu erhalten.\\
 Gelernt werden kann jeder einzelne Kernel für sich und die jeweiligen Bewertungen der Kernel und Neuronen.
 \cite{pdf_CNN}\cite{wiki_CNN}
 \begin{figure}
 	\centering
 	\includegraphics[width=0.9\linewidth]{img/cnn}
-	\caption{Beispiel für den Aufbau eines CNN zur Klassifizierung.\\Zu sehen ist das Erkennen einer Zahl auf einem Straßenschild.\cite{bild_CNN}}
+	\caption{Beispiel für den Aufbau eines CNN zur Klassifizierung.\\Zu sehen ist das Erkennen einer Zahl auf einem Straßenschild. Bild von \cite{bild_CNN}}
 	\label{img_cnn}
 \end{figure}
 \subsection{Constrained Local Model (CLM)}
-In Constrained Local Modellen wird die Erkennung eines Objektes in die Erkennung einzelner charakteristischer Teilpunkt, sogenannter Landmarks, aufgespalten. Dieses Verfahren eigenen sich deshalb besonders dazu deformierbare Objekte zu erkennen.\\
+In Constrained Local Modellen wird die Erkennung eines Objektes in die Erkennung einzelner charakteristischer Teilpunkt, der sogenannter Landmarks, aufgespalten. Dieses Verfahren eigenen sich deshalb besonders dazu deformierbare Objekte zu erkennen.\\
 Um mehrere Punkte eines Objektes zu lokalisieren wird eine Wahrscheinlichkeitskarte der einzelnen Teilpunkte relativ zueinander gelernt. Auf dem Eingabebild wird dann die Ähnlichkeit der Bildregionen mit den gesuchten Punkten quantifiziert, die die Ähnlichkeit der Darstellung angibt. Anschließend wird die optimale Kombination aus Bildähnlichkeit und der Lage aller Punkte zueinander bestimmt.\\
 Diese Art der Bestimmung von positionsabhängigen Punkten ist ziemlich zuverlässig und dennoch dynamisch genug um auch mit kleinen Veränderungen zurecht zu kommen.\\
 Dies ist wichtig bei der Detektion von leicht verformbaren Objekten wie beispielsweise Gesichter und ist zuverlässiger als das Active Appearance Model (AAM).
@@ -35,6 +35,7 @@ Als nächster Schritt werden die Ergebnisse der Detektoren mit einer Karte der P
 Dies ist ein Verfahren der Bildverarbeitung um Übereinstimmungen zu einem Modell zu finden. Dazu wird aus dem Trainingsdatensatz eine typische \glqq durchschnittliche\grqq Form eines Objektes, sowie die Faktoren der wichtigsten möglichen Veränderungen der Form ermittelt. So können beispielsweise alle Merkmale, die ein Gesichts als männlich oder weiblich charakterisieren in einem Abweichungsvektor zusammengefasst und durch einen einzigen Gewichtungsparameter beschrieben werden.\\
 Soll nun zu einem Eingabebild die Übereinstimmung ermittelt werden, so müssen nur die wichtigsten Veränderungsfaktoren angepasst werden. Dies ist ein bedeutend kleinerer Parameterraum als alle Landmarks einzeln anzupassen. Sind dennoch Unterschiede zur Eingabe vorhanden, liegen diese an der Erscheinung des Objektes.
 \cite{wiki_AAM}
+\newpage
 \subsection{Patch Experts}
 Das Patch Experts ist ein Bewertungsverfahren um die Wahrscheinlichkeit zu ermitteln, dass ein Landmark an einer bestimmten Stelle im Bild dargestellt wird. Für die Bestimmung wird ein ganzer Bereich um diese Position herum ausgewertet, um Ergebnisse auf einen Teilen eines Pixels genau zu bestimmen.
 \cite{CLNF}

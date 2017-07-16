@@ -1,24 +1,16 @@
 \section{Gesichtsanalyse mit OpenFace}
 \label{OpenFace}
 OpenFace ist ein Open-Source Echtzeitverfahren auf Basis von CLNF für die Bestimmung und Analyse von Gesichtsmerkmalen in Graubildern und Videos. Dieses Verfahren wurde gewählt, da es zum aktuellen Stand der Technik gehört und viele Probleme der Gesichtsanalyse löst. Dazu gehört neben der zuverlässigen Bestimmung der Landmarks, auch die Fähigkeit zur bestimmung der 3D-Position, ermittlung der Blickrichtung und die Fähigkeit zu lernen. Dabei stehen in der aktuellen Anwendung neben dem Farbbild nur die Kameraparameter zur Verfügung und keinerlei Zusätze wie ein Tiefenbild (kann mitverwendet werden wenn es vorhanden ist) oder Infrarotbeleuchtung der Szene.\\
-OpenFace kann 68 Landmarks ermitteln, die das Gesicht beschreiben, und mit deren Hilfe Position, Blickrichtung und Gesichtsmerkmale zu bestimmen. Sollte ein Video als Quelle fungieren, kann OpenFace auch lernen, wodurch eine zuverlässigere Verarbeitung erzielt werden kann.\\
+OpenFace kann 68 Landmarks ermitteln, die das Gesicht beschreiben, und mit deren Hilfe Position, Blickrichtung und Gesichtsmerkmale bestimmen. Sollte ein Video als Quelle fungieren, kann OpenFace auch lernen, wodurch eine zuverlässigere Verarbeitung erzielt werden kann.\\
 Als Ergebnis ist die Kopfposition (Translation und Orientierung) sowie Blickrichtung von Interesse, da mit ihnen zurückrechnet werden kann wohin die Person schaut.\\
 Der Rechenaufwand zur Verarbeitung des Eingabebildes ist so ausgelegt, das ein Webcam-Video in Echtzeit ausgewertet werden kann, dies ist im aktuellen Fall nicht notwendig, da es sich um eine nachträgliche Auswertung handelt, bei der es vor allem um Genauigkeit geht.
-\subsection{Bestimmung der Landmarks}
-\label{bestimmung_Landmarks}
-Für die Bestimmung der Landmarks wird OpenFace auf den zuvor bestimmten Bildausschnitten eingesetzt. Dies bietet mehrere Vorteile, so wird nur auf Bildbereichen gearbeitet, in denen ein Gesicht zu sehen ist und unnötige Suche vermieden. Außerdem kann für jede Person die passende Initialisierung des CLNF, basierend auf dem letzten Ergebnis dieser Person, gewählt werden, auch für jene Personen die nur selten dargestellt sind. Auf diese Weise kann der Bildausschnitt möglichst exakt und gleichzeitig mit den anderen ausgewertet werden.\\
-Für die eigentliche Bestimmung der Landmarks bietet OpenFace zwei verschiedene Methoden, die Berechnung auf Bildern und Videos. Der Hauptunterschied ist das Lernen, dass bei der Videoauswertung verwendet wird, wodurch sich der Toleranzbereich deutlich erhöht und bessere Ergebnisse geliefert werden. Dies liegt an der Anpassung des Modells und dem möglichen Tracking der Landmarks.\\
-Dies ist interessant für die spätere Anwendung, da somit auch Einzelbilder verwendet werden können, die eine deutlich höhere Auflösung besitzen als ein Video. Allerdings haben die Vorabtestes (\autoref{Vorversuche}), gezeigt, das bei Verwendung von Einzelbildern der maximale Winkel relativ zur Kamera beträchtlich sinkt. Außerdem hat sich gezeigt, dass bei Verwendung eines Videos das Gesicht deutlich kleiner dargestellt sein kann bis keine Auswertung mehr möglich ist. Sollte ein Gesicht im aktuellen Frame erfolgreichen detektiert werden, können auch die nachfolgenden Frames durch das Lernen ausgewertet werden.\\
-Dennoch kann es passieren, dass trotz allem ein Gesicht falsch detektiert wird, wie z.B. das Erkennen eines sehr kleinen Gesichtes innerhalb einer Ohrmuschel. In solch einem Fall muss das CLNF zurückgesetzt werden, damit sich der Fehler nicht fortpflanzt.
-\subsubsection{Gesichts-Landmarks: Detektion und Verfolgung}
-Für die Bestimmung und Tracking der Landmarks wird ein Conditional Local Neural Fields (CLNF) eingesetzt. Dabei handelt es sich im Grunde um ein Constrained Local Model (CLM) nur mit verbesserter Patch Experts und Optimierungsfunktionen.\\
-Die beiden Hauptkomponenten des CLNF von OpenFace ist das Point Distribution Model (PDM) zur Erfassung der Anordnung der Landmarks und Patch Experts zum Erfassen der Variante der einzelnen Landmarks.\\
+\subsection{Gesichts-Landmarks: Detektion und Verfolgung}
+Für die Bestimmung und Tracking der Landmarks wird ein Conditional Local Neural Fields (CLNF) eingesetzt, dabei handelt es sich im Grunde um ein Constrained Local Model (CLM). Es wird das Point Distribution Model (PDM) zum Erfassen der Anordnung der Landmarks sowie ein verbessertes Patch Experts zum Erfassen der Variante der einzelnen Landmarks verwendet.\\
 Zu Beginn werden verschiedene initiale Hypothesen aus der dlib-Bibliothek verwendet und die Passende zur Eingabe ausgewählt. Bei den unterschiedlichen initial Hypothesen handelt es sich um die Darstellung verschiedener Gesichtsorientierungen auf denen unterschiedliche Netze trainiert wurden. Diese Herangehensweise ist langsam, aber auch exakter als eine einfache Hypothese. Wird ein Tracking, das Verfolgen der Landmarks über mehrere Frames, durchgeführt wird als initiale Hypothese das Ergebnis aus der letzten Eingabe verwendet. Sollte das Tracking scheitern, wird das CNN reseted um Neu zu beginnen mit den ursprünglichen Hypothesen.\\
-Auf diese Weise werden 68 Gesichts-Landmarks und  weitere 28 pro Auge erfasst. Zur Berechnung auf den Gesichtern sollten diese laut Paper \cite{OpenFace} eine Optimalgröße von 100 Pixeln für eine zuverlässige Detektion aufweisen.
-\subsubsection{Erkennen der Gesichtsmerkmale}
-Dieser Schritt kann von OpenFace ausgeführt werden, ist aber im aktuellen Fall nicht von Relevanz, da die Blickrichtung von Interesse ist und nicht die Mimik der Probanden.
-\subsubsection{Veröffentlichte Genauigkeit der Kopforientierung}
-Um die Qualität der Berechnung auf dem Kopf zu bewerten wurde im Paper \cite{OpenFace} der \glqq Biwi Kinect head pose\grqq \cite{BIWI_database},\glqq ICT-3DHP\grqq \cite{ICT_database} und \glqq BU Datensatz\grqq \cite{BU_database} ausgewertet. Dabei handelt es sich um Portrait-Fotos von Probanden, deren Körper in Richtung Kamera ausgerichtet sind und ihren Kopf in eine beliebige Richtung drehen. Für die Genauigkeit der Kopfposition haben sich Werte ergeben in Grad, siehe \autoref{OpenFace_Error}.\\
+Auf diese Weise werden 68 Gesichts-Landmarks und weitere 28 pro Auge bestimmt.\\
+Für eine zuverlässige Detektion der Gesichter, sollten diese laut Paper \cite{OpenFace} eine Größe von 100 Pixeln aufweisen.
+\subsection{Veröffentlichte Genauigkeit der Kopforientierung}
+Um die Qualität der Berechnung auf dem Kopf zu bewerten wurde im Paper \cite{OpenFace} der \glqq Biwi Kinect head pose\grqq \cite{BIWI_database}, \glqq ICT-3DHP\grqq \cite{ICT_database} und \glqq BU Datensatz\grqq \cite{BU_database} ausgewertet. Dabei handelt es sich um Portrait-Fotos von Probanden, deren Körper in Richtung Kamera ausgerichtet sind und ihren Kopf in eine beliebige Richtung drehen. Für die Genauigkeit der bestimmten Kopfposition haben sich folgende Werte in \autoref{OpenFace_Error} ergeben, Angraben in Grad.\\
 Für die Qualität zur Bestimmung der Blickrichtung wurde der Augendatensatz \glqq Appearancebased gaze estimation in the wild\grqq \cite{database_Eye_old} zur Bestimmung der Blickrichtung verwendet und es ergab sich ein durchschnittlichen Fehler von $9,96$ Grad.
 \begin{figure}[h]
 	\centering
@@ -29,6 +21,6 @@ Für die Qualität zur Bestimmung der Blickrichtung wurde der Augendatensatz \gl
 		BU dataset&2.8&3.3&2.3&2.8&2.0\\\hline
 		ICT-3DHP&3.6&3.6&3.6&3.6&-\\\hline
 	\end{tabular}
-	\caption{Veröffentlichte Abweichung von OpenFace auf verschiedenen Datensätze.\cite{OpenFace}}
+	\caption{Veröffentlichte Abweichung von OpenFace auf verschiedenen Datensätze, bestimmt von \cite{OpenFace}}
 	\label{OpenFace_Error}
 \end{figure}

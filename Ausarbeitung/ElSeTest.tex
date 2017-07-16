@@ -1,8 +1,8 @@
 \section{ElSe im Test}
-Der Ursprüngliche ElSe-Algorithmus wurde für Eye-Tracking Brillen entwickelt, daher soll geprüft werden in wieweit es in dieser Anwendung eingesetzt werden kann.\\
+Der Ursprüngliche ElSe-Algorithmus wurde für Eye-Tracking Brillen entwickelt, also für ein qualitativ hochwertiges Bild eines Auges, daher soll geprüft werden in wieweit es in dieser Anwendung eingesetzt werden kann.\\
 Um die einzelnen Grau-Verfahren besser vergleichen zu können, wurden künstliche Augen aus dem Datensatz \cite{database_Eye} verwendet damit die exakte Position der Landmarks bekannt ist.\\
 Ein gutes Verfahren muss stabil gegenüber der Skalierung sein, damit es auch auf kleinen Bereichen zuverlässig arbeitet. Da für die spätere Anwendung vor allem das Zentrum der Pupille von Interesse ist, wird der euklidische Abstand zum Zentrum als Qualitätsmaß verwendet.\\
-Da ElSe für Eye-Tracking Brillen entwickelt wurde, also für ein qualitativ hochwertiges Bild eines Auges, wurde der Bildbereich soweit verkleinert, dass nur noch alle Landmarks des Auges mit etwas Rand dargestellt werden, um diesen Anforderungen entsprechend nahe zu kommen.\\
+Da ElSe für Eye-Tracking Brillen entwickelt wurde ist der Augenbereich genauer bestimmt als im Datensatz enthalten, daher wurde der Bildbereich soweit verkleinert, dass nur noch alle Landmarks des Auges mit etwas Rand dargestellt werden, um diesen Anforderungen entsprechend nahe zu kommen.\\
 Somit sind die Bildausschnitte im Datensatz auf denen gerechnet wird etwa 64 auf 29 Pixel groß und werden für die Verarbeitung auf eine Breite von 384 Pixeln vergrößert, die Auflösung, wofür ElSe entwickelt wurde. Da durch die Skalierung allerdings keine zusätzlichen Informationen entstehen, ist vor allem die grobe Bestimmung der Ellipse, beschrieben in \autoref{ElSe_Grob}, von Interesse. Diese Auswahl des Bildbereiches kann auch in der späteren Anwendung eingesetzt werden, da der Augenbereich durch eigene Landmarks in der Gesichtsanalyse, relativ genau bestimmt ist.\\
 Um die Qualität der Berechnung bei verschiedenen Größen zu ermittelt, wurde das Bild linear verkleinert.
 \subsection{Auswirkung des Filterradius}
@@ -34,7 +34,7 @@ Ein Unterschied zwischen den Verfahren konnte bei der Bestimmung des Radius der 
 Für die Bestimmung der Iris hat das quadratische Verfahren die geringste mittlere Abweichung mit $2,488$ Pixel, nur etwas genauer als Min-Verfahren ($2,49$ Pixel). Für diese Berechnung ist ein Radius des Filters von 18 Pixel am besten gewählt.\\
 Somit wurden drei Verfahren ausgewählt um diese näher zu untersuchen, Gleam mit der geringsten Abweichung des Zentrums, Quadrat als bestes Resultat bei der Iris und Luminance da es ein Standartverfahren ist. Mit allen Verfahren wurden die Berechnung zur Pupille/Zentrum/Iris für verschieden groß skalierten Bildern bestimmt mit ihren jeweiligen optimalen Filterradien.\\
 Bei der Berechnung der Pupille auf den unterschiedlich großen Abbildungen ist weiterhin kein Unterschied zu erkennen, siehe \autoref{img_Vergleich_Scal_PI} oben.\\
-Auch bleiben die Unterschiede der Verfahren erhalten und die Fehler auf dem glichen Niveau bis zu einer Skalierung von $0,15$. So liefert das Gleam-Verfahren die besten Ergebnisse im Bezug auf das Zentrum, wo hingegen das Quatrat-Verfahren geeignet für die Bestimmung des Iris-Radius. 
+Auch bleiben die Unterschiede der Verfahren erhalten und die Fehler auf dem glichen Niveau bis zu einer Skalierung von $0,15$, ab welcher die Berechnung bei allen Verfahren scheitert. So liefert das Gleam-Verfahren die besten Ergebnisse im Bezug auf das Zentrum, wo hingegen das Quatrat-Verfahren geeignet für die Bestimmung des Iris-Radius ist.
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{Eye_Img_Box/Vergleich_Scal_A}
@@ -66,8 +66,9 @@ Aus \autoref{OpenFace_Eye_Box} ist zu entnehmen, dass der Bereich des Auges zwar
 \end{figure}
 \subsection{Ergebnis}
 Die Tests haben ergeben, das ElSe mit einem Radius von 10 Pixel auf Bildern die mithilfe von Gleam ins Graue überführt wurde die besten Ergebnisse liefert. Dabei ist das Verfahren stabil gegenüber der Skalierung und kann die Iris bis zu einer Größe von 3 Pixel erkennen, das einer Distanz von etwa $4m$ entspricht (Basierend auf der Actioncam).\\
-Allerdings hat der Vergleich ergeben, das bis zu einer Skalierung von $0,47$ ElSe schlechtere Ergebnisse liefert als OpenFace-Augen.\\
+Allerdings hat der Vergleich ergeben, das bis zu einer Skalierung von $0,47$ ElSe schlechtere Ergebnisse liefert als das OpenFace-Augen-CNN.\\
 So kann das Ergebnis von OpenFace bei Bilder in denen die Iris größer als 21 Pixel ist direkt als Lösung verwendet werden, da der mögliche Fehler von OpenFace geringer ist als der von ElSe.\\
 Im Bereich zwischen 17 und 15 Pixel ($0,5-0,44$) können beide Ergebnisse kombiniert werden, da sie ungefähr gleich gute Ergebnisse liefern um den gesamtfehler zu minimiren, da die beiden Verfahren unabhängig voneinander arbeiten.\\
 Sollte die Iris im Originalbild noch kleiner sein, so ist ElSe deutlich genauer, da es noch bis zu einer Irisgröße von 3 Pixel stabil funktioniert.\\
-Eine genauere Darstellung der Messergebnisse ist in \autoref{Abbildungen} dargestellt. Die Auswirkung der Radien und der verschieden Verfahren auf die Pupille ist in \autoref{ElSe_Gray_Pupille}, auf die Iris in \autoref{ElSe_Gray_Iris} und auf die Bestimmung des Zentrums in \autoref{ElSe_Gray_Zentrum} dargestellt, die Auswirkung der Skalierung in \autoref{ElSe_scall}.
+Eine genauere Darstellung der Messergebnisse ist in \autoref{Abbildungen} dargestellt. Die Auswirkung der Radien und der verschieden Verfahren auf die Pupille ist in \autoref{ElSe_Gray_Pupille}, auf die Iris in \autoref{ElSe_Gray_Iris} und auf die Bestimmung des Zentrums in \autoref{ElSe_Gray_Zentrum} dargestellt, die Auswirkung der Skalierung in \autoref{ElSe_scall}.\\
+Bei realen Aufnahmen sind Bildfehler unvermeidlich, so können Reflektionen (Brille, Kontaktlinse usw.), Make-Up und körperliche Eigenschaften wie Augenfarbe die Detektion erschweren. Ein Problem das schon im originalen Test \cite{ElSe} aufgetreten ist, wenn der Farbunterschied zwischen Iris und Pupille recht gering ausfällt oder durch Reflektionen der Kantenverlauf gestört wird, wodurch die maximale Distanz in der eine Auswertung der augen möglich ist weiter sinkt.
