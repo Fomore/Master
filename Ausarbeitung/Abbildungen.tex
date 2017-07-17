@@ -6,7 +6,7 @@
 	\caption{Dargestellt ist der Bereich in denen im BIWI \cite{database_Face_Ori} ein Gesicht erkannt wurde.\\
 		Bicubic (blau), Lanczos (grün), Linear (schwarz), Nearest-Neighbor (rot)\\
 		Maximal erreichter Wert: \protect\includegraphics[width=0.15\linewidth]{line/Line1}\\
-		$99,5\%$ Quantile der Messwerte: \protect\includegraphics[width=0.15\linewidth]{line/Line4}\\
+		$99\%$ Quantile der Messwerte: \protect\includegraphics[width=0.15\linewidth]{line/Line4}\\
 		$80\%$ Quantile der Messwerte:\protect\includegraphics[width=0.15\linewidth]{line/Line2}\\
 		Median aus den Messwerten: \protect\includegraphics[width=0.15\linewidth]{line/Line3}}
 	\label{img_Rot_Max}
@@ -178,16 +178,16 @@
 		\caption{Abweichung der Videoaufnahme von der Kopfausrichtung Horizontal (Oben), Kopforientierung Vertikal (Mitte) und die X-Ausrichtung der Augen (Unten)\\Skalierungsfaktor von links nach rechts (1/0.5/0.25/0.1/0.05), Y-Achse: $[0-35]^\circ$}
 		\label{graph_VideoSkalierung_Err}
 	\end{figure}
+\end{landscape}
 \begin{figure}
 	\centering
-	\begin{tabular}{ll}
 		\input{Versuch1_Img_res}
 		\input{Versuch1_Video_res}
-	\end{tabular}
 	\caption{Dargestellt ist der horizontale Winkelbereich in denen ein Gesicht mit aufbereitetem Inhalt erkannt wurde.\\
 		Links: Einzelbilder, Rechts: Video}
 	\label{graph_Test_1_Resize}
 \end{figure}
+\begin{landscape}
 \begin{figure}
 	\centering
 	\input{Augenbereich}

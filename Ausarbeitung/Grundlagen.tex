@@ -1,7 +1,7 @@
 \section{Computer Vision Methoden zur Gesichtsanalyse}
 \label{Grundlagen}
 Gesichtserkennung ist eine der am weitesten fortgeschrittenen Verfahren in der maschinellen Bildverarbeitung und wird ständig weiterentwickelt. Neben dem Erkennen eines Gesichts fällt darunter auch dessen Analyse wie beispielsweise die Orientierung, Übereinstimmung oder das Erkennen von Mimik.\\
-Eine Standardmethode bei der Gesichtserkennung ist die Verwendung eines Neuronalen Netzes.
+Eine Standardmethode bei der Gesichtserkennung ist die Verwendung eines neuronalen Netzes.
 \subsection{Künstliches neuronales Netz}
 Ein künstliches neuronales Netz besteht aus miteinander verknüpften künstlichen Neuronen. Jedes Neuron besitzt Eingangswerte und einen Ausgabewert.\\
 Um die Ausgabe zu bestimmen, werden die einzelnen Eingangswerte des Neurons individuell gewichtet, mit einer Übertragungsfunktion zusammengefasst und mittels einer Schwellenwertfunktion das Ergebnis bestimmt.\\
@@ -22,22 +22,22 @@ Gelernt werden kann jeder einzelne Kernel für sich und die jeweiligen Bewertung
 	\label{img_cnn}
 \end{figure}
 \subsection{Constrained Local Model (CLM)}
-In Constrained Local Modellen wird die Erkennung eines Objektes in die Erkennung einzelner charakteristischer Teilpunkt, der sogenannter Landmarks, aufgespalten. Dieses Verfahren eigenen sich deshalb besonders dazu deformierbare Objekte zu erkennen.\\
+In Constrained Local Modellen wird die Erkennung eines Objektes in die Erkennung einzelner charakteristischer Teilpunkte, der sogenannten Landmarks, aufgespalten. Dieses Verfahren eignet sich deshalb besonders dazu deformierbare Objekte zu erkennen.\\
 Um mehrere Punkte eines Objektes zu lokalisieren wird eine Wahrscheinlichkeitskarte der einzelnen Teilpunkte relativ zueinander gelernt. Auf dem Eingabebild wird dann die Ähnlichkeit der Bildregionen mit den gesuchten Punkten quantifiziert, die die Ähnlichkeit der Darstellung angibt. Anschließend wird die optimale Kombination aus Bildähnlichkeit und der Lage aller Punkte zueinander bestimmt.\\
 Diese Art der Bestimmung von positionsabhängigen Punkten ist ziemlich zuverlässig und dennoch dynamisch genug um auch mit kleinen Veränderungen zurecht zu kommen.\\
-Dies ist wichtig bei der Detektion von leicht verformbaren Objekten wie beispielsweise Gesichter und ist zuverlässiger als das Active Appearance Model (AAM).
+Dies ist wichtig bei der Detektion von leicht verformbaren Objekten wie beispielsweise Gesichtern und ist zuverlässiger als das Active Appearance Model (AAM).
 \cite{pdf_CLM}
+\newpage
 \subsection{Constrained Local Neural Fields (CLNF)}
 Bei CLNF handelt es sich um einen Gesichtsdetektor. Für die Detektion wird für jedes Merkmal ein eigener Detektor eingesetzt der auf einem Bildbereich arbeitet und eine Wahrscheinlichkeitskarte für dieses Merkmal erstellt.\\
 Als nächster Schritt werden die Ergebnisse der Detektoren mit einer Karte der Position aller Landmarks, entsprechend dem Vorgehen eines CLM, verglichen.
 \cite{CLNF}
 \subsection{Active Appearance Model (AAM)}
-Dies ist ein Verfahren der Bildverarbeitung um Übereinstimmungen zu einem Modell zu finden. Dazu wird aus dem Trainingsdatensatz eine typische \glqq durchschnittliche\grqq Form eines Objektes, sowie die Faktoren der wichtigsten möglichen Veränderungen der Form ermittelt. So können beispielsweise alle Merkmale, die ein Gesichts als männlich oder weiblich charakterisieren in einem Abweichungsvektor zusammengefasst und durch einen einzigen Gewichtungsparameter beschrieben werden.\\
+Dies ist ein Verfahren der Bildverarbeitung um Übereinstimmungen zu einem Modell zu finden. Dazu wird aus dem Trainingsdatensatz eine typische \glqq durchschnittliche\grqq Form eines Objektes, sowie die Faktoren der wichtigsten möglichen Veränderungen der Form ermittelt. So können beispielsweise alle Merkmale, die ein Gesicht als männlich oder weiblich charakterisieren in einem Abweichungsvektor zusammengefasst und durch einen einzigen Gewichtungsparameter beschrieben werden.\\
 Soll nun zu einem Eingabebild die Übereinstimmung ermittelt werden, so müssen nur die wichtigsten Veränderungsfaktoren angepasst werden. Dies ist ein bedeutend kleinerer Parameterraum als alle Landmarks einzeln anzupassen. Sind dennoch Unterschiede zur Eingabe vorhanden, liegen diese an der Erscheinung des Objektes.
 \cite{wiki_AAM}
-\newpage
 \subsection{Patch Experts}
-Das Patch Experts ist ein Bewertungsverfahren um die Wahrscheinlichkeit zu ermitteln, dass ein Landmark an einer bestimmten Stelle im Bild dargestellt wird. Für die Bestimmung wird ein ganzer Bereich um diese Position herum ausgewertet, um Ergebnisse auf einen Teilen eines Pixels genau zu bestimmen.
+Das Patch Experts ist ein Bewertungsverfahren um die Wahrscheinlichkeit zu ermitteln, dass ein Landmark an einer bestimmten Stelle im Bild dargestellt wird. Für die Bestimmung wird ein ganzer Bereich um diese Position herum ausgewertet, um Ergebnisse auf ein Teilpixels genau zu bestimmen.
 \cite{CLNF}
 \subsection{Non-maximum suppression  (NMS)}
 Das NMS ist ein Verfahren um ein lokales Maximum zu bestimmen und kann z.B. in einem Bild eingesetzt werden um Kanten exakter zu bestimmen.\\
@@ -51,6 +51,6 @@ X &= \overline{X}+P\cdot b
 \end{align*}
 Somit können durch einen Skalierungsvektor $b$ alle möglichen Eingabeformen $X$ des Objektes aus dem Durchschnittsmodell wiederhergestellt werden. Zur Vereinfachung reicht es, die signifikantesten Eigenvektoren in $P$ aufzunehmen und dennoch $X$ ausreichend genau beschreiben zu können.\\
 Ist bekannt welche Art der Verformung durch den Eingenvektor dargestellt wird, z.B. eine bestimmte Orientierung, so kann anhand des Skalierungsvektors die Rotation der Eingabe bestimmt werden, siehe Generalized Adaptive View-based Appearance Model (GAVAM).\\
-Eine Problematik bei dieser Art der Rotationsbestimmung entsteht, wenn die Lösung nicht eindeutig ist. Dies kann daran liegen, dass unter Umständen durch verschiedene Gewichtungskombinationen die selbe Darstellung erzielt wird oder das eine nicht erfasste Verformung des Objektes stattgefunden hat, wodurch immer eine Abweichung zu allen Kombinationen entsteht.\\
-Dieses Problem der Verformung tritt bei Berechnungen von Gesichter auf, da immer eine Veränderung z.B. der Mundwinkel oder Augenlider vorhanden ist.
+Eine Problematik bei dieser Art der Rotationsbestimmung entsteht, wenn die Lösung nicht eindeutig ist. Dies kann daran liegen, dass unter Umständen durch verschiedene Gewichtungskombinationen die selbe Darstellung erzielt wird oder dass eine nicht erfasste Verformung des Objektes stattgefunden hat, wodurch immer eine Abweichung zu allen Kombinationen entsteht.\\
+Dieses Problem der Verformung tritt bei Berechnungen von Gesichtern auf, da immer eine Veränderung z.B. der Mundwinkel oder Augenlider vorhanden ist.
 \cite{pdf_PDM}\cite{pdf_GAVAM}\cite{wiki_PDM}

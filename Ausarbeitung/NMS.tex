@@ -1,5 +1,4 @@
 \subsection{Non-maximum suppression  (NMS)}
-Ein Verfahren um Kanten in einem Bild exakter zu bestimmen. Als Eingabe für das Verfahren, wird das Ergebnis eines Kantendetektor z.B. Kirsch-Operator verwendet. Dabei gibt die Stärke der Farbe eines Pixels an, wie nahe es an einer Kante im Originalbild liegen. Bei der Verarbeitung wird nun der Farbwert jedes einzelnen Pixels des Eingabebildes mit seinen umliegenden verglichen und sollte es nicht maximal sein auf Null gesetzt.\\
-Auf diese Weise bleibt nur noch ein Kantenpixel übrig.
-\subsubsection{To Do}
-Quelle
+Ein Verfahren um ein lokales Maximum zu bestimmen und kann z.B. in einem Bild eingesetzt werden um Kanten exakter zu bestimmen. Als Eingabe für das Verfahren im Beispiel, wird das Ergebnis eines Kantendetektor z.B. Kirsch-Operator verwendet. Dabei gibt die Stärke der Farbe eines Pixels an, wie nahe es an einer Kante im Originalbild liegen. Bei der Verarbeitung wird nun der Farbwert jedes einzelnen Pixels des Eingabebildes mit seinen umliegenden verglichen und sollte es nicht maximal sein auf Null gesetzt.\\
+Auf diese Weise bleibt nur noch ein Kantenpixel übrig. Wird das Verfahren auf die Bestimmung von Boxen eingesetzt, so wird jene Fläche bestimmt die von allen am ehesten beschreiben wird.
+\cite{wiki_Canny}\cite{NMS}

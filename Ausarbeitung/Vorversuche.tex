@@ -19,17 +19,17 @@ Es zeigt sich, das auf allen Positionen die Probanden erfolgreich erkannt wurden
 	\centering
 	\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
 		\hline
-		\includegraphics[width=1.1cm]{img_MTCNN/Img1-4_pupil1}&
-		\includegraphics[width=1.1cm]{img_MTCNN/Img2-4_pupil1}&
-		\includegraphics[width=1.1cm]{img_MTCNN/Img3-4_pupil1}&
-		\includegraphics[width=1.1cm]{img_MTCNN/Img4-4_pupil1}&
-		\includegraphics[width=1.1cm]{img_MTCNN/Img5-4_pupil1}&
-		\includegraphics[width=1.1cm]{img_MTCNN/Img6-4_pupil1}&
-		\includegraphics[width=1.1cm]{img_MTCNN/Img7-4_pupil1}&
-		\includegraphics[width=1.1cm]{img_MTCNN/Img8-4_pupil1}&
-		\includegraphics[width=1.1cm]{img_MTCNN/Img9-4_pupil1}&
-		\includegraphics[width=1.1cm]{img_MTCNN/Img10-4_pupil1}&
-		\includegraphics[width=1.1cm]{img_MTCNN/Img11-4_pupil1}\\
+		\includegraphics[width=0.06\linewidth]{img_MTCNN/Img1-4_pupil1}&
+		\includegraphics[width=0.06\linewidth]{img_MTCNN/Img2-4_pupil1}&
+		\includegraphics[width=0.06\linewidth]{img_MTCNN/Img3-4_pupil1}&
+		\includegraphics[width=0.06\linewidth]{img_MTCNN/Img4-4_pupil1}&
+		\includegraphics[width=0.06\linewidth]{img_MTCNN/Img5-4_pupil1}&
+		\includegraphics[width=0.06\linewidth]{img_MTCNN/Img6-4_pupil1}&
+		\includegraphics[width=0.06\linewidth]{img_MTCNN/Img7-4_pupil1}&
+		\includegraphics[width=0.06\linewidth]{img_MTCNN/Img8-4_pupil1}&
+		\includegraphics[width=0.06\linewidth]{img_MTCNN/Img9-4_pupil1}&
+		\includegraphics[width=0.06\linewidth]{img_MTCNN/Img10-4_pupil1}&
+		\includegraphics[width=0.06\linewidth]{img_MTCNN/Img11-4_pupil1}\\
 		\hline
 		$1m$& $2m$& $3m$& $4m$& $5m$& $6m$& $7m$& $8m$& $9m$& $10m$& $11m$\\\hline
 	\end{tabular}
@@ -40,26 +40,26 @@ Es zeigt sich, das auf allen Positionen die Probanden erfolgreich erkannt wurden
 Für die Analyse wurden aus dem Video jene Frames ausgewählt in denen ein Target fokussiert wurde und analysiert.\\
 Als erstes wurde die Einzelbildauswertung von OpenFace auf die Frames angewendet und jene Abbildungen der Kopfrotationen markiert, in denen erfolgreich ein Gesicht erkannt wurde. In \autoref{graph_Test_1_Normal} links ist der horizontale Wertebereich dargestellt in dem an der jeweiligen Position ein Gesicht erfolgreich erkannt wurde.\\
 Im zweiten Teil wurden die selben Frames für die Messung verwendet, dieses mal allerdings wurde das gesamte Video analysiert. Der Winkelbereich in dem auf der horizontalen Achse an den entsprechenden Positionen ein Gesicht erkannt wurde, ist in \autoref{graph_Test_1_Normal} rechts dargestellt.\\
-Um die alle Verbesserungen in einer Realen Umgebung auszutesten, wurde wie in \autoref{Implementierung_Ablauf} beschreiben vorgegangen und die relevanten Bildausschnitte linear vergrößert. Die Auswirkung auf den horizontalen Bereich ist in \autoref{graph_Test_1_Resize} dargestellt. Durch diese Verbesserung wird die Distanz auf der gearbeitet werden kann mehr als verdoppelt bei der Video- und Einzelbild-Analyse.
+Um alle Verbesserungen in einer realen Umgebung auszutesten, wurde wie in \autoref{Implementierung_Ablauf} beschrieben vorgegangen und die relevanten Bildausschnitte linear vergrößert. Die Auswirkung auf den horizontalen Bereich ist in \autoref{graph_Test_1_Resize} dargestellt. Durch diese Verbesserung wird die Distanz auf der gearbeitet werden kann mehr als verdoppelt bei der Video- und Einzelbild-Analyse.
 \begin{figure}
 	\centering
 	\begin{tabular}{ll}
 	\input{Versuch1_Img}
 	\input{Versuch1_Video}
 	\end{tabular}
-	\caption{Dargestellt ist der horizontale Winkelbereich in denen ein Gesicht erkannt wurde.\\
+	\caption{Dargestellt ist der horizontale Winkelbereich in denen ein Gesicht erkannt wurde. Angaben in Meter\\
 	Links: Einzelbilder, Rechts: Video}
 	\label{graph_Test_1_Normal}
 \end{figure}
 \subsection{Ergebnis}
 Es zeigt sich, dass eine Auswertung von OpenFace auf einem Video deutlich zuverlässiger arbeitet als auf Einzelbildern, vor allem der größere Arbeitsbereich bezüglich der Rotation ist von Vorteil.\\
 Durch die Verwendung des Weitwinkelobjektivs, kann die gesamte Breite eines Klassenzimmers erfasst werden und der Arbeitsbereich der Auswertung ist für eine erfolgreiche Detektion und Analyse breit genug um Schüler erfassen zu können, die selbst die vorderen Eckpunkte eines Klassenzimmers betrachten.\\
-Bei der Distanz zur Kamera (Tiefe) besteht Handlungsbedarf, als Ziel wurde $8m$ angesetzt und das aktuelle Verfahren endet bei $5m$ in der einfachen Ausführung. Wird der Bildbereich allerdings verbessert, so verdoppelt sich die Distanz wischen Kamera und Person, wodurch eine Abdeckung des gesamten Klassenzimmers erreicht wird.\\
-Der in \autoref{OpenFace_skal} theoretischen bestimmten Detektionsabstand von $14m$ konnte nicht erreicht werden, die erreichte Maximaldistanz liegt bei etwa $10m$, immer noch ausreichend für ein Klassenzimmer. Als Ursache kann das Pixelrauschen und die Überbeleuchtung durch das einfallende Licht der Fenster angenommen werden.\\
-Auch MTCNN-Face ist als Detektor geeignet, er findet zuverlässige alle Gesichter im Frame, unabhängig ihrer Größe und Orientierung. Sogar jene die von OpenFace nicht mehr verwendet werden kann. Einzige Anmerkung ist die etwas ungenaue Box, dies kann aber mit einer einfachen Verschiebung der Boxränder korrigiert werden.\\
+Bei der Distanz zur Kamera (Tiefe) besteht Handlungsbedarf, als Ziel wurde $8m$ angesetzt und das aktuelle Verfahren endet bei $5m$ in der einfachen Ausführung. Wird der Bildbereich allerdings verbessert, so verdoppelt sich die Distanz zwischen Kamera und Person, wodurch eine Abdeckung des gesamten Klassenzimmers erreicht wird.\\
+Der in \autoref{OpenFace_skal} theoretisch bestimmte Detektionsabstand von $14m$ konnte nicht erreicht werden, die erreichte Maximaldistanz liegt bei etwa $10m$, immer noch ausreichend für ein Klassenzimmer. Als Ursache kann das Pixelrauschen und die Überbeleuchtung durch das einfallende Licht der Fenster angenommen werden.\\
+Auch MTCNN-Face ist als Detektor geeignet, er findet zuverlässig alle Gesichter im Frame, unabhängig ihrer Größe und Orientierung. Sogar jene die von OpenFace nicht mehr verwendet werden können. Einzige Anmerkung ist die etwas ungenaue Box, dies kann aber mit einer einfachen Verschiebung der Boxränder korrigiert werden.\\
 Eine signifikante Aussage bezüglich des vertikalen Winkel kann aus diesem Aufbau nicht getroffen werden, da die Neigungswinkel zwar differenziert werden können, sie allerdings zu ähnlich sind bei stehenden Personen (beides mal fast horizontal).\\
 Von Interesse ist ob ein Schüler auch erkannt werden kann, wenn dieser auf den Tisch vor sich schaut, was einen sehr großen Neigungswinkel bedeutet. Um dies aus zu testen wurde Versuch 2 durchgeführt.
-\section{Versuch 2 - Arbeitsbereich der Verfahren}
+\section{Versuch 2 - Arbeitsbereich bezüglich der Neigung des Kopfes}
 Da ein aufmerksamer Schüler durchaus auch auf den Tisch blicken kann, z.B. beim Schreiben, soll getestet werden wie weit die Analyse in solchen Situationen funktioniert.
 \subsection{Versuchsaufbau}
 Für diesen Versuch wurde die Kamera auf $1,88m$ Höhe und $3m$ vor dem vordersten Standort der Probanden aufgestellt.\\
@@ -67,7 +67,7 @@ Als Standorte wurde eine Markierung mit einem Meter Abstand zueinander auf einer
 Als Target diente die Kamera, ein Punkt $78cm$ unterhalb der Kamera und einer $40cm$ über dem Boden und $50cm$ vor der Kamera. Alle anderen Targets befinden sich $1m$ vor den Standorten.\\
 Diesmal war das Versuchsgelände draußen an einem bedecken Tag, wodurch eine helle schattenlose Szene entsteht.
 \subsection{Auswertung}
-Es wurde die selbe Auswertung wie in Versuch 1 verwendet, einzelne Frames mit bekanntem Target. In \autoref{graph_Test_2_Normal} ist der vertikale Arbeitsbereich dargestellt, wiederum ist der Arbeitsbereich bei Verwendung der Video-Analyse etwas größer, wobei ein Winkel von $60^\circ$ nach unten erfasst werden kann.\\
+Es wurde die selbe Auswertung wie in Versuch 1 verwendet, einzelne Frames mit bekanntem Target. In \autoref{graph_Test_2_Normal} ist der vertikale Arbeitsbereich dargestellt, wiederum ist der Arbeitsbereich bei Verwendung der Video-Analyse etwas größer mit $50^\circ$, wobei ein Winkel von $50^\circ$ nach unten immer erfasst werden kann.\\
 Durch die Verbesserung der Eingabebilder kann auf einer Distanz von $9m$ gearbeitet werden, siehe \autoref{graph_Test_2_Resize}, mit dem selben Arbeitsbereich.
 \begin{figure}
 	\centering
@@ -79,7 +79,7 @@ Durch die Verbesserung der Eingabebilder kann auf einer Distanz von $9m$ gearbei
 \begin{figure}
 \centering
 	\input{Versuch2_res}
-	\caption{Dargestellt ist der horizontale Winkelbereich in denen ein Gesicht erkannt bei aufbereitetem Eingabebild.\\
+	\caption{Dargestellt ist der horizontale Winkelbereich in denen ein Gesicht erkannt wird bei aufbereitetem Eingabebild.\\
 	Oben: Einzelbilder, Unten: Video}
 \label{graph_Test_2_Resize}
 \end{figure}
@@ -92,12 +92,12 @@ Um einen Eindruck von ElSe mit hochauflösenden Aufnahmen zu erhalten, wurde ein
 \subsection{Versuchsaufbau}
 Als Messinstrument wurde die Sony ILCE-6000 verwendet. Diese liefert ein $6000\times 4000$ Pixel großes Farbbild bei einer Brennweite von  $16mm$. Als Standort der Probanden wurden die selben wie in Versuch 1  verwendet. Da es sich um eine Fotokamera handelt, wurde ein Datensatz von Einzelbildern erstellt. Dabei wurden nur Aufnahmen gemacht, bei denen die Probanden direkt in die Kamera schauten.
 \subsection{Auswertung}
-Von Interesse ist die Augenpartie und die Ergebnisse des OpenFace Eye-Detektor im Vergleich zu ElSe, Dabei wurde ElSe in der Basiskonfiguration eingesetzt, dies bedeutet das Luminance-Verfahren, siehe \autoref{gray_Luminance} als Graukonvertierer und einem Radius der Maske von 12 Pixel.
+Von Interesse ist die Augenpartie und die Ergebnisse des OpenFace Eye-Detektor im Vergleich zu ElSe. Dabei wurde ElSe in der Basiskonfiguration eingesetzt, dies bedeutet das Luminance-Verfahren, siehe \autoref{gray_Luminance} als Graukonvertierer und einem Radius der Maske von 12 Pixel.
 Für die Analyse wurde zuerst mit OpenFace das Gesicht soweit analysiert um die Augenpartie als Eingabebild zu bestimmen, siehe \autoref{graph_Auge_Verbesserung} und ein Beispiel in \autoref{img_Versuch_Auge} oben. Auf diesem Eingabebild wird nun der ElSe-Algorithmus angewendet um die Ellipse zu bestimmen, dargestellt in grün. Im Vergleich sind die zusätzlichen 28 Landmarks der Augen von OpenFace auch in \autoref{img_Versuch_Auge} Mitte oben. Als Ergebnis wurde aus den berechneten Ellipsen von ElSe die Landmarks der Pupille und Iris abgeleitet und im selben Farbschema dargestellt.
 \begin{figure}
 	\centering
 	\input{GraphAuge}
-	\caption{Dargestellt sind der Ablauf, um die Landmarks des Auges zu verbessern}
+	\caption{Dargestellt sind der Ablauf um die Landmarks des Auges zu verbessern}
 	\label{graph_Auge_Verbesserung}
 \end{figure}
 \begin{figure}

@@ -3,13 +3,13 @@
 Da die Berechnungen von ElSe auf Graubildern arbeitet und das Eingabebild in Farbe ist, muss es in ein Graubild umgewandelt werden.\\
 Die Wahl des Verfahrens beruht auf der Anforderung von ElSe, dass vor allem der Farbunterschied zwischen Pupille und der Umgebung maximal sein soll, die Pupille möglichst dunkel und das restliche Auge hell. Die Farbe der Iris erschwert die Differenzierung zusätzlich, wenn diese recht dunkel ausfällt ist auch der Unterschied zur Pupille entsprechend gering in den Grauwerten. Außerdem ist das Erkennen der Pupille bei sehr kleinen Bildern schwierig bis unmöglich wodurch auf der Iris gerechnet werden muss, und daher diese weiterhin erhalten bleiben sollte.\\
 Nach der Umwandlung wird für die Anwendung das Graubild noch normiert, damit mindestens ein schwarzes und ein weißes Pixel vorhanden ist.\\
-Die Wahl von Gleam basiert auf den Ergebnissen von \glqq Color-to-Grayscale: Does the Method Matter in Image Recognition?\grqq \cite{rgb_to_Gray} und New-Gleam als eine Umsetzung des dort veröffentlichtem Ausblicks. Luminance als Standart , Quadrat als gegenstück zu Gleam und Min/Max beruht auf der Idee die farbigen Iris zu nutzen.\\
-Das Eingabebild der Beispiele der einzelnen Graukonvertierung ist in \autoref{img_Gray_Einagbe} dargestellt. Eine Farbpalette, das Bildverarbeitungsbeispiel Lena sowie ein Augenbereich aus dem Augendatensatz \cite{database_Eye}. 
+Die Wahl von Gleam basiert auf den Ergebnissen von \glqq Color-to-Grayscale: Does the Method Matter in Image Recognition?\grqq \cite{rgb_to_Gray} und New-Gleam als eine Umsetzung des dort veröffentlichtem Ausblicks. Luminance als Standart, Quadrat als gegenstück zu Gleam und Min/Max beruht auf der Idee die farbige Iris zu nutzen.\\
+Das Eingabebild der Beispiele der einzelnen Graukonvertierungen ist in \autoref{img_Gray_Einagbe} dargestellt. Eine Farbpalette, das Bildverarbeitungsbeispiel Lena sowie ein Augenbereich aus dem Augendatensatz \cite{database_Eye}. 
 \begin{figure}
 	\centering
-	\includegraphics[width=0.2\linewidth]{img/Farbtafel2}
-	\includegraphics[width=0.2\linewidth]{img/lena}
-	\includegraphics[width=0.2\linewidth]{img/Auge}
+	\includegraphics[width=0.19\linewidth]{img/Farbtafel2}
+	\includegraphics[width=0.19\linewidth]{img/lena}
+	\includegraphics[width=0.19\linewidth]{img/Auge}
 	\caption{Dies sind die Eingabebilder der verschiedenen Konverter von Farbe nach Grau. Links eine Farbpalette, Mitte Lena und Rechts ein Augenausschnitt aus dem Augendatensatz \cite{database_Eye}}
 	\label{img_Gray_Einagbe}
 \end{figure}
@@ -55,44 +55,44 @@ Der Gauß-Filters ist ein Tiefpassfilter und wird verwendet um das Eingangssigna
 Die einzelnen Werte werden ihrer Umgebung angepasst, wodurch lokal auftretende Extremar verschwinden bzw. abgeschwächt werden und ähnliche Farbwerte zu ihrer Umgebung erhalten bleiben.
 \begin{figure}
 	\centering
-	\includegraphics[width=0.2\linewidth]{img/Farbkarte2}
-	\includegraphics[width=0.2\linewidth]{img/Lena2}
-	\includegraphics[width=0.2\linewidth]{img/Auge_2Gray}
+	\includegraphics[width=0.19\linewidth]{img/Farbkarte2}
+	\includegraphics[width=0.19\linewidth]{img/Lena2}
+	\includegraphics[width=0.19\linewidth]{img/Auge_2Gray}
 	\caption{Ergebnis der Umwandlung von Farb- nach Grauwert mittels Gleam-Verfahren}
 	\label{img_Gleam}
 \end{figure}
 \begin{figure}[p]
 	\centering
-	\includegraphics[width=0.2\linewidth]{img/Farbkarte1}
-	\includegraphics[width=0.2\linewidth]{img/Lena1}
-	\includegraphics[width=0.2\linewidth]{img/Auge_1Gray}
+	\includegraphics[width=0.19\linewidth]{img/Farbkarte1}
+	\includegraphics[width=0.19\linewidth]{img/Lena1}
+	\includegraphics[width=0.19\linewidth]{img/Auge_1Gray}
 	\caption{Ergebnis der Umwandlung von Farb- nach Grauwert mittels Gleam-New-Verfahren}
 	\label{img_NewGeam}
 \end{figure}
 \begin{figure}[p]
 	\centering
-	\includegraphics[width=0.2\linewidth]{img/Farbkarte0}
-	\includegraphics[width=0.2\linewidth]{img/Lena0}
-	\includegraphics[width=0.2\linewidth]{img/Auge_0Gray}
+	\includegraphics[width=0.19\linewidth]{img/Farbkarte0}
+	\includegraphics[width=0.19\linewidth]{img/Lena0}
+	\includegraphics[width=0.19\linewidth]{img/Auge_0Gray}
 	\caption{Ergebnis der Umwandlung von Farb- nach Grauwert mittels Luminance-Verfahren}
 	\label{img_Luminance}
 \end{figure}
 \begin{figure}[p]
 	\centering
-	\includegraphics[width=0.2\linewidth]{img/Farbkarte5}
-	\includegraphics[width=0.2\linewidth]{img/Lena5}
-	\includegraphics[width=0.2\linewidth]{img/Auge_5Gray}\\
-	\includegraphics[width=0.2\linewidth]{img/Farbkarte4}
-	\includegraphics[width=0.2\linewidth]{img/Lena4}
-	\includegraphics[width=0.2\linewidth]{img/Auge_4Gray}
+	\includegraphics[width=0.19\linewidth]{img/Farbkarte5}
+	\includegraphics[width=0.19\linewidth]{img/Lena5}
+	\includegraphics[width=0.19\linewidth]{img/Auge_5Gray}\\
+	\includegraphics[width=0.19\linewidth]{img/Farbkarte4}
+	\includegraphics[width=0.19\linewidth]{img/Lena4}
+	\includegraphics[width=0.19\linewidth]{img/Auge_4Gray}
 	\caption{Ergebnis der Umwandlung von Farb- nach Grauwert mittels Extremwert-Verfahren. Oben: Max-Verfahren, Unten: Min-Verfahren}
 	\label{img_MinMax}
 \end{figure}
 \begin{figure}[p]
 	\centering
-	\includegraphics[width=0.2\linewidth]{img/Farbkarte3}
-	\includegraphics[width=0.2\linewidth]{img/Lena3}
-	\includegraphics[width=0.2\linewidth]{img/Auge_3Gray}
+	\includegraphics[width=0.19\linewidth]{img/Farbkarte3}
+	\includegraphics[width=0.19\linewidth]{img/Lena3}
+	\includegraphics[width=0.19\linewidth]{img/Auge_3Gray}
 	\caption{Ergebnis der Umwandlung von Farb- nach Grauwert mittels Quadrat-Verfahren}
 	\label{img_Quadrat}
 \end{figure}

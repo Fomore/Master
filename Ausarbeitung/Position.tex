@@ -39,15 +39,15 @@ Diesem kann entgegengewirkt werden, indem zwischen beiden Berechnungen (rechts u
 Dieser Trick kann verwendet werden, da der Unterschied zwischen beiden Blickrichtungen minimal ausfällt (nahezu parallel), sollte ein weiter entfernterer Punkt fokussiert werden.
 \subsubsection{Auswirkung der Bildkoordinaten auf die Berechnung}
 Befinden sich die Bildpunkte nicht im Zentrum, so muss die Ausrichtung der Pixel beachtet werden, um diese mit in die Berechnung einfließen zu lassen. Dieser zusätzliche Winkel muss beachtet werden, da die Abweichung immer stärker wird, je weiter der Pixel vom Zentrum entfernt ist.\\ 
-Als Ausgangspunkt werden die Ergebnisse des CNN verwendet um die Position zu erhalten. Zur Bestimmung der Orientierung $R$ liefert auch das CNN ein Ergebnis $R_{CNN}$. Allerdings stimmt es nur im Zentrum des Bildes, da für de Berechnung die Anordnung der Landmarks relevant ist und die Position im Bild noch nicht beachtet wurde.\\
+Als Ausgangspunkt werden die Ergebnisse des CNN verwendet um die Position zu erhalten. Zur Bestimmung der Orientierung $R$ liefert auch das CNN ein Ergebnis $R_{CNN}$. Allerdings stimmt es nur im Zentrum des Bildes, da für die Berechnung die Anordnung der Landmarks relevant ist und die Position im Bild noch nicht beachtet wurde.\\
 \begin{align*}
 euler_x &= \tan^{-1}(\frac{\sqrt{X^2+Z^2}}{Z^2})\\
 euler_y &= \tan^{-1}(\frac{\sqrt{Y^2+Z^2}}{Z^2})\\
 R_{pos} &= R(euler_x,euler_y,0)\text{ Umwandlung zur Rotationsmatrix}\\
 R &= R_{CNN}\cdot R_{pos}
 \end{align*}
-Eine weitere Verbesserung kann erreicht werden, indem die gefundenen 2D-Landmarks mit Hilfe des PDM in 3D überführt werden. Anschließend werden die 3D nach 2D-Koordinaten wieder überführt um die Orientierung und Position zu ermitteln. Auch bei diesem Verfahren muss die Pixelorientierung beachtet werden. Allerdings ist die Verwendung eins Tiefenbild sinnvoll, da ansonsten die Fehler weiter verstärkt werden. Daher ist es in der aktuellen Anwendung nicht sinnvoll einsetzbar.\cite{OpenFace}
-\subsection{Bestimmung eines Punktes, auf der die Aufmerksamkeit liegt}
+Eine weitere Verbesserung kann erreicht werden, indem die gefundenen 2D-Landmarks mit Hilfe des PDM in 3D überführt werden. Anschließend werden die 3D nach 2D-Koordinaten wieder überführt um die Orientierung und Position zu ermitteln. Auch bei diesem Verfahren muss die Pixelorientierung beachtet werden. Allerdings ist die Verwendung eines Tiefenbildes von Vorteil, da ansonsten die Fehler weiter verstärkt werden. Daher ist es in der aktuellen Anwendung nicht sinnvoll einsetzbar.\cite{OpenFace}
+\subsection{Bestimmung eines Punktes, auf dem die Aufmerksamkeit liegt}
 Von Interesse ist vor allem der Punkt auf dem der Blick ruht bzw. auf den das Gesicht ausgerichtet ist.\\
 Bestimmung des Richtungsvektors $V$ aus der Rotationsmatrix:
 \[V= R\cdot (0,0,-1)^T\] 

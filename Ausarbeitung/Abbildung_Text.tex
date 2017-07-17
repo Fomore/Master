@@ -1,6 +1,6 @@
 \label{Abbildungen}
 In diesem Abschnitt werden weitere Diagramme dargestellt um einen besseren Eindruck über die Messergebnisse zu erhalten.
-\subsection*{Boxplot}
+\subsection{Boxplot}
 Folgende Angaben gelten für alle dargestellten Boxplots.
 \begin{itemize}
 	\item Die schwarze Mittellinie in der Box zeigt den Median der Messwerte an.
@@ -10,29 +10,29 @@ Folgende Angaben gelten für alle dargestellten Boxplots.
 	\item Alle Ausreißer wurden zwecks Übersichtlichkeit weggelassen
 	\item Die eingezeichnete horizontale Linie stellt den Median der Messwerte aus Skalierung 1 dar, die Beschriftung gibt den Median an.
 \end{itemize}
-\subsection*{Anzahl der Messwerte}
+\subsection{Anzahl der Messwerte}
 Um eine Übersicht über die Anzahl der Messwerte zu erhalten ein Überblick:
-\subsubsection*{Biwi Random Forests for Real Time 3D Face Analysis \cite{database_Face_Ori}}
-Alle Darstellungen und Auswertungen bezüglich der verschiedenen Skalierungsverfahren haben folgende Anzahl an Messwerten bei den angegebenen Skalierungen.\\
+\subsubsection{Biwi Random Forests for Real Time 3D Face Analysis \cite{database_Face_Ori}}
+Alle Darstellungen und Auswertungen bezüglich der verschiedenen Skalierungsverfahren haben folgende Anzahl an Messwerten bei den angegebenen Skalierungen, Maximum bei Skalierung 1 mit 9800.\\
 Die geringe Anzahl der Messwerte bei $0,04$ kann keine begründete Aussage gemacht werden, außerdem weichen die Werte so sehr von de anderen ab, das sie als False-True erkannten Gesichtern angesehen werden können
 $[$\autoref{img_Rot_Max}, \autoref{img_X_Pos_Skal}, \autoref{img_Y_Pos_Skal}, \autoref{img_Z_Pos_Skal}, \autoref{img_X_Rot_Skal}, \autoref{img_Y_Rot_Skal}, \autoref{img_Z_Rot_Skal}$]$\\
 \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|}
 	\hline 
-	&0,04&0,07&0,1&0,13&0,16&0,19&0,22&0,25&0,28&0,31-1\\
+	&$0,04$&$0,07$&$0,1$&$0,13$&$0,16$&$0,19$&$0,22$&$0,25$&$0,28$&$\geq0,31$\\
 	\hline 
-	Bicubic&3&1190&4545&5888&7147&8329&8991&9439&9561&$9600-9800$\\
+	Bicubic&3&1190&4545&5888&7147&8329&8991&9439&9561&$>9600$\\
 	\hline 
-	Lanczos&3&1224&4206&5696&6941&8224&8958&9400&9548&$9700-9800$\\
+	Lanczos&3&1224&4206&5696&6941&8224&8958&9400&9548&$>9700$\\
 	\hline 
-	Linear&1&776&3935&5439&6851&8019&8625&9107&9313&$9400-9800$\\
+	Linear&1&776&3935&5439&6851&8019&8625&9107&9313&$>9400$\\
 	\hline 
-	Nearest-Neighbor&0&0&0&193&2081&4374&5976&7825&8595&$9200-9800$\\ 
+	Nearest-N.&0&0&0&193&2081&4374&5976&7825&8595&$>9200$\\ 
 	\hline 
 \end{tabular} 
-\subsubsection*{Augen-Datensatz \cite{database_Eye}}
+\subsubsection{Augen-Datensatz \cite{database_Eye}}
 Die einzelnen abgebildeten Boxplots basierend auf dem Augen-Datensatz \cite{database_Eye} besitzen mindestens 10.000 Messwerte.\\
 $[$\autoref{ElSe_Gray_Zentrum}, \autoref{ElSe_Gray_Pupille}, \autoref{ElSe_Gray_Iris}, \autoref{ElSe_scall}$]$
-\subsubsection*{Aufmerksamkeitsmessung - Werte im Versuch}
+\subsubsection{Aufmerksamkeitsmessung - Werte im Versuch}
 Für diese Auswertung ergeben sich folgende Werteverteilungen, dabei wurde der durchschnittliche Fehler (Mean-Error) über den gesamten Datensatz bestimmt. Die Einteilung der Boxplots erfolgte durch das natürliche Runden auf die Zehnerstelle der wahren X bzw. Y Werte. Die ungleichmäßige Verteilung der Messwerte liegt am Versuchsaufbau und ein gewisser Teil des Rauschens kann auf den Wertebereich zurückgeführt werden, die in einer Box zusammengefasst wurden ($\pm 5^\circ$)\\
 Dies Angaben bezeihen sich auch  \autoref{graph_VideoSkalierung} und \autoref{graph_VideoSkalierung_Err})\\
 Skalierung 1:\\
@@ -90,3 +90,4 @@ X-Rotation: Anzahl&1231&575&550&589&1859&557&607&530&1335\\
 Y-Rotation: Anzahl&&1151&661&2419&1217&817&1568&&\\
 \hline
 \end{tabular}
+\section{Graphen}
