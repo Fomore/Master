@@ -18,16 +18,16 @@ Gelernt werden kann jeder einzelne Kernel für sich und die jeweiligen Bewertung
 \begin{figure}
 	\centering
 	\includegraphics[width=0.9\linewidth]{img/cnn}
-	\caption{Beispiel für den Aufbau eines CNN zur Klassifizierung.\\Zu sehen ist das Erkennen einer Zahl auf einem Straßenschild. Bild von \cite{bild_CNN}}
+	\caption{Aufbau eines CNN zur Klassifizierung am Beispiel zur Erkennung einer Zahl auf einem Straßenschild. Bild von \cite{bild_CNN}}
 	\label{img_cnn}
 \end{figure}
+\newpage
 \subsection{Constrained Local Model (CLM)}
 In Constrained Local Modellen wird die Erkennung eines Objektes in die Erkennung einzelner charakteristischer Teilpunkte, der sogenannten Landmarks, aufgespalten. Dieses Verfahren eignet sich deshalb besonders dazu deformierbare Objekte zu erkennen.\\
 Um mehrere Punkte eines Objektes zu lokalisieren wird eine Wahrscheinlichkeitskarte der einzelnen Teilpunkte relativ zueinander gelernt. Auf dem Eingabebild wird dann die Ähnlichkeit der Bildregionen mit den gesuchten Punkten quantifiziert, die die Ähnlichkeit der Darstellung angibt. Anschließend wird die optimale Kombination aus Bildähnlichkeit und der Lage aller Punkte zueinander bestimmt.\\
 Diese Art der Bestimmung von positionsabhängigen Punkten ist ziemlich zuverlässig und dennoch dynamisch genug um auch mit kleinen Veränderungen zurecht zu kommen.\\
 Dies ist wichtig bei der Detektion von leicht verformbaren Objekten wie beispielsweise Gesichtern und ist zuverlässiger als das Active Appearance Model (AAM).
 \cite{pdf_CLM}
-\newpage
 \subsection{Constrained Local Neural Fields (CLNF)}
 Bei CLNF handelt es sich um einen Gesichtsdetektor. Für die Detektion wird für jedes Merkmal ein eigener Detektor eingesetzt der auf einem Bildbereich arbeitet und eine Wahrscheinlichkeitskarte für dieses Merkmal erstellt.\\
 Als nächster Schritt werden die Ergebnisse der Detektoren mit einer Karte der Position aller Landmarks, entsprechend dem Vorgehen eines CLM, verglichen.

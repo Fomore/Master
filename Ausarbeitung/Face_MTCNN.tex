@@ -1,17 +1,19 @@
 \section{Gesichtserkennung}
 \label{MTCNN}
-Multi-task Cascaded Convolutional Networks (MTCNN) ist ein Algorithmus zur Detektion von Gesichtern und Bestimmung von 5 Gesichts-Landmarks in Farbbildern. Es machte im Vorabtests auf Probebildern einen sehr guten Eindruck und konnte die meisten Gesichter mit verschieden Größen und Blickrichtungen finden.\\
+Multi-task Cascaded Convolutional Networks (MTCNN) ist ein Algorithmus zur Detektion von Gesichtern und Bestimmung von 5 Gesichts-Landmarks in Farbbildern. Es machte in Vorabtests auf Probebildern einen sehr guten Eindruck und konnte die meisten Gesichter mit verschieden Größen und Blickrichtungen finden.\\
 Für die Detektion werden drei CNN auf einer Bildpyramide angewendet um zuverlässig Gesichter verschiedenster Größe zu erkennen. Außerdem wird für die Detektion der Gesichter auch deren Ausrichtung berücksichtigt, um bessere Ergebnisse zu erzielen. Laut Beschreibung des Verfahrens sollen somit sogar recht kleine Gesichter mit $20\times 20$ Pixeln erfassbar sein.\\
-Sein Einsatzgebiet in der aktuellen Anwendung ist die Vorverarbeitung eines Frames für die spätere Auswertung. Somit soll dieser Schritt von einem möglichst robusten Verfahren durchgeführt werden. Dabei wird im aktuellen Fall auf einem hochauflösenden Bild gearbeitet mit verhältnismäßig kleinen, verschieden großen und weit verteilten Gesichtern.
+Sein Einsatzgebiet in der aktuellen Anwendung ist die Vorverarbeitung eines Frames für die spätere Auswertung. Somit soll dieser Schritt von einem möglichst robusten Verfahren durchgeführt werden.
+\newpage Dabei wird im aktuellen Fall auf einem hochauflösenden Bild gearbeitet mit verhältnismäßig kleinen, verschieden großen und weit verteilten Gesichtern.
 \begin{figure}
 	\centering
-	\includegraphics[width=0.5\linewidth]{img/MTCNN_Step}
-	\caption{Darstellung des Funktionsablaufes von MTCNN, Abbildung aus \cite{MTCCN}}
+	\includegraphics[width=0.7\linewidth]{img/MTCNN_Step}
+	\caption{Darstellung des Funktionsablaufes von MTCNN, Bild von \cite{MTCCN}}
 	\label{img_MTCNN_Step}
 \end{figure}
 \subsection{Die 3 Stufen der Verarbeitung}
 Für die gute Detektionsqualität sorgt die dreistufige Verarbeitung mit verschiedenen CNN auf einer Bildpyramide. Bei der Bildpyramide handelt es sich um ein in verschiedenen Größen skaliertes Bild, damit der gesuchte Inhalt in der gewünschten Auflösung abgebildet ist, ohne etwas über den Inhalt zu wissen.\\
 Dies ist von Vorteil, damit das CNN auf eine feste Größe von Gesichtern optimiert werden kann, um das Lernen nicht zusätzlich zu erschweren. So werden nur die Farbverläufe gelernt und nicht weiter durch die Skalierung erschwert, wodurch das CNN auf seine jeweilige Aufgabe besser optimiert werden kann.
+\newpage
 \subsubsection{Stufe 1}
 Beim ersten Verarbeitungsschritt werden alle Bereiche eines Bilds gesucht, in denen möglicherweise ein Gesicht zu erkennen ist. Dazu wird für die Detektion ein CNN eingesetzt, dem sogenannten Proposal Network (P-Net), das alle möglichen Bounding-Boxen ermittelt in denen ein Gesicht zu sehen sein könnte. Diese Bounding-Boxen werden anschließend mit einem NMS ausgedünnt, um die am stärksten überlappenden Boxen zusammen zu fassen. Dies ist notwendig, da dieses CNN zwar recht schnell arbeitet, allerdings auch mit einer sehr großen False-True-Fehlerrate (Erkennen trotz nicht vorhanden).
 \subsubsection{Stufe 2}

@@ -2,7 +2,8 @@
 \label{OpenFace}
 OpenFace ist ein Open-Source Echtzeitverfahren auf Basis von CLNF für die Bestimmung und Analyse von Gesichtsmerkmalen in Graubildern und Videos. Dieses Verfahren wurde gewählt, da es zum aktuellen Stand der Technik gehört und viele Probleme der Gesichtsanalyse löst. Dazu gehört neben der zuverlässigen Bestimmung der Landmarks, auch die Fähigkeit zur Bestimmung der 3D-Position, Ermittlung der Blickrichtung und die Fähigkeit zu lernen. Dabei stehen in der aktuellen Anwendung neben dem Farbbild nur die Kameraparameter zur Verfügung und keinerlei Zusätze wie ein Tiefenbild (kann mitverwendet werden wenn es vorhanden ist) oder Infrarotbeleuchtung der Szene.\\
 OpenFace kann 68 Landmarks ermitteln, die das Gesicht beschreiben, und mit deren Hilfe Position, Blickrichtung und Gesichtsmerkmale bestimmen. Sollte ein Video als Quelle fungieren, kann OpenFace auch lernen, wodurch eine zuverlässigere Verarbeitung erzielt werden kann.\\
-Als Ergebnis ist die Kopfposition (Translation und Orientierung) sowie Blickrichtung von Interesse, da mit ihnen zurückrechnet werden kann wohin die Person schaut.\\
+Als Ergebnis ist die Kopfposition (Translation und Orientierung) sowie Blickrichtung von Interesse, da mit ihnen zurückrechnet werden kann wohin die Person schaut.
+\newpage
 Der Rechenaufwand zur Verarbeitung des Eingabebildes ist so ausgelegt, das ein Webcam-Video in Echtzeit ausgewertet werden kann, dies ist im aktuellen Fall nicht notwendig, da es sich um eine nachträgliche Auswertung handelt, bei der es vor allem um Genauigkeit geht.
 \subsection{Gesichts-Landmarks: Detektion und Verfolgung}
 Für die Bestimmung und Tracking der Landmarks wird ein Conditional Local Neural Fields (CLNF) eingesetzt, dabei handelt es sich im Grunde um ein Constrained Local Model (CLM). Es wird das Point Distribution Model (PDM) zum Erfassen der Anordnung der Landmarks sowie ein verbessertes Patch Experts zum Erfassen der Variante der einzelnen Landmarks verwendet.\\
@@ -11,7 +12,7 @@ Auf diese Weise werden 68 Gesichts-Landmarks und weitere 28 pro Auge bestimmt.\\
 Für eine zuverlässige Detektion der Gesichter, sollten diese laut Paper \cite{OpenFace} eine Größe von 100 Pixeln aufweisen.
 \subsection{Veröffentlichte Genauigkeit der Kopforientierung}
 Um die Qualität der Berechnung auf dem Kopf zu bewerten wurde im Paper \cite{OpenFace} der \glqq Biwi Kinect head pose\grqq \cite{BIWI_database}, \glqq ICT-3DHP\grqq \cite{ICT_database} und \glqq BU Datensatz\grqq \cite{BU_database} ausgewertet. Dabei handelt es sich um Portrait-Fotos von Probanden, deren Körper in Richtung Kamera ausgerichtet sind und ihren Kopf in eine beliebige Richtung drehen. Für die Genauigkeit der bestimmten Kopfposition haben sich folgende Werte in \autoref{OpenFace_Error} ergeben, Angraben in Grad.\\
-Für die Qualität zur Bestimmung der Blickrichtung wurde der Augendatensatz \glqq Appearancebased gaze estimation in the wild\grqq \cite{database_Eye_old} zur Bestimmung der Blickrichtung verwendet und es ergab sich ein durchschnittlichen Fehler von $9,96$ Grad.
+Für die Qualität zur Bestimmung der Blickrichtung wurde der Augendatensatz \glqq Appearancebased gaze estimation in the wild\grqq \cite{database_Eye_old} zur Bestimmung der Blickrichtung verwendet und es ergab sich ein durchschnittlicher Fehler von $9,96$ Grad.
 \begin{figure}[h]
 	\centering
 	\begin{tabular}{|l|c|c|c||c|c|}

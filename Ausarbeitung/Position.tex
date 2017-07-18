@@ -34,8 +34,8 @@ Die Orientierung kann anhand der Position der Landmarks mit einem PDM bestimmt w
 \subsubsection{Bestimmung der Blickrichtung}
 \label{OpenFace_Blickrichtung}
 Zur Bestimmung der Blickrichtung wird wie folgt vorgegangen: Zuerst wird der Strahl bestimmt der, ausgehend vom Zentrum der Kamera, durch das Zentrum der Pupille verläuft. Nun wird der Schnittpunkt zwischen diesem Strahl und einer Sphäre bestimmt, die das Auge repräsentiert. Anschließend wird ein Strahl bestimmt der vom Zentrum der Sphäre ausgehend durch den berechneten Schnittpunkt verläuft, dies ist die resultierende Blickrichtung.\cite{OpenFace}\\
-Da die Berechnung für jedes Auge unabhängig vom anderen ausgeführt wird, können Messungenauigkeiten dazu führen, das die berechnete Blickrichtung der beiden Augen in verschiedene Richtung verlaufen.\\
-Diesem kann entgegengewirkt werden, indem zwischen beiden Berechnungen (rechts und linkes Auge) eine Abhängigkeit formuliert wird, z.B. Durchschnitt.\\
+Da die Berechnung für jedes Auge unabhängig vom anderen ausgeführt wird, können Messungenauigkeiten dazu führen, dass die berechnete Blickrichtung der beiden Augen in verschiedene Richtung verlaufen.\\
+Diesem kann entgegengewirkt werden, indem zwischen beiden Berechnungen (rechtes und linkes Auge) eine Abhängigkeit formuliert wird, z.B. Durchschnitt.\\
 Dieser Trick kann verwendet werden, da der Unterschied zwischen beiden Blickrichtungen minimal ausfällt (nahezu parallel), sollte ein weiter entfernterer Punkt fokussiert werden.
 \subsubsection{Auswirkung der Bildkoordinaten auf die Berechnung}
 Befinden sich die Bildpunkte nicht im Zentrum, so muss die Ausrichtung der Pixel beachtet werden, um diese mit in die Berechnung einfließen zu lassen. Dieser zusätzliche Winkel muss beachtet werden, da die Abweichung immer stärker wird, je weiter der Pixel vom Zentrum entfernt ist.\\ 
@@ -46,7 +46,9 @@ euler_y &= \tan^{-1}(\frac{\sqrt{Y^2+Z^2}}{Z^2})\\
 R_{pos} &= R(euler_x,euler_y,0)\text{ Umwandlung zur Rotationsmatrix}\\
 R &= R_{CNN}\cdot R_{pos}
 \end{align*}
-Eine weitere Verbesserung kann erreicht werden, indem die gefundenen 2D-Landmarks mit Hilfe des PDM in 3D überführt werden. Anschließend werden die 3D nach 2D-Koordinaten wieder überführt um die Orientierung und Position zu ermitteln. Auch bei diesem Verfahren muss die Pixelorientierung beachtet werden. Allerdings ist die Verwendung eines Tiefenbildes von Vorteil, da ansonsten die Fehler weiter verstärkt werden. Daher ist es in der aktuellen Anwendung nicht sinnvoll einsetzbar.\cite{OpenFace}
+Eine weitere Verbesserung kann erreicht werden, indem die gefundenen 2D-Landmarks mit Hilfe des PDM in 3D überführt werden. Anschließend werden die 3D nach 2D-Koordinaten wieder überführt um die Orientierung und Position zu ermitteln. Auch bei diesem Verfahren muss die Pixelorientierung beachtet werden.
+\newpage
+Allerdings ist die Verwendung eines Tiefenbildes von Vorteil, da ansonsten die Fehler weiter verstärkt werden. Daher ist es in der aktuellen Anwendung nicht sinnvoll einsetzbar.\cite{OpenFace}
 \subsection{Bestimmung eines Punktes, auf dem die Aufmerksamkeit liegt}
 Von Interesse ist vor allem der Punkt auf dem der Blick ruht bzw. auf den das Gesicht ausgerichtet ist.\\
 Bestimmung des Richtungsvektors $V$ aus der Rotationsmatrix:

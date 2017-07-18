@@ -30,6 +30,13 @@
 \usepackage {tikz}
 \usetikzlibrary {positioning, shadows, arrows, automata}
 
+%% Für Bild in Tabelle
+\newcommand\tabbild[2][]{%
+	\raisebox{0pt}[\dimexpr\totalheight+\dp\strutbox\relax][\dp\strutbox]{%
+		\includegraphics[#1]{#2}%
+	}%
+}
+
 \pagestyle{headings}
 
 \setkomafont{disposition}{\normalcolor\bfseries} % überall Serifen verwenden
@@ -111,8 +118,8 @@ Betreuer: Thomas Kübler
 
 \chapter{Herangehensweise}
 \input{Ablauf}
-\input{Ziele}
 \input{Schulvideo}
+\input{Ziele}
 %\input{Hardware}
 \cleardoublepage
 

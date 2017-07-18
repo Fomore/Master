@@ -1,6 +1,6 @@
 \label{Abbildungen}
 In diesem Abschnitt werden weitere Diagramme dargestellt um einen besseren Eindruck über die Messergebnisse zu erhalten.
-\subsection{Boxplot}
+\section{Boxplot}
 Folgende Angaben gelten für alle dargestellten Boxplots.
 \begin{itemize}
 	\item Die schwarze Mittellinie in der Box zeigt den Median der Messwerte an.
@@ -10,11 +10,12 @@ Folgende Angaben gelten für alle dargestellten Boxplots.
 	\item Alle Ausreißer wurden zwecks Übersichtlichkeit weggelassen
 	\item Die eingezeichnete horizontale Linie stellt den Median der Messwerte aus Skalierung 1 dar, die Beschriftung gibt den Median an.
 \end{itemize}
-\subsection{Anzahl der Messwerte}
+\section{Anzahl der Messwerte}
 Um eine Übersicht über die Anzahl der Messwerte zu erhalten ein Überblick:
-\subsubsection{Biwi Random Forests for Real Time 3D Face Analysis \cite{database_Face_Ori}}
+\subsection{Biwi Random Forests for Real Time 3D Face Analysis \cite{database_Face_Ori}}
 Alle Darstellungen und Auswertungen bezüglich der verschiedenen Skalierungsverfahren haben folgende Anzahl an Messwerten bei den angegebenen Skalierungen, Maximum bei Skalierung 1 mit 9800.\\
-Die geringe Anzahl der Messwerte bei $0,04$ kann keine begründete Aussage gemacht werden, außerdem weichen die Werte so sehr von de anderen ab, das sie als False-True erkannten Gesichtern angesehen werden können
+Es wurden die Skalierungen von $1$ bis $0,04$ getestet mit $0,06$ Schritte\\ 
+Die geringe Anzahl der Messwerte bei $0,04$ kann keine begründete Aussage gemacht werden, außerdem weichen die Werte so sehr von den anderen ab, das sie als False-True erkannten Gesichtern angesehen werden können.
 $[$\autoref{img_Rot_Max}, \autoref{img_X_Pos_Skal}, \autoref{img_Y_Pos_Skal}, \autoref{img_Z_Pos_Skal}, \autoref{img_X_Rot_Skal}, \autoref{img_Y_Rot_Skal}, \autoref{img_Z_Rot_Skal}$]$\\
 \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|}
 	\hline 
@@ -29,11 +30,11 @@ $[$\autoref{img_Rot_Max}, \autoref{img_X_Pos_Skal}, \autoref{img_Y_Pos_Skal}, \a
 	Nearest-N.&0&0&0&193&2081&4374&5976&7825&8595&$>9200$\\ 
 	\hline 
 \end{tabular} 
-\subsubsection{Augen-Datensatz \cite{database_Eye}}
+\subsection{Augen-Datensatz \cite{database_Eye}}
 Die einzelnen abgebildeten Boxplots basierend auf dem Augen-Datensatz \cite{database_Eye} besitzen mindestens 10.000 Messwerte.\\
 $[$\autoref{ElSe_Gray_Zentrum}, \autoref{ElSe_Gray_Pupille}, \autoref{ElSe_Gray_Iris}, \autoref{ElSe_scall}$]$
-\subsubsection{Aufmerksamkeitsmessung - Werte im Versuch}
-Für diese Auswertung ergeben sich folgende Werteverteilungen, dabei wurde der durchschnittliche Fehler (Mean-Error) über den gesamten Datensatz bestimmt. Die Einteilung der Boxplots erfolgte durch das natürliche Runden auf die Zehnerstelle der wahren X bzw. Y Werte. Die ungleichmäßige Verteilung der Messwerte liegt am Versuchsaufbau und ein gewisser Teil des Rauschens kann auf den Wertebereich zurückgeführt werden, die in einer Box zusammengefasst wurden ($\pm 5^\circ$)\\
+\subsection{Blickrichtungsmessung - Werte im Versuch 4}
+Für diese Auswertung ergeben sich folgende Werteverteilungen der Messwerte, dabei wurde der durchschnittliche Fehler (Mean-Error) über den gesamten Datensatz bestimmt. Die Einteilung der Boxplots erfolgte durch das natürliche Runden auf die Zehnerstelle der wahren X bzw. Y Werte und ihre Anzahl in den Tabellen angegeben. Die ungleichmäßige Verteilung der Messwerte liegt am Versuchsaufbau und ein gewisser Teil des Rauschens kann auf den Wertebereich zurückgeführt werden, die in einer Box zusammengefasst wurden ($\pm 5^\circ$)\\
 Dies Angaben bezeihen sich auch  \autoref{graph_VideoSkalierung} und \autoref{graph_VideoSkalierung_Err})\\
 Skalierung 1:\\
 X-Mean-Error = $8,971^\circ$; Y-Mean-Error = $10,08^\circ$; EyeAVG-X-Mean-Error = $17,49^\circ$\\
@@ -41,9 +42,9 @@ X-Mean-Error = $8,971^\circ$; Y-Mean-Error = $10,08^\circ$; EyeAVG-X-Mean-Error 
 	\hline 
 	Winkel [Grad]&-40&-30&-20&-10&0&10&20&30&40\\
 	\hline 
-	X-Rotation: Anzahl&3115&1363&1278&1297&4142&1189&1343&1304&3449\\ 
+	X-Rotation&3115&1363&1278&1297&4142&1189&1343&1304&3449\\ 
 	\hline 
-	Y-Rotation: Anzahl&444&3328&1920&5692&2215&1804&3077&&\\
+	Y-Rotation&444&3328&1920&5692&2215&1804&3077&&\\
 	\hline
 \end{tabular}\\\\
 Skalierung $0,5$:\\
@@ -52,20 +53,21 @@ X-Mean-Error = $8,927^\circ$; Y-Mean-Error = $10,07^\circ$; EyeAVG-X-Mean-Error 
 	\hline 
 	Winkel [Grad]&-40&-30&-20&-10&0&10&20&30&40\\
 	\hline 
-	X-Rotation: Anzahl&2420&1068&1002&1002&3217&932&1070&1023&2720\\ 
+	X-Rotation&2420&1068&1002&1002&3217&932&1070&1023&2720\\ 
 	\hline 
-	Y-Rotation: Anzahl&222&2649&1506&4372&1819&1415&2471&&\\
+	Y-Rotation&222&2649&1506&4372&1819&1415&2471&&\\
 	\hline
-\end{tabular}\\\\
+\end{tabular}
+\newpage
 Skalierung $0,25$:\\
 X-Mean-Error = $8,742^\circ$; Y-Mean-Error = $9,772^\circ$; EyeAVG-X-Mean-Error = $17,07^\circ$\\
 \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
 \hline 
 Winkel [Grad]&-40&-30&-20&-10&0&10&20&30&40\\
 \hline 
-X-Rotation: Anzahl&2471&1074&1012&1018&3283&950&1077&1047&2749\\ 
+X-Rotation&2471&1074&1012&1018&3283&950&1077&1047&2749\\ 
 \hline 
-Y-Rotation: Anzahl&222&2753&1536&4452&1831&1417&2470&&\\
+Y-Rotation&222&2753&1536&4452&1831&1417&2470&&\\
 \hline
 \end{tabular}\\\\
 Skalierung $0,1$:\\
@@ -74,9 +76,9 @@ X-Mean-Error = $9,899^\circ$; Y-Mean-Error = $10,14^\circ$; EyeAVG-X-Mean-Error 
 \hline 
 Winkel [Grad]&-40&-30&-20&-10&0&10&20&30&40\\
 \hline 
-X-Rotation: Anzahl&2466&1064&1002&1018&3283&950&1074&1047&2727\\ 
+X-Rotation&2466&1064&1002&1018&3283&950&1074&1047&2727\\ 
 \hline 
-Y-Rotation: Anzahl&222&2734&1517&4451&1829&1417&2461&&\\
+Y-Rotation&222&2734&1517&4451&1829&1417&2461&&\\
 \hline
 \end{tabular}\\\\
 Skalierung 0.05:\\
@@ -85,9 +87,9 @@ X-Mean-Error = $12,48^\circ$ Y-Mean-Error = $12,48$; EyeAVG-X-Mean-Error = $21,4
 \hline 
 Winkel [Grad]&-40&-30&-20&-10&0&10&20&30&40\\
 \hline 
-X-Rotation: Anzahl&1231&575&550&589&1859&557&607&530&1335\\ 
+X-Rotation&1231&575&550&589&1859&557&607&530&1335\\ 
 \hline 
-Y-Rotation: Anzahl&&1151&661&2419&1217&817&1568&&\\
+Y-Rotation&&1151&661&2419&1217&817&1568&&\\
 \hline
 \end{tabular}
 \section{Graphen}
