@@ -1,0 +1,24 @@
+\subsection{OpenFace}
+\begin{frame}
+Einsatz eines Conditional Local Neural Fields (CLNF) für die Landmark-Detektion
+\begin{itemize}
+	\item<1-> 68 Gesichts-Landmarks
+	\item<1-> 28 Augen-Landmarks
+	\item<1-> Zuverlässig ab 100 Pixel große Gesichter
+\end{itemize}
+Zuverlässigkeit der Bestimmung von Position und Orientierung
+\begin{itemize}
+	\item<1-> Rotation auf BIWI: $6^\circ$
+	\item<1-> Position auf BIWI: $2,5cm$ bei $95cm$
+\end{itemize}
+\end{frame}
+\subsection{Auswirkung auf die Berechnung}
+\begin{frame}
+\begin{center}
+\includegraphics[width=0.49\linewidth]{img_Skal/Skal_Diff_RX}
+\includegraphics[width=0.49\linewidth]{img_Skal/Skal_Diff_RY}\\
+\includegraphics[width=0.49\linewidth]{img_Skal/Skal_Diff_TX}
+\includegraphics[width=0.49\linewidth]{img_Skal/Skal_Diff_Tz}\\
+\footnotesize{Bicubic (blau), Lanczos (grün), Linear (schwarz), N.-Neighbor (rot)}
+\end{center}
+\end{frame}

@@ -1,0 +1,30 @@
+\subsection{Umsetzung Graph}
+\begin{frame}
+\begin{center}
+\begin{footnotesize}
+\begin{tikzpicture}
+	\node[circle,draw,align=center] (C) at(0,0) {Kamera};
+	\node[draw,align=center] (F) at(0,-2)  {Gesichtserkennung};
+	\node[draw,align=center] (S) at(0,-3.1)  {Skalierung};
+	\node[draw,align=center] (G) at(6,-4.2)  {Graukonvertierung};
+	\node[draw,align=center] (A) at(0,-4.2)  {Gesichtsanalyse};
+	\node[draw,align=center] (E) at(6,-5.3)  {Augenanalyse};
+	
+	\node (outA) at(0,-7.3)  {};
+	\node (outB) at(6,-7.3)  {};
+	
+	\draw[->] (E)to node[right,align=center]{Blickrichtung}(outB);
+	\draw[->] (A)to[out=-45,in=90] node[right]{}(outB);
+	
+	\draw[->] (C)to node[right]{Frame}(F);
+	\draw[->] (F)to node[right]{Bildausschnitt}(S);
+	\draw[->] (S)to node[right]{Eingabebild}(A);
+	\draw[->] (A)to node[left,align=center]{Gesichts-\\orientierung}(outA);
+	
+	\draw[->] (A)to node[below]{Augenbereich}(G);
+	\draw[->] (C)to[out=-45,in=90] node[left]{}(G);
+	\draw[->] (G)to node[right]{Eingabebild}(E);
+\end{tikzpicture}
+\end{footnotesize}
+\end{center}
+\end{frame}

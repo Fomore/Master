@@ -1,0 +1,105 @@
+\subsection{Versuch 1}
+\begin{frame}
+Auswirkung der Position im Raum auf die Berechnung und horizontaler Arbeitsbereich
+\begin{itemize}
+	\item<1-> Probanden befinden sich auf einem $1\times 1m$ Raster.
+	\item<1-> $2688\times 1520$ Farbkamera mit $170^\circ$ Weitwinkel-Linse und großer Schärfentiefe.
+	\item<1-> Blick-Ziel sind weit verteilt an der Wand
+\end{itemize}
+\begin{figure}
+	\centering
+	\includegraphics[width=0.7\linewidth]{images/Target}
+\end{figure}
+\end{frame}
+\begin{frame}
+\begin{center}
+	\input{Versuch1_Img}
+	\input{Versuch1_Video}
+\end{center}
+\end{frame}
+\begin{frame}
+\begin{center}
+\input{Versuch1_Video_res}
+\end{center}
+\end{frame}
+\subsection{Versuch 2}
+\begin{frame}
+Verkürzter Versuch um den vertikalen Arbeitsbereich zu Untersuchen.
+\begin{itemize}
+	\item<1-> Der Proband befindet sich auf einer Linie $3m$ und $9m$ entfernt
+	\item<1-> Blick-Ziel befinden sich zu meist $1m$ auf dem Boden vor den Linien.
+	\item<1-> $2688\times 1520$ Farbkamera mit $170^\circ$ Weitwinkel-Linse und großer Schärfentiefe.
+\end{itemize}
+\end{frame}
+\begin{frame}
+\begin{center}
+	\input{Versuch2}
+	\input{Versuch2_res}
+\end{center}
+\end{frame}
+\subsection{Versuch 3}
+\begin{frame}
+	Fotokamera mit $6000 \times 4000$ Farbbild\\
+	\input{Augenbereich.tex}
+\end{frame}
+\begin{frame}
+Beispielergebnisse von OpenFace und ElSe:\\
+Augenparie - OpenFace - ElSe - ElSe-Landmarks
+\begin{center}
+	\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|} 
+		\hline 
+		\tabbild[width=0.05\linewidth]{img_Versuch_Auge/Auge_2}&
+		\tabbild[width=0.05\linewidth]{img_Versuch_Auge/Auge_3}&
+		\tabbild[width=0.05\linewidth]{img_Versuch_Auge/Auge_6}&
+		\tabbild[width=0.05\linewidth]{img_Versuch_Auge/Auge_7}&
+		\tabbild[width=0.05\linewidth]{img_Versuch_Auge/Auge_10}&
+		\tabbild[width=0.05\linewidth]{img_Versuch_Auge/Auge_11}&	
+		\tabbild[width=0.05\linewidth]{img_Versuch_Auge/Auge_14}&
+		\tabbild[width=0.05\linewidth]{img_Versuch_Auge/Auge_15}&
+		\tabbild[width=0.05\linewidth]{img_Versuch_Auge/Auge_17}&
+		\tabbild[width=0.05\linewidth]{img_Versuch_Auge/Auge_19}&
+		\tabbild[width=0.05\linewidth]{img_Versuch_Auge/Auge_22}\\
+		\hline 
+		$1m$&$2m$&$3m$&$4m$&$5m$&$6m$&$7m$&$8m$&$9m$&$10m$&$11m$\\ 
+		\hline
+		$60$&$25$&$18$&$12$&$9$&$7$&$5$&$4$&$3$&$2$&$1$\\\hline
+	\end{tabular}
+\end{center}
+\end{frame}
+\subsection{Versuch 4}
+\begin{frame}
+Dieser Versuch soll die Genauigkeit der Berechnung aufzeigen.
+\begin{itemize}
+	\item<1-> Bewegtes Blick-Ziel
+	\item<1-> Mehrere Probanden
+	\item<1-> Verfolgen des Ziels auf natürlicher weise
+	\item<1-> Feste Position der Probanden, Distanzänderungen mit Skalierung simuliert
+\end{itemize}
+\begin{figure}
+	\centering
+	\includegraphics[width=0.7\linewidth]{images/VideoSumme}
+\end{figure}
+\end{frame}
+\begin{frame}
+\begin{center}
+\includegraphics[width=0.192\linewidth]{OpenFace_Img/Head_x_S1}
+\includegraphics[width=0.192\linewidth]{OpenFace_Img/Head_x_S05}
+\includegraphics[width=0.192\linewidth]{OpenFace_Img/Head_x_S025}
+\includegraphics[width=0.192\linewidth]{OpenFace_Img/Head_x_S01}
+\includegraphics[width=0.192\linewidth]{OpenFace_Img/Head_x_S005}\\	
+\includegraphics[width=0.192\linewidth]{OpenFace_Img/Head_y_S1}
+\includegraphics[width=0.192\linewidth]{OpenFace_Img/Head_y_S05}
+\includegraphics[width=0.192\linewidth]{OpenFace_Img/Head_y_S025}
+\includegraphics[width=0.192\linewidth]{OpenFace_Img/Head_y_S01}
+\includegraphics[width=0.192\linewidth]{OpenFace_Img/Head_y_S005}\\	
+\includegraphics[width=0.192\linewidth]{OpenFace_Img/EyeAVG_x_S1}	
+\includegraphics[width=0.192\linewidth]{OpenFace_Img/EyeAVG_x_S05}
+\includegraphics[width=0.192\linewidth]{OpenFace_Img/EyeAVG_x_S025}
+\includegraphics[width=0.192\linewidth]{OpenFace_Img/EyeAVG_x_S01}
+\includegraphics[width=0.192\linewidth]{OpenFace_Img/EyeAVG_x_S005}
+\end{center}
+Auswertung der Videoaufnahme:\\
+\footnotesize{
+Kopfausrichtung Horizontal und Vertikal und X-Ausrichtung der Augen}
+Skalierungsfaktor: 1/0,5/0,25/0,1/0,05
+\end{frame}

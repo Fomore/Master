@@ -1,0 +1,162 @@
+%% LaTeX Beamer presentation template 
+%% für den Lehrstuhl Paralleles Rechnen
+%% am Wilhelm-Schickard-Institut der Universität Tübingen
+
+%% Versions:
+%% 0.9: 081014, Philip Effinger
+%% 0.91: 110214, Philip Effinger: Anpassung an das neue CD der Universität 
+
+%% Eine sehr gute Einführung in das Beamer-Package bietet der BEAMER_GUIDE
+%% zuletzt gesehen unter: 
+%% faq.ktug.or.kr/wiki/uploads/beamer_guide.pdf
+
+\documentclass[compress]{beamer}
+
+\mode<presentation>
+{
+% Das Theme für Beamer:
+\usetheme{Darmstadt}
+%möglich ist auch {Frankfurt}
+
+% Farbe passend zum Unilogo
+\usecolortheme[rgb={0.65,0.18,0.215}]{structure}
+
+\usefonttheme{professionalfonts}
+
+%Anzeigen der Seitenzahlen
+\setbeamertemplate{footline}[frame number]
+
+
+% Aufzählungspunkte sollen verdeckt sein, wenn sie noch nicht aktuell sind
+\setbeamercovered{invisible}
+% falls erwünscht, so kann auch {transparent} gewählt werden
+
+% Navigationssymbole werden ausgeblendet
+\setbeamertemplate{navigation symbols}{}}
+
+% Wenn die aktuelle Folien rechts unten erscheinen soll
+%\setbeamertemplate{footline}[frame number]
+
+\usepackage[ngerman]{babel}
+
+% Deutsche TeX-Eigenheiten
+\usepackage{ngerman}
+
+%deutsche Bibtex interpretation
+\usepackage{bibgerm}
+
+% Pakete für angenehmes Encoding
+\usepackage[utf8x]{inputenc}
+% \usepackage[T1]{fontenc}
+%\usepackage{inputenc}
+
+
+%% Für Bild in Tabelle
+\newcommand\tabbild[2][]{%
+	\raisebox{0pt}[\dimexpr\totalheight+\dp\strutbox\relax][\dp\strutbox]{%
+		\includegraphics[#1]{#2}%
+	}%
+}
+
+\usepackage{array}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
+
+% Tabelle-Zelle vertikal verbinden
+\usepackage{multirow}
+
+% für die Benutzung von Farben und Bildern
+\usepackage{pgf}
+
+% Verwendete Schriftarten
+ \usepackage{mathptmx}
+ \usepackage[scaled=.90]{helvet}
+ \usepackage {amsmath, amssymb}
+
+
+% %Für die Graphen
+\usepackage {amsmath, amssymb}
+\usepackage {graphicx}
+\usepackage {tikz}
+\usetikzlibrary {positioning, shadows, arrows, automata}
+
+% Falls folgende Schriftart beim Kompilieren nicht gefunden wird, die Zeile
+% bitte auskommentieren
+\usepackage{avant}
+
+% Die Daten für die pdf-Datei
+\hypersetup{
+	pdftitle={Masterarbeit:\\Untersuchung zur Machbarkeit von simultanem Eye-Tracking bei Menschengruppen mit Anwendungen im Klassenzimmer}
+	pdfsubject={Masterarbeit Informatik}
+	pdfauthor={Falko Benezan}
+	pdfkeywords={Schluesselworte}
+	pdfpagemode={FullScreen}
+}
+
+% Titelseite
+\title{Untersuchung zur Machbarkeit von simultanem Eye-Tracking bei Menschengruppen mit Anwendungen im Klassenzimmer}
+%\titlegraphic{\includegraphics[height=1.5cm]{unilogo-rot} \qquad
+%\includegraphics[height=2cm]{Wilhelm_Schickard}}
+
+\author{Falko Benezan} 
+
+\institute[Universität Tübingen]
+{
+Mathematisch-Naturwissenschaftliche Fakult"at \\
+Wilhelm-Schickard-Institut f"ur Informatik
+}
+
+\date{\today}
+
+% Wenn das Universitätslogo auf jeder Seite rechts unten klein erscheinen soll
+ %\pgfdeclareimage[height=0.5cm]{university-logo}{./images/unilogo}
+ %\logo{\pgfuseimage{university-logo}}
+
+
+% Die Einblendung des Inhaltsverzeichnis am Beginn einer Sektion ist eigentlich
+% nicht nötig
+% \AtBeginSubsection[]
+% {
+% \begin{frame}<beamer>
+% \frametitle{Outline}
+% \tableofcontents[currentsection,currentsubsection]
+% \end{frame}
+% }
+
+% Aktiviere schrittweises Einblenden bei Aufzählungen
+
+\beamerdefaultoverlayspecification{<+->}
+ 
+\begin{document}
+ 
+\begin{frame}
+\begin{center}
+	\begin{huge}
+		Masterarbeit Informatik
+	\end{huge}
+\end{center}
+\titlepage
+\end{frame}
+
+% Der Rest des Templates ist eine kurze Einführung in:
+% - die verschiedenen Overlay-Möglichkeiten von Beamer
+% - die Benutzung von (Unter-)Sektionen in Beamer
+%\frame{\frametitle{Gliederung}}
+%\frame{\frametitle{Gliederung} \tableofcontents[sections={4-8}]}
+\section{Intention}
+\input{Intention}
+\input{Struktur_Graph} % Anstelle von Gliederung
+\section{Gesichtserkennung}
+\input{Gesichtserkennung}
+\section{Skalierung}
+\input{Skalierung}
+\section{Gesichtsanalyse}
+\input{Gesichtsanalyse}
+\section{Graukonvertierung}
+\input{Graukonvertierung}
+\section{Augenanalyse}
+\input{Augenanalyse}
+\section{Versuche}
+\input{Versuche}
+\section{Zusammenfassung }
+\input{Ende}
+\end{document}
